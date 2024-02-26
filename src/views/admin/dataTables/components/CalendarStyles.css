@@ -1,0 +1,34 @@
+/* CalendarNavStyles.css */
+.rbc-toolbar button {
+    background-image: linear-gradient(to right, rgb(0, 153, 255), rgb(22, 129, 216)); 
+    color: white; /* Text color */
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 5px 10px; /* Padding for the button */
+    transition: transform 0.3s ease; /* Smooth transition for scaling */
+  }
+  
+  .rbc-toolbar button:hover {
+    background-image: linear-gradient(to right, rgb(201, 23, 23), red); /* Slightly different gradient for hover */
+    transform: scale(1.01); /* Slight zoom effect on hover */
+  }
+  
+  .rbc-toolbar button:active {
+    background-image: linear-gradient(to right, blue, #1e7b92); /* Different gradient for active/clicked state */
+  }
+  .react-calendar-timeline .rct-row {
+    min-height: 50px !important;
+  }
+  
+  /* CustomTimelineStyles.css */
+.react-calendar-timeline .rct-item {
+  background-color: #007bff; /* Change the background color */
+}
+
+.react-calendar-timeline .rct-item-content {
+  font-size: 16px; /* Change the font size */
+  color: #fff; /* Change the font color */
+}
+
+  
+  
