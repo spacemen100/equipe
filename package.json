@@ -28,6 +28,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-register": "^6.26.0",
+    "date-fns": "^3.6.0",
     "framer-motion": "^10.16.5",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
