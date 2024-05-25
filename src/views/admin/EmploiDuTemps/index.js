@@ -26,7 +26,6 @@ const EmploiDuTemps = () => {
   const leaders = teamMembers.filter(member => member.isLeader);
   const [showAlert, setShowAlert] = useState(!selectedTeam);
   const [showDropdown, setShowDropdown] = useState(true);
-  const [showApp, setShowApp] = useState(false);
 
   useEffect(() => {
     async function fetchTeamData() {
