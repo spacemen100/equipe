@@ -11,10 +11,11 @@ import Menu from "views/admin/Menu"; // Import the Menu component
 
 const routes = [
   {
-    path: "/",
-    pathTo: "/admin/menu",
     name: "Menu",
-    redirect: true,
+    layout: "/admin",
+    path: "/default",
+    icon: <Icon as={FcMenu} width='20px' height='20px' color='inherit' />,
+    component: Menu,
   },
   {
     name: "Gestion opérationnelle",
@@ -57,13 +58,6 @@ const routes = [
     path: "/parametres",
     icon: <Icon as={FcSettings} width='20px' height='20px' color='inherit' />,
     component: Parametres,
-  },
-  {
-    name: "Menu",
-    layout: "/admin",
-    path: "/menu",
-    icon: <Icon as={FcMenu} width='20px' height='20px' color='inherit' />,
-    component: Menu,
   },
 ];
 
