@@ -1,4 +1,5 @@
 import { FcHome } from "react-icons/fc";
+import { VscBellDot, VscBell } from "react-icons/vsc";
 import {
   Flex,
   Image,
@@ -10,7 +11,7 @@ import {
 import DropdownMenu from 'components/navbar/searchBar/DropdownMenu';
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 import { useHistory } from "react-router-dom";
 // Assets
 import navImage from 'assets/img/layout/Navbar.png';
@@ -26,6 +27,9 @@ export default function HeaderLinks(props) {
     '14px 17px 40px 4px rgba(112, 144, 176, 0.18)',
     '14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
   );
+
+  // État pour les notifications
+  const [hasNotification, setHasNotification] = useState(true);
 
   return (
     <Flex
@@ -66,6 +70,14 @@ export default function HeaderLinks(props) {
         variant="ghost"
         onClick={() => history.push('/admin/menu')} // Adjust the path as needed
         ml="10px"
+      />
+      <IconButton
+        aria-label="Notifications"
+        icon={hasNotification ? <VscBellDot /> : <VscBell />}
+        size="lg"
+        variant="ghost"
+        ml="10px"
+        onClick={() => setHasNotification(!hasNotification)} // Toggle notification state for demonstration
       />
     </Flex>
   );
