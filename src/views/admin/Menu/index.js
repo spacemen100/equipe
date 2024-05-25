@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, SimpleGrid, Text, VStack, IconButton } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcSupport, FcSettings } from "react-icons/fc";
 import { useHistory } from "react-router-dom";
 
 const Menu = () => {
@@ -11,7 +11,7 @@ const Menu = () => {
     { icon: FcCalendar, label: "Emploi du temps", path: "/admin/emploi-du-temps" },
     { icon: FcDocument, label: "Documents", path: "/admin/documents" },
     { icon: FcConferenceCall, label: "Communication", path: "/admin/communication" },
-    { icon: FcPackage, label: "Matériel", path: "/admin/materiel" },
+    { icon: FcSupport, label: "Matériel", path: "/admin/materiel" },
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
   ];
 
