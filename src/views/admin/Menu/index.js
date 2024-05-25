@@ -16,18 +16,33 @@ const Menu = () => {
   ];
 
   return (
-    <Box pt={{ base: '180px', md: '80px', xl: '80px' }}>
-      <SimpleGrid columns={3} spacing={10}>
+    <Box pt={{ base: '180px', md: '80px', xl: '80px' }} textAlign="center">
+      <SimpleGrid columns={[2, null, 3]} spacing={10}>
         {menuItems.map((item, index) => (
-          <VStack key={index} onClick={() => history.push(item.path)} cursor="pointer">
-            <IconButton
-              icon={<item.icon size="40px" />}
-              size="lg"
-              isRound
-              aria-label={item.label}
-            />
-            <Text>{item.label}</Text>
-          </VStack>
+          <Box
+            key={index}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p={5}
+            bg="white"
+            _hover={{ bg: "gray.100" }}
+            onClick={() => history.push(item.path)}
+            cursor="pointer"
+            boxShadow="md"
+          >
+            <VStack spacing={4}>
+              <IconButton
+                icon={<item.icon size="60px" />}
+                size="lg"
+                isRound
+                aria-label={item.label}
+                variant="ghost"
+                colorScheme="blue"
+              />
+              <Text fontSize="lg" fontWeight="bold">{item.label}</Text>
+            </VStack>
+          </Box>
         ))}
       </SimpleGrid>
     </Box>
