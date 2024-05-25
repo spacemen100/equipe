@@ -111,18 +111,7 @@ const Documents = () => {
         </Badge>
       )}
       <TeamMembersDisplay />
-      <GpsPosition />
       <DocumentsViewer/>
-      <VianneyAlertChat />
-      <TeamScheduleByMySelfEquipe />
-      <Badge colorScheme="orange" onClick={toggleAppVisibility} cursor="pointer" mt={1}>
-        {showApp ? "Cacher" : "Montrer"} Radio CB virtuelle
-      </Badge>
-      {showApp && (
-        <div>
-
-        </div>
-      )}
     </Box>
   );
 };
