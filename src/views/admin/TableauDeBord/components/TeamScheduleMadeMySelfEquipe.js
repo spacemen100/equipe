@@ -20,7 +20,7 @@ moment.locale('fr');
 const localizer = momentLocalizer(moment);
 
 const TeamScheduleByMySelfEquipe = () => {
-    const [showSchedule, setShowSchedule] = useState(false); // New state for controlling visibility
+    const [showSchedule, setShowSchedule] = useState(true); // New state for controlling visibility
     const toggleScheduleVisibility = () => {
       setShowSchedule(!showSchedule);
     };
