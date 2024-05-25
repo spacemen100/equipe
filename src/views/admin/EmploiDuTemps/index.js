@@ -14,14 +14,11 @@ import {
   Spacer,
   Text,
 } from '@chakra-ui/react';
-import GpsPosition from './../InterfaceEquipe/components/GpsPosition';
-import VianneyAlertChat from '../TableauDeBord/components/VianneyAlertChat';
 import { supabase } from './../../../supabaseClient';
 import TeamMembersDisplay from './../InterfaceEquipe/components/TeamMembersDisplay';
 
 import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';
 import TeamScheduleByMySelfEquipe from '../TableauDeBord/components/TeamScheduleMadeMySelfEquipe';
-import DocumentsViewer from './../InterfaceEquipe/components/DocumentsViewer';
 
 const EmploiDuTemps = () => {
   const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
@@ -30,9 +27,6 @@ const EmploiDuTemps = () => {
   const [showAlert, setShowAlert] = useState(!selectedTeam);
   const [showDropdown, setShowDropdown] = useState(true);
   const [showApp, setShowApp] = useState(false);
-  const toggleAppVisibility = () => {
-    setShowApp(!showApp);
-  };
 
   useEffect(() => {
     async function fetchTeamData() {
