@@ -1,0 +1,17 @@
+/* Dans votre fichier CSS */
+@media print {
+    /* Masquer tout sauf les éléments spécifiques pour l'impression */
+    body * {
+      visibility: hidden;
+    }
+    /* Assurez-vous que le conteneur d'impression et son contenu sont visibles */
+    .print-container, .print-container * {
+      visibility: visible;
+    }
+    /* Optionnel: ajustez la position pour qu'elle démarre du haut et de la gauche de la page */
+    .print-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  }
