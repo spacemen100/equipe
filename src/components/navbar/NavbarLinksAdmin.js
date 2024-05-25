@@ -11,12 +11,15 @@ import DropdownMenu from 'components/navbar/searchBar/DropdownMenu';
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { useHistory } from "react-router-dom";
 // Assets
 import navImage from 'assets/img/layout/Navbar.png';
 import routes from 'routes.js';
 
 export default function HeaderLinks(props) {
   const { secondary } = props;
+  const history = useHistory();  // Hook useHistory pour accéder à l'historique de navigation
+
   // Chakra Color Mode
   let menuBg = useColorModeValue('white', 'navy.800');
   const shadow = useColorModeValue(
