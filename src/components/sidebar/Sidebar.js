@@ -29,7 +29,6 @@ const filteredRoutes = routes.filter(route => route.name !== "Carte zoomée" && 
 }
 
 export function SidebarResponsive(props) {
-  let sidebarBackgroundColor = useColorModeValue("white", "navy.800");
   let menuColor = useColorModeValue("gray.400", "white");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
@@ -43,7 +42,7 @@ export function SidebarResponsive(props) {
       </Flex>
       <Drawer isOpen={isOpen} onClose={onClose} placement={document.documentElement.dir === "rtl" ? "right" : "left"} finalFocusRef={btnRef}>
         <DrawerOverlay />
-        <DrawerContent w="285px" maxW="285px" bg={sidebarBackgroundColor}>
+        <DrawerContent w="285px" maxW="285px" bg="#465f8b">
           <DrawerCloseButton zIndex="3" onClose={onClose} _focus={{ boxShadow: "none" }} _hover={{ boxShadow: "none" }} />
           <DrawerBody maxW="285px" px="0rem" pb="0">
             <Scrollbars autoHide renderTrackVertical={renderTrack} renderThumbVertical={renderThumb} renderView={renderView}>
