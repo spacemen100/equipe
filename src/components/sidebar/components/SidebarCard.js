@@ -65,7 +65,7 @@ export default function SidebarDocs() {
           Améliorez votre efficacité opérationnelle 
         </Text>
       </Flex>
-      <Link href='https://horizon-ui.com/pro?ref=horizon-chakra-free'>
+      <Link href='https://monpadessai.my.canva.site/eventsecu-votre-solution-s-curit-digitale'>
         <Button
           bg='whiteAlpha.300'
           _hover={{ bg: "whiteAlpha.200" }}
