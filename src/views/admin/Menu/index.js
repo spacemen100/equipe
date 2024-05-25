@@ -16,8 +16,7 @@ const Menu = () => {
   ];
 
   return (
-    <Box p={5}>
-      <Text fontSize="2xl" mb={4}>Menu</Text>
+    <Box pt={{ base: '180px', md: '80px', xl: '80px' }}>
       <SimpleGrid columns={2} spacing={10}>
         {menuItems.map((item, index) => (
           <VStack key={index} onClick={() => history.push(item.path)} cursor="pointer">
