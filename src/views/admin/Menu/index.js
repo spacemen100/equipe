@@ -25,8 +25,8 @@ const Menu = () => {
             borderRadius="lg"
             overflow="hidden"
             p={5}
-            bg="white"
-            _hover={{ bg: "gray.100" }}
+            bg="#465f8b"
+            _hover={{ bg: "#3b4c6e" }}
             onClick={() => history.push(item.path)}
             cursor="pointer"
             boxShadow="md"
@@ -38,9 +38,9 @@ const Menu = () => {
                 isRound
                 aria-label={item.label}
                 variant="ghost"
-                colorScheme="blue"
+                colorScheme="whiteAlpha"
               />
-              <Text fontSize="lg" fontWeight="bold">{item.label}</Text>
+              <Text fontSize="lg" fontWeight="bold" color="white">{item.label}</Text>
             </VStack>
           </Box>
         ))}
