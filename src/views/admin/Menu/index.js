@@ -17,7 +17,7 @@ const Menu = () => {
 
   return (
     <Box pt={{ base: '180px', md: '80px', xl: '80px' }} textAlign="center">
-      <SimpleGrid columns={[2, null, 3]} spacing={10}>
+      <SimpleGrid columns={[3, null, 2]} spacing={10}>
         {menuItems.map((item, index) => (
           <Box
             key={index}
