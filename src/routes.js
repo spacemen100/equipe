@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcBox, FcSettings, FcMenu } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu } from "react-icons/fc";
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -10,6 +10,12 @@ import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; // Import the Menu component
 
 const routes = [
+  {
+    path: "/",
+    pathTo: "/admin/menu",
+    name: "Menu",
+    redirect: true,
+  },
   {
     name: "Gestion opérationnelle",
     layout: "/admin",
@@ -42,7 +48,7 @@ const routes = [
     name: "Matériel",
     layout: "/admin",
     path: "/materiel",
-    icon: <Icon as={FcBox} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FcPackage} width='20px' height='20px' color='inherit' />,
     component: Materiel,
   },
   {
@@ -58,12 +64,6 @@ const routes = [
     path: "/menu",
     icon: <Icon as={FcMenu} width='20px' height='20px' color='inherit' />,
     component: Menu,
-  },
-  {
-    path: "/",
-    pathTo: "/admin/menu",
-    name: "Menu",
-    redirect: true,
   },
 ];
 
