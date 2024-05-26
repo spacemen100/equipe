@@ -20,7 +20,7 @@ import TeamMembersDisplay from './../InterfaceEquipe/components/TeamMembersDispl
 import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';import Materiel from './Materiel';
 ;
 
-const Communication = () => {
+const Materiels = () => {
   const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
   const { selectedEventId } = useEvent(); // Get selected event ID from useEvent context
   const leaders = teamMembers.filter(member => member.isLeader);
@@ -110,4 +110,4 @@ const Communication = () => {
   );
 };
 
-export default Communication;
+export default Materiels;
