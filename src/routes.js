@@ -5,9 +5,9 @@ import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
 import Communication from "views/admin/Communication";
-import Materiel from "views/admin/Materiel";
+import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
-import Menu from "views/admin/Menu"; // Import the Menu component
+import Menu from "views/admin/Menu"; 
 
 const routes = [
   {
@@ -46,11 +46,11 @@ const routes = [
     component: Communication,
   },
   {
-    name: "Matériel",
+    name: "Matériels",
     layout: "/admin",
-    path: "/materiel",
+    path: "/materiels",
     icon: <Icon as={FcPackage} width='20px' height='20px' color='inherit' />,
-    component: Materiel,
+    component: Materiels,
   },
   {
     name: "Paramètres",

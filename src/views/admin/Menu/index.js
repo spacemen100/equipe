@@ -11,7 +11,7 @@ const Menu = () => {
     { icon: FcCalendar, label: "Emploi du temps", path: "/admin/emploi-du-temps" },
     { icon: FcDocument, label: "Documents", path: "/admin/documents" },
     { icon: FcConferenceCall, label: "Communication", path: "/admin/communication" },
-    { icon: FcSupport, label: "Matériel", path: "/admin/materiel" },
+    { icon: FcSupport, label: "Matériel", path: "/admin/materiels" },
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
   ];
 
