@@ -42,7 +42,6 @@ const AfficherMateriels = () => {
                 console.error('Erreur lors de la récupération des événements', error);
             } else {
                 setEvents(data);
-                // Trouver le nom de l'événement actuellement sélectionné
                 const currentEvent = data.find(event => event.event_id === selectedEventId);
                 if (currentEvent) setSelectedEventName(currentEvent.event_name);
             }
@@ -54,16 +53,16 @@ const AfficherMateriels = () => {
 
     useEffect(() => {
         const fetchTeams = async () => {
-            if (!selectedEventId) return; // Utilisez selectedEventId ici
+            if (!selectedEventId) return;
             setLoadingTeams(true);
             const { data, error } = await supabase
                 .from('vianney_teams')
                 .select('*')
-                .eq('event_id', selectedEventId); // Correction pour utiliser selectedEventId
+                .eq('event_id', selectedEventId);
 
             if (error) {
                 console.error('Erreur lors de la récupération des équipes', error);
-                setTeams([]); // S'assurer que teams est réinitialisé en cas d'erreur
+                setTeams([]);
             } else {
                 setTeams(data);
             }
@@ -71,7 +70,7 @@ const AfficherMateriels = () => {
         };
 
         fetchTeams();
-    }, [selectedEventId]); // Dépendance mise à jour pour réagir aux changements de selectedEventId   
+    }, [selectedEventId]);
 
     const eventDisplay = selectedEventName ? (
         <Badge colorScheme="blue" p="2">
@@ -87,12 +86,10 @@ const AfficherMateriels = () => {
             if (materielsError) {
                 console.error('Erreur lors de la récupération des matériels', materielsError);
             } else {
-                // Récupérer également les données des équipes associées
                 const { data: teamsData, error: teamsError } = await supabase.from('vianney_teams').select('*');
                 if (teamsError) {
                     console.error('Erreur lors de la récupération des équipes', teamsError);
                 } else {
-                    // Mettre à jour les données des matériels avec les noms des équipes associées
                     const updatedMateriels = materielsData.map(materiel => {
                         const associatedTeam = teamsData.find(team => team.id === materiel.associated_team_id);
                         return {
@@ -131,8 +128,8 @@ const AfficherMateriels = () => {
     }, [selectedEvent, setEvents, setLoadingEvents, setLoadingMateriels]);
 
     const handleOpenAssociationModal = (materiel) => {
-        setSelectedMaterial(materiel); // This sets the selected material
-        onAssociationModalOpen(); // Opens the modal
+        setSelectedMaterial(materiel);
+        onAssociationModalOpen();
     };
 
     const handleDeleteConfirmation = (id) => {
@@ -146,11 +143,9 @@ const AfficherMateriels = () => {
             if (error) {
                 console.error('Erreur lors de la suppression du matériel', error);
             } else {
-                // Mettre à jour l'état local pour refléter la suppression
                 setMateriels(materiels.filter(materiel => materiel.id !== confirmDeleteId));
-                onClose(); // Fermer le modal de confirmation
-                setConfirmDeleteId(null); // Réinitialiser l'id de confirmation
-                // Afficher un toast de succès
+                onClose();
+                setConfirmDeleteId(null);
                 toast({
                     title: "Matériel supprimé avec succès",
                     status: "success",
@@ -170,12 +165,10 @@ const AfficherMateriels = () => {
         });
         setMateriels(updatedMateriels);
 
-        // Mettre à jour la base de données
         const { error } = await supabase.from('vianney_inventaire_materiel').update({ associated_team_id: null }).match({ id });
         if (error) {
             console.error('Erreur lors de la mise à jour du matériel', error);
         } else {
-            // Afficher un toast de succès
             toast({
                 title: "Matériel rendu avec succès",
                 status: "success",
@@ -244,9 +237,7 @@ const AfficherMateriels = () => {
             )}
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing="20px">
                 {filteredMateriels.filter((materiel) => {
-                    // Convertir en minuscules pour la comparaison insensible à la casse
                     const searchTermLower = searchTerm.toLowerCase();
-                    // Vérifier si le terme de recherche est inclus dans le nom ou la description
                     return materiel.nom.toLowerCase().includes(searchTermLower) ||
                            (materiel.description && materiel.description.toLowerCase().includes(searchTermLower));
                 }).map((materiel) => (
@@ -294,7 +285,6 @@ const AfficherMateriels = () => {
                     </Box>
                 ))}
             </SimpleGrid>
-            {/* Modal de confirmation de la suppression */}
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
@@ -310,49 +300,45 @@ const AfficherMateriels = () => {
             </Modal>
 
             <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
-                <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
-                    <ModalOverlay />
-                    <ModalContent>
-                        <ModalHeader>Associer à une équipe</ModalHeader>
-                        <ModalCloseButton />
-                        <ModalBody>
-                            <VStack spacing={4} align="stretch">
-                                {/* Remplacement du Select par le Badge pour l'événement */}
-                                {eventDisplay}
-                                {loadingTeams ? (
-                                    <Text>Chargement des équipes...</Text>
-                                ) : (
-                                    <Select placeholder="Sélectionner une équipe" onChange={handleTeamChange}>
-                                        {teams.map((team) => (
-                                            <option key={team.id} value={team.id}>
-                                                {team.name_of_the_team}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-
-                                {/* Here we check if a material is already selected. If so, display a Badge instead of the Select component */}
-                                {selectedMaterial ? (
-                                    <Badge colorScheme="green" p="2">
-                                        {selectedMaterial.nom} (Sélectionné)
-                                    </Badge>
-                                ) : (
-                                    <Select placeholder="Sélectionner un matériel" onChange={(e) => {
-                                        const selected = materiels.find(materiel => materiel.id.toString() === e.target.value);
-                                        setSelectedMaterial(selected);
-                                    }}>
-                                        {materiels.map((materiel) => (
-                                            <option key={materiel.id} value={materiel.id}>
-                                                {materiel.nom}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-
-                                <Button onClick={handleAssociation}>Associer matériel à l'équipe</Button>
-                            </VStack>
-                        </ModalBody>
-                    </ModalContent>
+            <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Associer à une équipe</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack spacing={4} align="stretch">
+                            {eventDisplay}
+                            {loadingTeams ? (
+                                <Text>Chargement des équipes...</Text>
+                            ) : (
+                                <Select placeholder="Sélectionner une équipe" onChange={handleTeamChange}>
+                                    {teams.map((team) => (
+                                        <option key={team.id} value={team.id}>
+                                            {team.name_of_the_team}
+                                        </option>
+                                    ))}
+                                </Select>
+                            )}
+                            {selectedMaterial ? (
+                                <Badge colorScheme="green" p="2">
+                                    {selectedMaterial.nom} (Sélectionné)
+                                </Badge>
+                            ) : (
+                                <Select placeholder="Sélectionner un matériel" onChange={(e) => {
+                                    const selected = materiels.find(materiel => materiel.id.toString() === e.target.value);
+                                    setSelectedMaterial(selected);
+                                }}>
+                                    {materiels.map((materiel) => (
+                                        <option key={materiel.id} value={materiel.id}>
+                                            {materiel.nom}
+                                        </option>
+                                    ))}
+                                </Select>
+                            )}
+                            <Button onClick={handleAssociation}>Associer matériel à l'équipe</Button>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
                 </Modal>
             </Modal>
         </Box>
