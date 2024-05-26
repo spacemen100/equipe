@@ -103,7 +103,7 @@ const Parametres = () => {
         </Badge>
       )}
       <TeamMembersDisplay />
-      <EquipiersTableSimplify/>
+      {selectedTeam && <EquipiersTableSimplify />}
     </Box>
   );
 };
