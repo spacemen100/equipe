@@ -16,19 +16,24 @@ import {
   ModalBody,
   Flex,
   Text,
+  Button,
+  Box,
 } from '@chakra-ui/react';
 import { FcPhone } from "react-icons/fc";
 import 'leaflet/dist/leaflet.css';
 
 import { useEvent } from '../../../../EventContext';
+import { useTeam } from './../../InterfaceEquipe/TeamContext';
 import { supabase } from './../../../../supabaseClient';
-import EditUserForm from './EditUserForm';  
+import EditUserForm from './EditUserForm';
 
 const EquipiersTableSimplify = () => {
   const [equipiers, setEquipiers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEquipier, setSelectedEquipier] = useState(null);
+  const [filterEnabled, setFilterEnabled] = useState(true);
   const { selectedEventId } = useEvent();
+  const { selectedTeam } = useTeam();
 
   const onRowClick = (equipier) => {
     setSelectedEquipier(equipier);
@@ -40,6 +45,7 @@ const EquipiersTableSimplify = () => {
     fontWeight: 'bold',
     color: useColorModeValue('gray.600', 'gray.200'),
   };
+
   const headerGradientStyle = {
     background: 'linear-gradient(to right, #ff914d, #ff7730)',
     color: 'white',
@@ -50,7 +56,6 @@ const EquipiersTableSimplify = () => {
     top: 0,
     zIndex: 1
   };
-
 
   const tableRowStyle = {
     borderBottom: '1px solid',
@@ -98,9 +103,7 @@ const EquipiersTableSimplify = () => {
           return;
         }
 
-        // Implement any post-fetch logic here (e.g., filtering or sorting based on actions)
-
-        setEquipiers(teams); // Assuming 'teams' is the desired state to update
+        setEquipiers(teams);
       } catch (error) {
         console.error('Error fetching equipiers:', error);
       }
@@ -134,20 +137,31 @@ const EquipiersTableSimplify = () => {
     );
   };
 
+  const filteredEquipiers = filterEnabled && selectedTeam
+    ? equipiers.filter(equipier => equipier.name_of_the_team === selectedTeam)
+    : equipiers;
+
   return (
     <>
+      <Box mb={4}>
+        {selectedTeam && (
+          <Button onClick={() => setFilterEnabled(!filterEnabled)}>
+            {filterEnabled ? 'Afficher toutes les équipes' : `Filtrer par l'équipe: ${selectedTeam}`}
+          </Button>
+        )}
+      </Box>
       <TableContainer style={{ overflowY: 'auto', overflowX: 'hidden' }}>
         <Table variant='simple'>
           <Thead style={{ ...headerGradientStyle, position: 'sticky', top: 0, zIndex: 1 }}>
             <Tr>
-              <Th><Text style={headerStyle}>photo</Text></Th>
-              <Th><Text style={headerStyle}>nom de l'équipe</Text></Th>
-              <Th><Text style={headerStyle}>nom du responsable</Text></Th>
-              <Th><Text style={headerStyle}>mission</Text></Th>
+              <Th><Text style={headerStyle}>Photo</Text></Th>
+              <Th><Text style={headerStyle}>Nom de l'équipe</Text></Th>
+              <Th><Text style={headerStyle}>Nom du responsable</Text></Th>
+              <Th><Text style={headerStyle}>Mission</Text></Th>
             </Tr>
           </Thead>
           <Tbody>
-            {equipiers.map((equipier, index) => (
+            {filteredEquipiers.map((equipier, index) => (
               <Tr key={index} onClick={() => onRowClick(equipier)} style={{ ...tableRowStyle, cursor: 'pointer' }} onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
                 <Td><Avatar size="md" src={equipier.photo_profile_url} style={avatarStyle} /></Td>
                 <Td>{equipier.name_of_the_team}</Td>
