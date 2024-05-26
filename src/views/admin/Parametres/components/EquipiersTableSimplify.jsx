@@ -18,6 +18,7 @@ import {
   Text,
   Button,
   Box,
+  Tooltip,
 } from '@chakra-ui/react';
 import { FcPhone } from "react-icons/fc";
 import 'leaflet/dist/leaflet.css';
@@ -156,12 +157,14 @@ const EquipiersTableSimplify = () => {
           </Thead>
           <Tbody>
             {filteredEquipiers.map((equipier, index) => (
-              <Tr key={index} onClick={() => onRowClick(equipier)} style={{ ...tableRowStyle, cursor: 'pointer' }} onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                <Td><Avatar size="md" src={equipier.photo_profile_url} style={avatarStyle} /></Td>
-                <Td>{equipier.name_of_the_team}</Td>
-                <Td>{getLeaderNameAndPhone(equipier.team_members)}</Td>
-                <Td>{equipier.mission}</Td>
-              </Tr>
+              <Tooltip label="Cliquez pour ouvrir l'onglet de modification" key={index}>
+                <Tr onClick={() => onRowClick(equipier)} style={{ ...tableRowStyle, cursor: 'pointer' }} onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
+                  <Td><Avatar size="md" src={equipier.photo_profile_url} style={avatarStyle} /></Td>
+                  <Td>{equipier.name_of_the_team}</Td>
+                  <Td>{getLeaderNameAndPhone(equipier.team_members)}</Td>
+                  <Td>{equipier.mission}</Td>
+                </Tr>
+              </Tooltip>
             ))}
           </Tbody>
         </Table>
