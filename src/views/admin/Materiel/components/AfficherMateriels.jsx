@@ -6,6 +6,7 @@ import { MdDeleteForever } from "react-icons/md";
 import { FcDisclaimer, FcOk } from "react-icons/fc";
 import { FaSearch } from "react-icons/fa";
 import { useEvent } from '../../../../EventContext';
+import { useTeam } from './../../InterfaceEquipe/TeamContext';
 
 const AfficherMateriels = () => {
     const [materiels, setMateriels] = useState([]);
@@ -29,6 +30,8 @@ const AfficherMateriels = () => {
     const [loadingTeams, setLoadingTeams] = useState(false);
     const { selectedEventId } = useEvent();
     const [selectedEventName, setSelectedEventName] = useState('');
+    const { selectedTeam: contextSelectedTeam } = useTeam();
+    const [filterEnabled, setFilterEnabled] = useState(false);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -217,6 +220,10 @@ const AfficherMateriels = () => {
         }
     };
 
+    const filteredMateriels = filterEnabled && contextSelectedTeam
+        ? materiels.filter(materiel => materiel.associated_team_id === contextSelectedTeam.id)
+        : materiels;
+
     if (loading) return <Text>Chargement...</Text>;
     if (materiels.length === 0) return <Text>Aucun matériel enregistré.</Text>;
 
@@ -230,8 +237,13 @@ const AfficherMateriels = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </InputGroup>
+            {contextSelectedTeam && (
+                <Button onClick={() => setFilterEnabled(!filterEnabled)}>
+                    {filterEnabled ? "Afficher tous les matériels" : `Afficher le matériel de l'équipe: ${contextSelectedTeam.name_of_the_team}`}
+                </Button>
+            )}
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing="20px">
-                {materiels.filter((materiel) => {
+                {filteredMateriels.filter((materiel) => {
                     // Convertir en minuscules pour la comparaison insensible à la casse
                     const searchTermLower = searchTerm.toLowerCase();
                     // Vérifier si le terme de recherche est inclus dans le nom ou la description
@@ -346,5 +358,5 @@ const AfficherMateriels = () => {
         </Box>
     );
 };
-    
+
 export default AfficherMateriels;
