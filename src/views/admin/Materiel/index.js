@@ -17,8 +17,8 @@ import {
 import { supabase } from './../../../supabaseClient';
 import TeamMembersDisplay from './../InterfaceEquipe/components/TeamMembersDisplay';
 
-import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';import Materiel from './Materiel';
-;
+import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';
+import Materiel from './Materiel';
 
 const Materiels = () => {
   const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
