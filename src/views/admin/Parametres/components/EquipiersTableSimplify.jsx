@@ -143,13 +143,7 @@ const EquipiersTableSimplify = () => {
 
   return (
     <>
-      <Box mb={4}>
-        {selectedTeam && (
-          <Button onClick={() => setFilterEnabled(!filterEnabled)}>
-            {filterEnabled ? 'Afficher toutes les équipes' : `Filtrer par l'équipe: ${selectedTeam}`}
-          </Button>
-        )}
-      </Box>
+      
       <TableContainer style={{ overflowY: 'auto', overflowX: 'hidden' }}>
         <Table variant='simple'>
           <Thead style={{ ...headerGradientStyle, position: 'sticky', top: 0, zIndex: 1 }}>
@@ -172,6 +166,13 @@ const EquipiersTableSimplify = () => {
           </Tbody>
         </Table>
       </TableContainer>
+      <Box mt={4}>
+        {selectedTeam && (
+          <Button onClick={() => setFilterEnabled(!filterEnabled)}>
+            {filterEnabled ? "Afficher toutes les équipes de l'évênement" : `Filtrer par l'équipe: ${selectedTeam}`}
+          </Button>
+        )}
+      </Box>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl">
         <ModalOverlay />
         <ModalContent>
