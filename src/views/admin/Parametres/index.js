@@ -17,6 +17,7 @@ import {
 import { supabase } from './../../../supabaseClient';
 import TeamMembersDisplay from './../InterfaceEquipe/components/TeamMembersDisplay';
 import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';
+import EquipiersTableSimplify from './components/EquipiersTableSimplify';
 
 const Parametres = () => {
   const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
@@ -102,6 +103,7 @@ const Parametres = () => {
         </Badge>
       )}
       <TeamMembersDisplay />
+      <EquipiersTableSimplify/>
     </Box>
   );
 };
