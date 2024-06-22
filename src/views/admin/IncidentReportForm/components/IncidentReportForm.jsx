@@ -16,21 +16,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 const IncidentReportForm = () => {
   const [formData, setFormData] = useState({
-    reportNumber: '',
-    incidentDateTime: '',
-    incidentLocation: '',
-    reporterName: '',
-    reporterPosition: '',
-    contactInfo: '',
-    involvedPersons: '',
+    report_number: '',
+    incident_date_time: '',
+    incident_location: '',
+    reporter_name: '',
+    reporter_position: '',
+    contact_info: '',
+    involved_persons: '',
     witnesses: '',
-    incidentType: '',
-    incidentDescription: '',
-    materialDamage: '',
-    physicalDamage: '',
+    incident_type: '',
+    incident_description: '',
+    material_damage: '',
+    physical_damage: '',
     attachments: '',
-    reporterSignature: '',
-    signatureDate: ''
+    additional_documents: '',
+    reporter_signature: '',
+    signature_date: ''
   });
 
   const toast = useToast();
@@ -44,9 +45,9 @@ const IncidentReportForm = () => {
     // Update the form data with the generated values
     setFormData((prevFormData) => ({
       ...prevFormData,
-      reportNumber: reportNumber,
-      incidentDateTime: currentDateTime,
-      signatureDate: new Date().toISOString().split('T')[0] // Only date part
+      report_number: reportNumber,
+      incident_date_time: currentDateTime,
+      signature_date: new Date().toISOString().split('T')[0] // Only date part
     }));
   }, []);
 
@@ -83,21 +84,22 @@ const IncidentReportForm = () => {
       const currentDateTime = new Date().toISOString().slice(0, 16);
 
       setFormData({
-        reportNumber: reportNumber,
-        incidentDateTime: currentDateTime,
-        incidentLocation: '',
-        reporterName: '',
-        reporterPosition: '',
-        contactInfo: '',
-        involvedPersons: '',
+        report_number: reportNumber,
+        incident_date_time: currentDateTime,
+        incident_location: '',
+        reporter_name: '',
+        reporter_position: '',
+        contact_info: '',
+        involved_persons: '',
         witnesses: '',
-        incidentType: '',
-        incidentDescription: '',
-        materialDamage: '',
-        physicalDamage: '',
+        incident_type: '',
+        incident_description: '',
+        material_damage: '',
+        physical_damage: '',
         attachments: '',
-        reporterSignature: '',
-        signatureDate: new Date().toISOString().split('T')[0] // Only date part
+        additional_documents: '',
+        reporter_signature: '',
+        signature_date: new Date().toISOString().split('T')[0] // Only date part
       });
 
     } catch (error) {
@@ -117,35 +119,35 @@ const IncidentReportForm = () => {
       <Heading mb={6} textAlign="center">Formulaire Rapport d'Incident/Information</Heading>
       <form onSubmit={handleSubmit}>
         <VStack spacing={4}>
-          <FormControl id="reportNumber" isRequired>
+          <FormControl id="report_number" isRequired>
             <FormLabel>Numéro de Rapport</FormLabel>
-            <Input name="reportNumber" value={formData.reportNumber} onChange={handleChange} readOnly />
+            <Input name="report_number" value={formData.report_number} onChange={handleChange} readOnly />
           </FormControl>
-          <FormControl id="incidentDateTime" isRequired>
+          <FormControl id="incident_date_time" isRequired>
             <FormLabel>Date et Heure de l'Incident</FormLabel>
-            <Input type="datetime-local" name="incidentDateTime" value={formData.incidentDateTime} onChange={handleChange} />
+            <Input type="datetime-local" name="incident_date_time" value={formData.incident_date_time} onChange={handleChange} />
           </FormControl>
-          <FormControl id="incidentLocation" isRequired>
+          <FormControl id="incident_location" isRequired>
             <FormLabel>Lieu de l'Incident</FormLabel>
-            <Input name="incidentLocation" value={formData.incidentLocation} onChange={handleChange} />
+            <Input name="incident_location" value={formData.incident_location} onChange={handleChange} />
           </FormControl>
-          <FormControl id="reporterName" isRequired>
+          <FormControl id="reporter_name" isRequired>
             <FormLabel>Nom et Poste du Rapporteur</FormLabel>
-            <Input name="reporterName" value={formData.reporterName} onChange={handleChange} />
+            <Input name="reporter_name" value={formData.reporter_name} onChange={handleChange} />
           </FormControl>
-          <FormControl id="reporterPosition">
+          <FormControl id="reporter_position">
             <FormLabel>Poste du Rapporteur</FormLabel>
-            <Input name="reporterPosition" value={formData.reporterPosition} onChange={handleChange} />
+            <Input name="reporter_position" value={formData.reporter_position} onChange={handleChange} />
           </FormControl>
-          <FormControl id="contactInfo" isRequired>
+          <FormControl id="contact_info" isRequired>
             <FormLabel>Coordonnées (Téléphone et Email)</FormLabel>
-            <Input name="contactInfo" value={formData.contactInfo} onChange={handleChange} />
+            <Input name="contact_info" value={formData.contact_info} onChange={handleChange} />
           </FormControl>
           <Divider />
           <Heading size="md" alignSelf="flex-start">Personnes Impliquées et Témoins</Heading>
-          <FormControl id="involvedPersons" isRequired>
+          <FormControl id="involved_persons" isRequired>
             <FormLabel>Personnes impliquées (noms, rôles, coordonnées)</FormLabel>
-            <Textarea name="involvedPersons" value={formData.involvedPersons} onChange={handleChange} />
+            <Textarea name="involved_persons" value={formData.involved_persons} onChange={handleChange} />
           </FormControl>
           <FormControl id="witnesses" isRequired>
             <FormLabel>Témoins (noms, rôles, coordonnées)</FormLabel>
@@ -153,23 +155,23 @@ const IncidentReportForm = () => {
           </FormControl>
           <Divider />
           <Heading size="md" alignSelf="flex-start">Description de l'Incident</Heading>
-          <FormControl id="incidentType" isRequired>
+          <FormControl id="incident_type" isRequired>
             <FormLabel>Type d'Incident (ex. intrusion, vol, accident, incendie, etc.)</FormLabel>
-            <Input name="incidentType" value={formData.incidentType} onChange={handleChange} />
+            <Input name="incident_type" value={formData.incident_type} onChange={handleChange} />
           </FormControl>
-          <FormControl id="incidentDescription" isRequired>
+          <FormControl id="incident_description" isRequired>
             <FormLabel>Description détaillée de l'incident</FormLabel>
-            <Textarea name="incidentDescription" value={formData.incidentDescription} onChange={handleChange} />
+            <Textarea name="incident_description" value={formData.incident_description} onChange={handleChange} />
           </FormControl>
           <Divider />
           <Heading size="md" alignSelf="flex-start">Évaluation des Dommages</Heading>
-          <FormControl id="materialDamage">
+          <FormControl id="material_damage">
             <FormLabel>Dommages Matériels</FormLabel>
-            <Textarea name="materialDamage" value={formData.materialDamage} onChange={handleChange} />
+            <Textarea name="material_damage" value={formData.material_damage} onChange={handleChange} />
           </FormControl>
-          <FormControl id="physicalDamage">
+          <FormControl id="physical_damage">
             <FormLabel>Dommages Corporels</FormLabel>
-            <Textarea name="physicalDamage" value={formData.physicalDamage} onChange={handleChange} />
+            <Textarea name="physical_damage" value={formData.physical_damage} onChange={handleChange} />
           </FormControl>
           <Divider />
           <Heading size="md" alignSelf="flex-start">Pièces Jointes et Documentation</Heading>
@@ -177,19 +179,19 @@ const IncidentReportForm = () => {
             <FormLabel>Photographies et/ou vidéos</FormLabel>
             <Input type="file" name="attachments" onChange={handleChange} />
           </FormControl>
-          <FormControl id="additionalDocuments">
+          <FormControl id="additional_documents">
             <FormLabel>Documents supplémentaires (rapports médicaux, déclarations de témoins, etc.)</FormLabel>
-            <Input type="file" name="additionalDocuments" onChange={handleChange} />
+            <Input type="file" name="additional_documents" onChange={handleChange} />
           </FormControl>
           <Divider />
           <Heading size="md" alignSelf="flex-start">Signature</Heading>
-          <FormControl id="reporterSignature" isRequired>
+          <FormControl id="reporter_signature" isRequired>
             <FormLabel>Nom et Signature du Rapporteur</FormLabel>
-            <Input name="reporterSignature" value={formData.reporterSignature} onChange={handleChange} />
+            <Input name="reporter_signature" value={formData.reporter_signature} onChange={handleChange} />
           </FormControl>
-          <FormControl id="signatureDate" isRequired>
+          <FormControl id="signature_date" isRequired>
             <FormLabel>Date</FormLabel>
-            <Input type="date" name="signatureDate" value={formData.signatureDate} onChange={handleChange} />
+            <Input type="date" name="signature_date" value={formData.signature_date} onChange={handleChange} />
           </FormControl>
           <Button type="submit" colorScheme="blue" size="lg" mt={4}>Soumettre</Button>
         </VStack>
