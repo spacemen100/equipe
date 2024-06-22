@@ -14,9 +14,11 @@ import {
 import { supabase } from './../../../../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 import SignatureCanvas from 'react-signature-canvas';
+import { useEvent } from './../../../../EventContext';
 import './IncidentReportForm.css'; // Custom CSS for signature canvas
 
 const IncidentReportForm = ({ reportingTeam }) => {
+    const { selectedEventId } = useEvent();
     const [formData, setFormData] = useState({
         report_number: '',
         incident_date_time: '',
@@ -33,7 +35,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
         attachments: '',
         additional_documents: '',
         reporter_signature: '',
-        signature_date: ''
+        signature_date: '',
+        event_uuid: ''
     });
 
     const signatureCanvasRef = useRef(null);
@@ -51,9 +54,10 @@ const IncidentReportForm = ({ reportingTeam }) => {
             report_number: reportNumber,
             incident_date_time: currentDateTime,
             reporter_team: reportingTeam,
-            signature_date: new Date().toISOString().split('T')[0] // Only date part
+            signature_date: new Date().toISOString().split('T')[0], // Only date part
+            event_uuid: selectedEventId || ''
         }));
-    }, [reportingTeam]);
+    }, [reportingTeam, selectedEventId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -109,7 +113,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 attachments: '',
                 additional_documents: '',
                 reporter_signature: '',
-                signature_date: new Date().toISOString().split('T')[0] // Only date part
+                signature_date: new Date().toISOString().split('T')[0], // Only date part,
+                event_uuid: selectedEventId || ''
             });
             handleClearSignature(); // Clear the signature pad
 
@@ -133,6 +138,10 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     <FormControl id="report_number" isRequired>
                         <FormLabel>Numéro de Rapport</FormLabel>
                         <Input name="report_number" value={formData.report_number} onChange={handleChange} readOnly />
+                    </FormControl>
+                    <FormControl id="event_uuid" isRequired>
+                        <FormLabel>ID de l'Événement</FormLabel>
+                        <Input name="event_uuid" value={formData.event_uuid} onChange={handleChange} readOnly />
                     </FormControl>
                     <FormControl id="incident_date_time" isRequired>
                         <FormLabel>Date et Heure de l'Incident</FormLabel>
