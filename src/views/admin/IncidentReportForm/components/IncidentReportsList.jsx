@@ -18,8 +18,10 @@ import {
 } from '@chakra-ui/react';
 import { supabase } from './../../../../supabaseClient';
 import jsPDF from 'jspdf';
+import { useEvent } from './../../../../EventContext';
 
 const IncidentReportsList = () => {
+  const { selectedEventId } = useEvent();
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +32,8 @@ const IncidentReportsList = () => {
       try {
         const { data, error } = await supabase
           .from('vianney_incident_reports')
-          .select('*');
+          .select('*')
+          .eq('event_uuid', selectedEventId);
 
         if (error) {
           throw error;
@@ -48,8 +51,10 @@ const IncidentReportsList = () => {
       }
     };
 
-    fetchReports();
-  }, [toast]);
+    if (selectedEventId) {
+      fetchReports();
+    }
+  }, [selectedEventId, toast]);
 
   const handleViewDetails = (report) => {
     setSelectedReport(report);
@@ -148,7 +153,7 @@ const IncidentReportsList = () => {
         ))}
       </VStack>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} size="full">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Détails du Rapport d'Incident</ModalHeader>
