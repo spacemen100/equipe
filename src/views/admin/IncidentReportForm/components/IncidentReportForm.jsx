@@ -9,9 +9,9 @@ import {
   VStack,
   Heading,
   Divider,
-  HStack,
   useToast
 } from '@chakra-ui/react';
+import { supabase } from './../../../../supabaseClient';
 
 const IncidentReportForm = () => {
   const [formData, setFormData] = useState({
@@ -42,17 +42,55 @@ const IncidentReportForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast({
-      title: "Form Submitted",
-      description: "Your incident report has been submitted.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-    // Here you can handle form submission, e.g., send the data to a server
-    console.log(formData);
+    try {
+        // eslint-disable-next-line
+      const { data, error } = await supabase
+        .from('vianney_incident_reports')
+        .insert([formData]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Form Submitted",
+        description: "Your incident report has been submitted.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // Reset form after successful submission
+      setFormData({
+        reportNumber: '',
+        incidentDateTime: '',
+        incidentLocation: '',
+        reporterName: '',
+        reporterPosition: '',
+        contactInfo: '',
+        involvedPersons: '',
+        witnesses: '',
+        incidentType: '',
+        incidentDescription: '',
+        materialDamage: '',
+        physicalDamage: '',
+        attachments: '',
+        reporterSignature: '',
+        signatureDate: ''
+      });
+
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
