@@ -102,7 +102,7 @@ const NoteDeFraisComponent = () => {
                 </Badge>
             )}
             <TeamMembersDisplay />
-            <IncidentReportForm />
+            <IncidentReportForm reportingTeam={selectedTeam} />
         </Box>
     );
 };

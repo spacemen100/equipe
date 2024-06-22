@@ -14,12 +14,12 @@ import {
 import { supabase } from './../../../../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
-const IncidentReportForm = () => {
+const IncidentReportForm = ({ reportingTeam }) => {
   const [formData, setFormData] = useState({
     report_number: '',
     incident_date_time: '',
     incident_location: '',
-    reporter_name: '',
+    reporter_team: '',
     reporter_position: '',
     contact_info: '',
     involved_persons: '',
@@ -47,9 +47,10 @@ const IncidentReportForm = () => {
       ...prevFormData,
       report_number: reportNumber,
       incident_date_time: currentDateTime,
+      reporter_team: reportingTeam,
       signature_date: new Date().toISOString().split('T')[0] // Only date part
     }));
-  }, []);
+  }, [reportingTeam]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,7 +88,7 @@ const IncidentReportForm = () => {
         report_number: reportNumber,
         incident_date_time: currentDateTime,
         incident_location: '',
-        reporter_name: '',
+        reporter_team: reportingTeam,
         reporter_position: '',
         contact_info: '',
         involved_persons: '',
@@ -131,9 +132,9 @@ const IncidentReportForm = () => {
             <FormLabel>Lieu de l'Incident</FormLabel>
             <Input name="incident_location" value={formData.incident_location} onChange={handleChange} />
           </FormControl>
-          <FormControl id="reporter_name" isRequired>
-            <FormLabel>Nom et Poste du Rapporteur</FormLabel>
-            <Input name="reporter_name" value={formData.reporter_name} onChange={handleChange} />
+          <FormControl id="reporter_team" isRequired>
+            <FormLabel>Équipe rapporteur</FormLabel>
+            <Input name="reporter_team" value={formData.reporter_team} onChange={handleChange} readOnly />
           </FormControl>
           <FormControl id="reporter_position">
             <FormLabel>Poste du Rapporteur</FormLabel>
