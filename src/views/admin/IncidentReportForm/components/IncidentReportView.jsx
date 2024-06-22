@@ -57,6 +57,10 @@ const IncidentReportView = ({ reportId }) => {
         <Text><strong>Poste du Rapporteur:</strong> {report.reporter_position}</Text>
         <Text><strong>Coordonnées:</strong> {report.contact_info}</Text>
         <Divider />
+        <Heading size="md">Événement</Heading>
+        <Text><strong>ID de l'Événement:</strong> {report.event_uuid}</Text>
+        <Text><strong>Nom de l'Événement:</strong> {report.event_name}</Text>
+        <Divider />
         <Heading size="md">Personnes Impliquées et Témoins</Heading>
         <Text><strong>Personnes impliquées:</strong> {report.involved_persons}</Text>
         <Text><strong>Témoins:</strong> {report.witnesses}</Text>
