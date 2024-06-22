@@ -18,6 +18,7 @@ import { supabase } from './../../../supabaseClient';
 import IncidentReportForm from './components/IncidentReportForm';
 import TeamMembersDisplay from '../InterfaceEquipe/components/TeamMembersDisplay';
 import UrgentAlerts from '../InterfaceEquipe/components/UrgentAlerts';
+import IncidentReportsList from './components/IncidentReportsList';
 
 const NoteDeFraisComponent = () => {
     const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
@@ -103,6 +104,7 @@ const NoteDeFraisComponent = () => {
             )}
             <TeamMembersDisplay />
             <IncidentReportForm reportingTeam={selectedTeam} />
+            <IncidentReportsList/>
         </Box>
     );
 };
