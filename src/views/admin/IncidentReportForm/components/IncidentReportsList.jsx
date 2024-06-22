@@ -86,53 +86,52 @@ const IncidentReportsList = () => {
     doc.text("Événement", 20, 90);
 
     doc.setFontSize(12);
-    doc.text(`ID de l'Événement: ${selectedReport.event_uuid}`, 20, 100);
-    doc.text(`Nom de l'Événement: ${selectedReport.event_name}`, 20, 110);
+    doc.text(`Nom de l'Événement: ${selectedReport.event_name}`, 20, 100);
 
     doc.setFontSize(16);
-    doc.text("Personnes Impliquées et Témoins", 20, 120);
+    doc.text("Personnes Impliquées et Témoins", 20, 110);
 
     doc.setFontSize(12);
-    doc.text(`Personnes impliquées: ${selectedReport.involved_persons}`, 20, 130);
-    doc.text(`Témoins: ${selectedReport.witnesses}`, 20, 140);
+    doc.text(`Personnes impliquées: ${selectedReport.involved_persons}`, 20, 120);
+    doc.text(`Témoins: ${selectedReport.witnesses}`, 20, 130);
 
     doc.setFontSize(16);
-    doc.text("Description de l'Incident", 20, 150);
+    doc.text("Description de l'Incident", 20, 140);
 
     doc.setFontSize(12);
-    doc.text(`Type d'Incident: ${selectedReport.incident_type}`, 20, 160);
-    doc.text(`Description détaillée: ${selectedReport.incident_description}`, 20, 170);
+    doc.text(`Type d'Incident: ${selectedReport.incident_type}`, 20, 150);
+    doc.text(`Description détaillée: ${selectedReport.incident_description}`, 20, 160);
 
     doc.setFontSize(16);
-    doc.text("Évaluation des Dommages", 20, 180);
+    doc.text("Évaluation des Dommages", 20, 170);
 
     doc.setFontSize(12);
-    doc.text(`Dommages Matériels: ${selectedReport.material_damage}`, 20, 190);
-    doc.text(`Dommages Corporels: ${selectedReport.physical_damage}`, 20, 200);
+    doc.text(`Dommages Matériels: ${selectedReport.material_damage}`, 20, 180);
+    doc.text(`Dommages Corporels: ${selectedReport.physical_damage}`, 20, 190);
 
     doc.setFontSize(16);
-    doc.text("Pièces Jointes et Documentation", 20, 210);
+    doc.text("Pièces Jointes et Documentation", 20, 200);
 
     if (selectedReport.attachments) {
       doc.setFontSize(12);
-      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments}`, 20, 220);
+      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments}`, 20, 210);
     }
 
     if (selectedReport.additional_documents) {
       doc.setFontSize(12);
-      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents}`, 20, 230);
+      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents}`, 20, 220);
     }
 
     doc.setFontSize(16);
-    doc.text("Signature", 20, 240);
+    doc.text("Signature", 20, 230);
 
     doc.setFontSize(12);
-    doc.text(`Date: ${new Date(selectedReport.signature_date).toLocaleDateString()}`, 20, 250);
+    doc.text(`Date: ${new Date(selectedReport.signature_date).toLocaleDateString()}`, 20, 240);
 
     // Optional: Add the signature image to the PDF
     if (selectedReport.reporter_signature) {
       const imgData = selectedReport.reporter_signature;
-      doc.addImage(imgData, 'PNG', 20, 260, 50, 20);
+      doc.addImage(imgData, 'PNG', 20, 250, 50, 20);
     }
 
     doc.save(`Rapport_${selectedReport.report_number}.pdf`);
@@ -169,7 +168,6 @@ const IncidentReportsList = () => {
                 <Text><strong>Coordonnées:</strong> {selectedReport.contact_info}</Text>
                 <Divider />
                 <Heading size="md">Événement</Heading>
-                <Text><strong>ID de l'Événement:</strong> {selectedReport.event_uuid}</Text>
                 <Text><strong>Nom de l'Événement:</strong> {selectedReport.event_name}</Text>
                 <Divider />
                 <Heading size="md">Personnes Impliquées et Témoins</Heading>
