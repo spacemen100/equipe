@@ -40,13 +40,13 @@ const IncidentReportForm = ({ reportingTeam }) => {
         event_name: ''
     });
 
+    const [attachmentsFile, setAttachmentsFile] = useState(null);
+    const [additionalDocumentsFile, setAdditionalDocumentsFile] = useState(null);
     const signatureCanvasRef = useRef(null);
     const toast = useToast();
 
     useEffect(() => {
-        // Generate a unique report number using UUID
         const reportNumber = `RPT-${uuidv4().substring(0, 8)}`;
-        // Get the current date and time in the required format
         const currentDateTime = new Date().toISOString().slice(0, 16);
 
         const fetchEventDetails = async () => {
@@ -68,13 +68,12 @@ const IncidentReportForm = ({ reportingTeam }) => {
             }
         };
 
-        // Update the form data with the generated values and fetch event details
         setFormData((prevFormData) => ({
             ...prevFormData,
             report_number: reportNumber,
             incident_date_time: currentDateTime,
             reporter_team: reportingTeam,
-            signature_date: new Date().toISOString().split('T')[0], // Only date part
+            signature_date: new Date().toISOString().split('T')[0], 
         }));
 
         fetchEventDetails();
@@ -92,11 +91,53 @@ const IncidentReportForm = ({ reportingTeam }) => {
         signatureCanvasRef.current.clear();
     };
 
+    const handleFileChange = (e) => {
+        const { name, files } = e.target;
+        if (name === 'attachments') {
+            setAttachmentsFile(files[0]);
+        } else if (name === 'additional_documents') {
+            setAdditionalDocumentsFile(files[0]);
+        }
+    };
+
+    const uploadFile = async (file, bucket) => {
+        const fileName = `${uuidv4()}-${file.name}`;
+        // eslint-disable-next-line
+        const { data, error } = await supabase.storage
+            .from(bucket)
+            .upload(fileName, file);
+        if (error) {
+            throw error;
+        }
+        const { publicURL, error: urlError } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(fileName);
+        if (urlError) {
+            throw urlError;
+        }
+        return publicURL;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            let attachmentsUrl = '';
+            let additionalDocumentsUrl = '';
+            
+            if (attachmentsFile) {
+                attachmentsUrl = await uploadFile(attachmentsFile, 'photographies-videos');
+            }
+            if (additionalDocumentsFile) {
+                additionalDocumentsUrl = await uploadFile(additionalDocumentsFile, 'documents-supplementaires');
+            }
+
             const signatureImage = signatureCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
-            const newFormData = { ...formData, reporter_signature: signatureImage };
+            const newFormData = { 
+                ...formData, 
+                reporter_signature: signatureImage,
+                attachments: attachmentsUrl,
+                additional_documents: additionalDocumentsUrl
+            };
             // eslint-disable-next-line
             const { data, error } = await supabase
                 .from('vianney_incident_reports')
@@ -114,7 +155,6 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 isClosable: true,
             });
 
-            // Reset form after successful submission
             const reportNumber = `RPT-${uuidv4().substring(0, 8)}`;
             const currentDateTime = new Date().toISOString().slice(0, 16);
 
@@ -134,11 +174,11 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 attachments: '',
                 additional_documents: '',
                 reporter_signature: '',
-                signature_date: new Date().toISOString().split('T')[0], // Only date part,
+                signature_date: new Date().toISOString().split('T')[0],
                 event_uuid: selectedEventId || '',
                 event_name: formData.event_name
             });
-            handleClearSignature(); // Clear the signature pad
+            handleClearSignature();
 
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -220,11 +260,11 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     <Heading size="md" alignSelf="flex-start">Pièces Jointes et Documentation</Heading>
                     <FormControl id="attachments">
                         <FormLabel>Photographies et/ou vidéos</FormLabel>
-                        <Input type="file" name="attachments" onChange={handleChange} />
+                        <Input type="file" name="attachments" onChange={handleFileChange} />
                     </FormControl>
                     <FormControl id="additional_documents">
                         <FormLabel>Documents supplémentaires (rapports médicaux, déclarations de témoins, etc.)</FormLabel>
-                        <Input type="file" name="additional_documents" onChange={handleChange} />
+                        <Input type="file" name="additional_documents" onChange={handleFileChange} />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Signature</Heading>
