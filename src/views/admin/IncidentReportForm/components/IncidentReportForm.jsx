@@ -161,10 +161,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
                         <FormLabel>Numéro de Rapport</FormLabel>
                         <Input name="report_number" value={formData.report_number} onChange={handleChange} readOnly />
                     </FormControl>
-                    <FormControl id="event_uuid" isRequired>
-                        <FormLabel>ID de l'Événement</FormLabel>
-                        <Input name="event_uuid" value={formData.event_uuid} onChange={handleChange} readOnly />
-                    </FormControl>
+                    <Input type="hidden" name="event_uuid" value={formData.event_uuid} onChange={handleChange} readOnly />
                     <FormControl id="event_name" isRequired>
                         <FormLabel>Nom de l'Événement</FormLabel>
                         <Input name="event_name" value={formData.event_name} onChange={handleChange} readOnly />
