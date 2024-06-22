@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -12,6 +12,7 @@ import {
   useToast
 } from '@chakra-ui/react';
 import { supabase } from './../../../../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
 const IncidentReportForm = () => {
   const [formData, setFormData] = useState({
@@ -33,6 +34,21 @@ const IncidentReportForm = () => {
   });
 
   const toast = useToast();
+
+  useEffect(() => {
+    // Generate a unique report number using UUID
+    const reportNumber = `RPT-${uuidv4().substring(0, 8)}`;
+    // Get the current date and time in the required format
+    const currentDateTime = new Date().toISOString().slice(0, 16);
+
+    // Update the form data with the generated values
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      reportNumber: reportNumber,
+      incidentDateTime: currentDateTime,
+      signatureDate: new Date().toISOString().split('T')[0] // Only date part
+    }));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,9 +79,12 @@ const IncidentReportForm = () => {
       });
 
       // Reset form after successful submission
+      const reportNumber = `RPT-${uuidv4().substring(0, 8)}`;
+      const currentDateTime = new Date().toISOString().slice(0, 16);
+
       setFormData({
-        reportNumber: '',
-        incidentDateTime: '',
+        reportNumber: reportNumber,
+        incidentDateTime: currentDateTime,
         incidentLocation: '',
         reporterName: '',
         reporterPosition: '',
@@ -78,7 +97,7 @@ const IncidentReportForm = () => {
         physicalDamage: '',
         attachments: '',
         reporterSignature: '',
-        signatureDate: ''
+        signatureDate: new Date().toISOString().split('T')[0] // Only date part
       });
 
     } catch (error) {
@@ -100,7 +119,7 @@ const IncidentReportForm = () => {
         <VStack spacing={4}>
           <FormControl id="reportNumber" isRequired>
             <FormLabel>Numéro de Rapport</FormLabel>
-            <Input name="reportNumber" value={formData.reportNumber} onChange={handleChange} />
+            <Input name="reportNumber" value={formData.reportNumber} onChange={handleChange} readOnly />
           </FormControl>
           <FormControl id="incidentDateTime" isRequired>
             <FormLabel>Date et Heure de l'Incident</FormLabel>
