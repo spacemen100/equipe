@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcSerialTasks } from "react-icons/fc";
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -8,6 +8,7 @@ import Communication from "views/admin/Communication";
 import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; 
+import ChatComponent from "views/admin/ChatComponent";
 
 const routes = [
   {
@@ -58,6 +59,13 @@ const routes = [
     path: "/parametres",
     icon: <Icon as={FcSettings} width='20px' height='20px' color='inherit' />,
     component: Parametres,
+  },
+  {
+    name: "Chat",
+    layout: "/admin",
+    path: "/chat",
+    icon: <Icon as={FcSerialTasks} width='20px' height='20px' color='inherit' />, 
+    component: ChatComponent,
   },
 ];
 
