@@ -4,6 +4,7 @@ import { Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalB
 import { GrSend } from "react-icons/gr";
 import { MdMic } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
+import { FcDeleteDatabase } from "react-icons/fc";
 import Card from "components/card/Card";
 import { useEvent } from '../../../../EventContext';
 import { useTeam } from './../../InterfaceEquipe/TeamContext';
@@ -272,6 +273,11 @@ function MessagerieWhatsappChat() {
         fileInputRef.current.click();
     };
 
+    const handleDeleteFile = () => {
+        setSelectedFile(null);
+        setPreviewImage(null);
+    };
+
     // eslint-disable-next-line
     const toggleImageSize = () => {
         setIsImageEnlarged(!isImageEnlarged);
@@ -386,8 +392,17 @@ function MessagerieWhatsappChat() {
 
                 <Box p={4} borderTop='1px solid #e0e0e0' bg='white' width='100%' position="sticky" bottom="0">
                     {previewImage && (
-                        <Box mb={4}>
+                        <Box mb={4} position="relative">
                             <Image src={previewImage} alt="Image Preview" maxH="100px" borderRadius="md" />
+                            <IconButton
+                                icon={<FcDeleteDatabase />}
+                                position="absolute"
+                                top="0"
+                                right="0"
+                                size="sm"
+                                colorScheme="red"
+                                onClick={handleDeleteFile}
+                            />
                         </Box>
                     )}
                     <Flex width='100%' alignItems='center'>
