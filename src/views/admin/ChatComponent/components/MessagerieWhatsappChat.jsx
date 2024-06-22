@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Box, Input, Button, VStack, Text, Select, Flex, useToast, Alert, AlertIcon, AlertTitle, AlertDescription, CloseButton, Avatar, IconButton } from '@chakra-ui/react';
 import { GrSend } from "react-icons/gr";
-import { MdMic } from "react-icons/md";
+import { MdMic, MdStop } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
 import { FcDeleteDatabase } from "react-icons/fc";
 import Card from "components/card/Card";
@@ -16,8 +16,9 @@ function MessagerieWhatsappChat() {
     const { selectedEventId } = useEvent();
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
-    // eslint-disable-next-line
-    const [imageUrl, setImageUrl] = useState('');
+    const [selectedAudio, setSelectedAudio] = useState(null);
+        // eslint-disable-next-line
+    const [audioUrl, setAudioUrl] = useState('');
     const [alerts, setAlerts] = useState([]);
     const [newAlertText, setNewAlertText] = useState('');
     const toast = useToast();
@@ -31,9 +32,14 @@ function MessagerieWhatsappChat() {
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
     const [isImageEnlarged, setIsImageEnlarged] = useState(false);
     const [showAlert, setShowAlert] = useState(true);
+    const [isRecording, setIsRecording] = useState(false);
+    const [mediaRecorder, setMediaRecorder] = useState(null);
+    const [audioChunks, setAudioChunks] = useState([]);
 
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+        // eslint-disable-next-line
+    const audioInputRef = useRef(null);
 
     const handlePasswordChange = (event) => {
         const inputPassword = event.target.value;
@@ -181,11 +187,12 @@ function MessagerieWhatsappChat() {
             return;
         }
 
-        if (newAlertText.trim() !== '') {
+        if (newAlertText.trim() !== '' || selectedFile || selectedAudio) {
             const fakeUUID = uuidv4(); // Use UUID v4 to generate a unique user_id for the demo
 
             try {
                 let imageUrl = ''; // Initialize imageUrl variable
+                let audioUrl = ''; // Initialize audioUrl variable
 
                 if (selectedFile) {
                     const fileExtension = selectedFile.name.split('.').pop();
@@ -206,6 +213,25 @@ function MessagerieWhatsappChat() {
                     imageUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-images/${filePath}`;
                 }
 
+                if (selectedAudio) {
+                    const fileExtension = 'webm';
+                    const fileName = `${uuidv4()}.${fileExtension}`;
+                    const filePath = `${fakeUUID}/${fileName}`;
+
+                    let { error: uploadError } = await supabase.storage
+                        .from('chat-audio')
+                        .upload(filePath, selectedAudio, {
+                            cacheControl: '3600',
+                            upsert: false,
+                        });
+
+                    if (uploadError) {
+                        throw new Error(`Failed to upload audio: ${uploadError.message}`);
+                    }
+
+                    audioUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${filePath}`;
+                }
+
                 const { data, error } = await supabase
                     .from('vianney_chat_messages')
                     .insert([
@@ -216,6 +242,7 @@ function MessagerieWhatsappChat() {
                             details: details,
                             event_id: selectedEventId,
                             image_url: imageUrl,
+                            audio_url: audioUrl,
                             team_name: selectedTeam,
                         },
                     ]);
@@ -234,6 +261,7 @@ function MessagerieWhatsappChat() {
                 setDetails('');
                 setSelectedFile(null);
                 setPreviewImage(null);
+                setSelectedAudio(null);
 
                 toast({
                     title: "Alerte ajoutée",
@@ -268,9 +296,37 @@ function MessagerieWhatsappChat() {
             setSelectedFile(file);
         }
     };
+    // eslint-disable-next-line
+    const handleAudioChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedAudio(file);
+        }
+    };
 
     const handlePlusClick = () => {
         fileInputRef.current.click();
+    };
+
+    const handleMicClick = async () => {
+        if (isRecording) {
+            mediaRecorder.stop();
+        } else {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (event) => {
+                setAudioChunks((prev) => [...prev, event.data]);
+            };
+            recorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                setSelectedAudio(audioBlob);
+                setAudioChunks([]);
+                stream.getTracks().forEach((track) => track.stop());
+            };
+            recorder.start();
+            setMediaRecorder(recorder);
+        }
+        setIsRecording(!isRecording);
     };
 
     const handleDeleteFile = () => {
@@ -278,6 +334,9 @@ function MessagerieWhatsappChat() {
         setPreviewImage(null);
     };
 
+    const handleDeleteAudio = () => {
+        setSelectedAudio(null);
+    };
     // eslint-disable-next-line
     const toggleImageSize = () => {
         setIsImageEnlarged(!isImageEnlarged);
@@ -355,6 +414,12 @@ function MessagerieWhatsappChat() {
                                                 mt={2}
                                             />
                                         )}
+                                        {alert.audio_url && (
+                                            <audio controls>
+                                                <source src={alert.audio_url} type="audio/webm" />
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        )}
                                         <Text fontSize="xs" color="gray.500" textAlign="right" mt={1}>
                                             {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </Text>
@@ -405,6 +470,23 @@ function MessagerieWhatsappChat() {
                             />
                         </Box>
                     )}
+                    {selectedAudio && (
+                        <Box mb={4} position="relative">
+                            <audio controls>
+                                <source src={URL.createObjectURL(selectedAudio)} type="audio/webm" />
+                                Your browser does not support the audio element.
+                            </audio>
+                            <IconButton
+                                icon={<FcDeleteDatabase />}
+                                position="absolute"
+                                top="0"
+                                right="0"
+                                size="sm"
+                                colorScheme="red"
+                                onClick={handleDeleteAudio}
+                            />
+                        </Box>
+                    )}
                     <Flex width='100%' alignItems='center'>
                         <IconButton
                             icon={<AiOutlinePlus />}
@@ -424,6 +506,14 @@ function MessagerieWhatsappChat() {
                                 handleFileChange(e);
                             }}
                         />
+                        <IconButton
+                            icon={isRecording ? <MdStop /> : <MdMic />}
+                            mr={2}
+                            flex='1'
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={handleMicClick}
+                        />
                         <Input
                             placeholder="Entrez un message..."
                             value={newAlertText}
@@ -435,13 +525,6 @@ function MessagerieWhatsappChat() {
                         <IconButton
                             icon={<GrSend />}
                             onClick={handleSubmit}
-                            flex='1'
-                            variant="outline"
-                            colorScheme="blue"
-                        />
-                        <IconButton
-                            icon={<MdMic />}
-                            onClick={() => { /* Handle microphone click */ }}
                             flex='1'
                             variant="outline"
                             colorScheme="blue"
