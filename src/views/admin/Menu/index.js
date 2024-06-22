@@ -15,6 +15,7 @@ const Menu = () => {
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
     { icon: FcComments, label: "Chat", path: "/admin/chat" },
     { icon: FcDocument, label: "Rapport d'incident", path: "/admin/rapport-incident" }, // Added link to incident report form
+    { icon: FcDocument, label: "Fiche Bilan SUAP", path: "/admin/fiche-bilan-suap" }, // Added link to Fiche Bilan SUAP
   ];
 
   return (
