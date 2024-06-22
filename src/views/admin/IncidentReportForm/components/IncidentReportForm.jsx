@@ -36,7 +36,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
         additional_documents: '',
         reporter_signature: '',
         signature_date: '',
-        event_uuid: ''
+        event_uuid: '',
+        event_name: ''
     });
 
     const signatureCanvasRef = useRef(null);
@@ -48,15 +49,35 @@ const IncidentReportForm = ({ reportingTeam }) => {
         // Get the current date and time in the required format
         const currentDateTime = new Date().toISOString().slice(0, 16);
 
-        // Update the form data with the generated values
+        const fetchEventDetails = async () => {
+            if (selectedEventId) {
+                const { data, error } = await supabase
+                    .from('vianney_event')
+                    .select('event_name')
+                    .eq('event_id', selectedEventId)
+                    .single();
+                if (error) {
+                    console.error('Error fetching event details:', error);
+                } else {
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        event_name: data.event_name,
+                        event_uuid: selectedEventId
+                    }));
+                }
+            }
+        };
+
+        // Update the form data with the generated values and fetch event details
         setFormData((prevFormData) => ({
             ...prevFormData,
             report_number: reportNumber,
             incident_date_time: currentDateTime,
             reporter_team: reportingTeam,
             signature_date: new Date().toISOString().split('T')[0], // Only date part
-            event_uuid: selectedEventId || ''
         }));
+
+        fetchEventDetails();
     }, [reportingTeam, selectedEventId]);
 
     const handleChange = (e) => {
@@ -114,7 +135,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 additional_documents: '',
                 reporter_signature: '',
                 signature_date: new Date().toISOString().split('T')[0], // Only date part,
-                event_uuid: selectedEventId || ''
+                event_uuid: selectedEventId || '',
+                event_name: formData.event_name
             });
             handleClearSignature(); // Clear the signature pad
 
@@ -142,6 +164,10 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     <FormControl id="event_uuid" isRequired>
                         <FormLabel>ID de l'Événement</FormLabel>
                         <Input name="event_uuid" value={formData.event_uuid} onChange={handleChange} readOnly />
+                    </FormControl>
+                    <FormControl id="event_name" isRequired>
+                        <FormLabel>Nom de l'Événement</FormLabel>
+                        <Input name="event_name" value={formData.event_name} onChange={handleChange} readOnly />
                     </FormControl>
                     <FormControl id="incident_date_time" isRequired>
                         <FormLabel>Date et Heure de l'Incident</FormLabel>
