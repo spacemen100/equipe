@@ -1,35 +1,16 @@
-import React, { useRef } from 'react';
-import { Box, Heading, Text, SimpleGrid, Divider, Button } from "@chakra-ui/react";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, {  useState } from 'react';
+import { Box, Heading, Text, SimpleGrid, Divider, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import RenderFicheBilanSUAPBis from './RenderFicheBilanSUAPBis';
 
 const RenderFicheBilanSUAP = ({ data }) => {
-  const ficheRef = useRef();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDownloadPDF = async () => {
-    const input = ficheRef.current;
-    const canvas = await html2canvas(input, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgProps = pdf.getImageProperties(imgData);
-    const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  const handleDownloadPDF = () => {
+    setIsModalOpen(true);
+  };
 
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-    heightLeft -= pdfHeight;
-
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-      heightLeft -= pdfHeight;
-    }
-
-    pdf.save(`fiche_bilan_${data.nom}_${data.prenom}_N°INTER_${data.inter_number}.pdf`);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   const renderList = (items) => {
@@ -40,7 +21,7 @@ const RenderFicheBilanSUAP = ({ data }) => {
   };
 
   return (
-    <Box ref={ficheRef} width="80%" margin="auto" border="1px" borderColor="gray.300" borderRadius="md" p={5} boxShadow="md" mb={10}>
+    <Box width="80%" margin="auto" border="1px" borderColor="gray.300" borderRadius="md" p={5} boxShadow="md" mb={10}>
       <Heading as="h1" size="lg" textAlign="center" mb={5}>
         FICHE BILAN SUAP - N° INTER: {data.inter_number}
       </Heading>
@@ -272,6 +253,17 @@ const RenderFicheBilanSUAP = ({ data }) => {
       <Button onClick={handleDownloadPDF} colorScheme="blue" mt={4}>
         Télécharger en PDF
       </Button>
+
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} size="full">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Fiche Bilan SUAP - N° INTER: {data.inter_number}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <RenderFicheBilanSUAPBis data={data} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };
