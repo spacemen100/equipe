@@ -10,6 +10,7 @@ import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; 
 import ChatComponent from "views/admin/ChatComponent";
 import IncidentReportForm from "views/admin/IncidentReportForm"; // Import the form component
+import FicheBilanSUAP from "views/admin/FicheBilanSUAP"; // Import the new component
 
 const routes = [
   {
@@ -74,6 +75,13 @@ const routes = [
     path: "/rapport-incident",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
     component: IncidentReportForm, // Add the new route here
+  },
+  {
+    name: "Fiche Bilan SUAP",
+    layout: "/admin",
+    path: "/fiche-bilan-suap",
+    icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
+    component: FicheBilanSUAP, // Add the new route here
   },
 ];
 
