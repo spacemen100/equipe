@@ -53,6 +53,9 @@ const RenderFicheBilanSUAPBis = ({ data }) => {
   return (
     <>
       <Box ref={ficheRef1} width="80%" margin="auto" border="1px" borderColor="gray.300" borderRadius="md" p={5} boxShadow="md" mb={10}>
+      <Button onClick={handleDownloadPDF} colorScheme="blue" mt={4}>
+          Télécharger en PDF
+        </Button>
         <Heading as="h1" size="lg" textAlign="center" mb={5}>
           FICHE BILAN SUAP - N° INTER: {data.inter_number}
         </Heading>
@@ -281,9 +284,7 @@ const RenderFicheBilanSUAPBis = ({ data }) => {
           </Box>
         </SimpleGrid>
 
-        <Button onClick={handleDownloadPDF} colorScheme="blue" mt={4}>
-          Télécharger en PDF
-        </Button>
+
       </Box>
     </>
   );
