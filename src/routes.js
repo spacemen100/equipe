@@ -9,6 +9,7 @@ import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; 
 import ChatComponent from "views/admin/ChatComponent";
+import IncidentReportForm from "views/admin/IncidentReportForm"; // Import the form component
 
 const routes = [
   {
@@ -66,6 +67,13 @@ const routes = [
     path: "/chat",
     icon: <Icon as={FcComments} width='20px' height='20px' color='inherit' />, 
     component: ChatComponent,
+  },
+  {
+    name: "Rapport d'incident",
+    layout: "/admin",
+    path: "/rapport-incident",
+    icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
+    component: IncidentReportForm, // Add the new route here
   },
 ];
 
