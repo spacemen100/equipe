@@ -17,6 +17,7 @@ import {
   Divider
 } from '@chakra-ui/react';
 import { supabase } from './../../../../supabaseClient';
+import jsPDF from 'jspdf';
 
 const IncidentReportsList = () => {
   const [reports, setReports] = useState([]);
@@ -58,6 +59,71 @@ const IncidentReportsList = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReport(null);
+  };
+
+  const handleDownloadReport = () => {
+    if (!selectedReport) return;
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Rapport d'Incident", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Numéro de Rapport: ${selectedReport.report_number}`, 20, 30);
+    doc.text(`Date et Heure de l'Incident: ${new Date(selectedReport.incident_date_time).toLocaleString()}`, 20, 40);
+    doc.text(`Lieu de l'Incident: ${selectedReport.incident_location}`, 20, 50);
+    doc.text(`Équipe rapporteur: ${selectedReport.reporter_team}`, 20, 60);
+    doc.text(`Poste du Rapporteur: ${selectedReport.reporter_position}`, 20, 70);
+    doc.text(`Coordonnées: ${selectedReport.contact_info}`, 20, 80);
+
+    doc.setFontSize(16);
+    doc.text("Personnes Impliquées et Témoins", 20, 90);
+
+    doc.setFontSize(12);
+    doc.text(`Personnes impliquées: ${selectedReport.involved_persons}`, 20, 100);
+    doc.text(`Témoins: ${selectedReport.witnesses}`, 20, 110);
+
+    doc.setFontSize(16);
+    doc.text("Description de l'Incident", 20, 120);
+
+    doc.setFontSize(12);
+    doc.text(`Type d'Incident: ${selectedReport.incident_type}`, 20, 130);
+    doc.text(`Description détaillée: ${selectedReport.incident_description}`, 20, 140);
+
+    doc.setFontSize(16);
+    doc.text("Évaluation des Dommages", 20, 150);
+
+    doc.setFontSize(12);
+    doc.text(`Dommages Matériels: ${selectedReport.material_damage}`, 20, 160);
+    doc.text(`Dommages Corporels: ${selectedReport.physical_damage}`, 20, 170);
+
+    doc.setFontSize(16);
+    doc.text("Pièces Jointes et Documentation", 20, 180);
+
+    if (selectedReport.attachments) {
+      doc.setFontSize(12);
+      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments}`, 20, 190);
+    }
+
+    if (selectedReport.additional_documents) {
+      doc.setFontSize(12);
+      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents}`, 20, 200);
+    }
+
+    doc.setFontSize(16);
+    doc.text("Signature", 20, 210);
+
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date(selectedReport.signature_date).toLocaleDateString()}`, 20, 220);
+
+    // Optional: Add the signature image to the PDF
+    if (selectedReport.reporter_signature) {
+      const imgData = selectedReport.reporter_signature;
+      doc.addImage(imgData, 'PNG', 20, 230, 50, 20);
+    }
+
+    doc.save(`Rapport_${selectedReport.report_number}.pdf`);
   };
 
   return (
@@ -123,7 +189,8 @@ const IncidentReportsList = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" onClick={handleCloseModal}>Fermer</Button>
+            <Button colorScheme="blue" mr={3} onClick={handleDownloadReport}>Télécharger le rapport</Button>
+            <Button onClick={handleCloseModal}>Fermer</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
