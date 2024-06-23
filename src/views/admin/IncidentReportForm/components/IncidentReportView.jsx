@@ -74,19 +74,19 @@ const IncidentReportView = ({ reportId }) => {
         <Text><strong>Dommages Corporels:</strong> {report.physical_damage}</Text>
         <Divider />
         <Heading size="md">Pièces Jointes et Documentation</Heading>
-        {report.attachments && (
+        {report.attachments_urls && (
           <Box>
             <Text><strong>Photographies et/ou vidéos:</strong></Text>
-            <Link href={report.attachments} isExternal>
-              {report.attachments}
+            <Link href={report.attachments_urls} isExternal>
+              {report.attachments_urls}
             </Link>
           </Box>
         )}
-        {report.additional_documents && (
+        {report.additional_documents_urls && (
           <Box>
             <Text><strong>Documents supplémentaires:</strong></Text>
-            <Link href={report.additional_documents} isExternal>
-              {report.additional_documents}
+            <Link href={report.additional_documents_urls} isExternal>
+              {report.additional_documents_urls}
             </Link>
           </Box>
         )}

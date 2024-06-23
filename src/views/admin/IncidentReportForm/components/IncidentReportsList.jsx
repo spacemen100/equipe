@@ -113,14 +113,14 @@ const IncidentReportsList = () => {
     doc.setFontSize(16);
     doc.text("Pièces Jointes et Documentation", 20, 200);
 
-    if (selectedReport.attachments) {
+    if (selectedReport.attachments_urls) {
       doc.setFontSize(12);
-      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments}`, 20, 210);
+      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments_urls}`, 20, 210);
     }
 
-    if (selectedReport.additional_documents) {
+    if (selectedReport.additional_documents_urls) {
       doc.setFontSize(12);
-      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents}`, 20, 220);
+      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents_urls}`, 20, 220);
     }
 
     doc.setFontSize(16);
@@ -184,19 +184,19 @@ const IncidentReportsList = () => {
                 <Text><strong>Dommages Corporels:</strong> {selectedReport.physical_damage}</Text>
                 <Divider />
                 <Heading size="md">Pièces Jointes et Documentation</Heading>
-                {selectedReport.attachments && (
+                {selectedReport.attachments_urls && (
                   <Box>
                     <Text><strong>Photographies et/ou vidéos:</strong></Text>
-                    <Link href={selectedReport.attachments} isExternal>
-                      {selectedReport.attachments}
+                    <Link href={selectedReport.attachments_urls} isExternal>
+                      {selectedReport.attachments_urls}
                     </Link>
                   </Box>
                 )}
-                {selectedReport.additional_documents && (
+                {selectedReport.additional_documents_urls && (
                   <Box>
                     <Text><strong>Documents supplémentaires:</strong></Text>
-                    <Link href={selectedReport.additional_documents} isExternal>
-                      {selectedReport.additional_documents}
+                    <Link href={selectedReport.additional_documents_urls} isExternal>
+                      {selectedReport.additional_documents_urls}
                     </Link>
                   </Box>
                 )}
