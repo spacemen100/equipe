@@ -3,7 +3,7 @@ import { Alert, AlertIcon, AlertTitle, Box, Heading, FormControl, FormLabel, Inp
 import { supabase } from './../../../../supabaseClient';
 import { useEvent } from './../../../../EventContext';
 
-function FicheBilanSUAP() {
+function FicheBilanSUAP({ teamName }) {
   const { setEventId, selectedEventId } = useEvent();
   const initialState = {
     inter_number: '',
@@ -53,7 +53,7 @@ function FicheBilanSUAP() {
     besoin_evacuation: '',
     position_evacuation: '',
     event_name: '',
-    team_name: ''
+    team_name: teamName || '' // Set the initial value of team_name to the prop
   };
 
   const [formData, setFormData] = useState(initialState);

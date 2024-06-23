@@ -103,8 +103,8 @@ export default function Settings() {
                 </Badge>
             )}
             <TeamMembersDisplay />
-        <FicheBilanSUAP/>
-        <ListFicheBilanSUAP/>
-    </Box>
-  );
+            <FicheBilanSUAP teamName={selectedTeam} />
+            <ListFicheBilanSUAP />
+        </Box>
+    );
 }
