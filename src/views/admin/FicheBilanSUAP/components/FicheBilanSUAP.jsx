@@ -232,10 +232,7 @@ function FicheBilanSUAP() {
         </FormControl>
       </SimpleGrid>
 
-      <FormControl my={5}>
-        <FormLabel>UUID de l'événement:</FormLabel>
-        <Input type="text" value={selectedEventId || ''} onChange={handleUuidChange} />
-      </FormControl>
+      <Input type="hidden" value={selectedEventId || ''} onChange={handleUuidChange} />
 
       <FormControl my={5}>
         <FormLabel>Nom de l'événement:</FormLabel>
