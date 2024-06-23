@@ -71,6 +71,19 @@ const RenderFicheBilanSUAP = ({ data }) => {
 
           <Divider my={5} />
 
+          <SimpleGrid columns={2} spacing={5} my={5}>
+            <Box>
+              <Text fontWeight="bold">Nom de l'Événement:</Text>
+              <Text>{data.event_name}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">Nom de l'Équipe:</Text>
+              <Text>{data.team_name}</Text>
+            </Box>
+          </SimpleGrid>
+
+          <Divider my={5} />
+
           <Heading as="h2" size="md" mb={3}>État Civil Victime</Heading>
           <SimpleGrid columns={2} spacing={5} my={5}>
             <Box>

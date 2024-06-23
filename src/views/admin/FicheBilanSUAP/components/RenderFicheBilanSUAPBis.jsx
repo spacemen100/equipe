@@ -53,7 +53,7 @@ const RenderFicheBilanSUAPBis = ({ data }) => {
   return (
     <>
       <Box ref={ficheRef1} width="80%" margin="auto" border="1px" borderColor="gray.300" borderRadius="md" p={5} boxShadow="md" mb={10}>
-      <Button onClick={handleDownloadPDF} colorScheme="blue" mt={4}>
+        <Button onClick={handleDownloadPDF} colorScheme="blue" mt={4}>
           Télécharger en PDF
         </Button>
         <Heading as="h1" size="lg" textAlign="center" mb={5}>
@@ -93,6 +93,19 @@ const RenderFicheBilanSUAPBis = ({ data }) => {
           <Box>
             <Text fontWeight="bold">Arrivée à l'hôpital:</Text>
             <Text>{data.arrive_hop}</Text>
+          </Box>
+        </SimpleGrid>
+
+        <Divider my={5} />
+
+        <SimpleGrid columns={2} spacing={5} my={5}>
+          <Box>
+            <Text fontWeight="bold">Nom de l'Événement:</Text>
+            <Text>{data.event_name}</Text>
+          </Box>
+          <Box>
+            <Text fontWeight="bold">Nom de l'Équipe:</Text>
+            <Text>{data.team_name}</Text>
           </Box>
         </SimpleGrid>
 
@@ -283,8 +296,6 @@ const RenderFicheBilanSUAPBis = ({ data }) => {
             <Text>{data.position_evacuation}</Text>
           </Box>
         </SimpleGrid>
-
-
       </Box>
     </>
   );

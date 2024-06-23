@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Stack, Spinner, Alert, AlertIcon, AlertTitle } from "@chakra-ui/react";
 import { supabase } from './../../../../supabaseClient';
 import RenderFicheBilanSUAP from './RenderFicheBilanSUAP';
+import { useEvent } from './../../../../EventContext';
 
 const ListFicheBilanSUAP = () => {
+  const { selectedEventId } = useEvent();
   const [fiches, setFiches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,7 +15,8 @@ const ListFicheBilanSUAP = () => {
       try {
         const { data, error } = await supabase
           .from('vianney_fiche_bilan_suap')
-          .select('*');
+          .select('*')
+          .eq('event_id', selectedEventId); // Filter by selected event ID
 
         if (error) {
           throw error;
@@ -28,8 +31,12 @@ const ListFicheBilanSUAP = () => {
       }
     };
 
-    fetchFiches();
-  }, []);
+    if (selectedEventId) {
+      fetchFiches();
+    } else {
+      setLoading(false);
+    }
+  }, [selectedEventId]);
 
   if (loading) {
     return (
