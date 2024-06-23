@@ -6,8 +6,7 @@ import {
   VStack,
   Divider,
   Image,
-  useToast,
-  Link
+  useToast
 } from '@chakra-ui/react';
 import { supabase } from './../../../../supabaseClient';
 
@@ -77,17 +76,13 @@ const IncidentReportView = ({ reportId }) => {
         {report.attachments_urls && (
           <Box>
             <Text><strong>Photographies et/ou vidéos:</strong></Text>
-            <Link href={report.attachments_urls} isExternal>
-              {report.attachments_urls}
-            </Link>
+            <Image src={report.attachments_urls} alt="Photographie" maxH="200px" />
           </Box>
         )}
         {report.additional_documents_urls && (
           <Box>
             <Text><strong>Documents supplémentaires:</strong></Text>
-            <Link href={report.additional_documents_urls} isExternal>
-              {report.additional_documents_urls}
-            </Link>
+            <Image src={report.additional_documents_urls} alt="Document supplémentaire" maxH="200px" />
           </Box>
         )}
         <Divider />
