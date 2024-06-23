@@ -51,7 +51,8 @@ function FicheBilanSUAP() {
     motricite: [],
     detection_symptomes: [],
     besoin_evacuation: '',
-    position_evacuation: ''
+    position_evacuation: '',
+    event_name: '',
   };
 
   const [formData, setFormData] = useState(initialState);
@@ -72,6 +73,25 @@ function FicheBilanSUAP() {
     generateInterNumber();
     setCurrentDate();
   }, []);
+
+  useEffect(() => {
+    const fetchEventName = async () => {
+      if (selectedEventId) {
+        const { data, error } = await supabase
+          .from('vianney_event')
+          .select('event_name')
+          .eq('event_id', selectedEventId)
+          .single();
+        if (data) {
+          setFormData(prevState => ({ ...prevState, event_name: data.event_name }));
+        } else {
+          console.error('Error fetching event name:', error);
+        }
+      }
+    };
+
+    fetchEventName();
+  }, [selectedEventId]);
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
@@ -95,6 +115,7 @@ function FicheBilanSUAP() {
   const handleSubmit = async () => {
     const dataToSubmit = {
       event_id: selectedEventId,
+      event_name: formData.event_name,
       inter_number: formData.inter_number,
       engin_a: formData.engin_a || 'N/A',
       engin_b: formData.engin_b || 'N/A',
@@ -214,6 +235,11 @@ function FicheBilanSUAP() {
       <FormControl my={5}>
         <FormLabel>UUID de l'événement:</FormLabel>
         <Input type="text" value={selectedEventId || ''} onChange={handleUuidChange} />
+      </FormControl>
+
+      <FormControl my={5}>
+        <FormLabel>Nom de l'événement:</FormLabel>
+        <Input type="text" id="event_name" value={formData.event_name} isReadOnly />
       </FormControl>
 
       <Box bg="black" color="white" p={2} textAlign="center" my={5}>ÉTAT CIVIL VICTIME</Box>
