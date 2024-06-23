@@ -53,6 +53,7 @@ function FicheBilanSUAP() {
     besoin_evacuation: '',
     position_evacuation: '',
     event_name: '',
+    team_name: ''
   };
 
   const [formData, setFormData] = useState(initialState);
@@ -161,7 +162,8 @@ function FicheBilanSUAP() {
       motricite: formData.motricite.length > 0 ? formData.motricite : ['N/A'],
       detection_symptomes: formData.detection_symptomes.length > 0 ? formData.detection_symptomes : ['N/A'],
       besoin_evacuation: formData.besoin_evacuation || 'N/A',
-      position_evacuation: formData.position_evacuation || 'N/A'
+      position_evacuation: formData.position_evacuation || 'N/A',
+      team_name: formData.team_name || 'N/A'
     };
 
     try {
@@ -237,6 +239,11 @@ function FicheBilanSUAP() {
       <FormControl my={5}>
         <FormLabel>Nom de l'événement:</FormLabel>
         <Input type="text" id="event_name" value={formData.event_name} isReadOnly />
+      </FormControl>
+
+      <FormControl my={5}>
+        <FormLabel>Nom de l'équipe:</FormLabel>
+        <Input type="text" id="team_name" value={formData.team_name} onChange={handleChange} />
       </FormControl>
 
       <Box bg="black" color="white" p={2} textAlign="center" my={5}>ÉTAT CIVIL VICTIME</Box>
