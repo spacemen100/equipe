@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, SimpleGrid, Text, VStack, IconButton } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcSupport, FcSettings, FcComments } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcSupport, FcSettings, FcComments, FcEditImage } from "react-icons/fc";
 import { useHistory } from "react-router-dom";
 
 const Menu = () => {
@@ -14,8 +14,9 @@ const Menu = () => {
     { icon: FcSupport, label: "Matériel", path: "/admin/materiels" },
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
     { icon: FcComments, label: "Chat", path: "/admin/chat" },
-    { icon: FcDocument, label: "Rapport d'incident", path: "/admin/rapport-incident" }, // Added link to incident report form
-    { icon: FcDocument, label: "Fiche Bilan SUAP", path: "/admin/fiche-bilan-suap" }, // Added link to Fiche Bilan SUAP
+    { icon: FcDocument, label: "Rapport d'incident", path: "/admin/rapport-incident" },
+    { icon: FcDocument, label: "Fiche Bilan SUAP", path: "/admin/fiche-bilan-suap" },
+    { icon: FcEditImage, label: "Note de frais", path: "/admin/note-de-frais" }, // Added link to Note de frais
   ];
 
   return (

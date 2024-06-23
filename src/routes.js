@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcComments } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcComments, FcEditImage } from "react-icons/fc";
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -9,8 +9,9 @@ import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; 
 import ChatComponent from "views/admin/ChatComponent";
-import IncidentReportForm from "views/admin/IncidentReportForm"; // Import the form component
-import FicheBilanSUAP from "views/admin/FicheBilanSUAP"; // Import the new component
+import IncidentReportForm from "views/admin/IncidentReportForm"; 
+import FicheBilanSUAP from "views/admin/FicheBilanSUAP"; 
+import NoteDeFrais from "views/admin/NoteDeFrais"; // Import the new component
 
 const routes = [
   {
@@ -74,14 +75,21 @@ const routes = [
     layout: "/admin",
     path: "/rapport-incident",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
-    component: IncidentReportForm, // Add the new route here
+    component: IncidentReportForm,
   },
   {
     name: "Fiche Bilan SUAP",
     layout: "/admin",
     path: "/fiche-bilan-suap",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
-    component: FicheBilanSUAP, // Add the new route here
+    component: FicheBilanSUAP,
+  },
+  {
+    name: "Note de frais",
+    layout: "/admin",
+    path: "/note-de-frais",
+    icon: <Icon as={FcEditImage} width='20px' height='20px' color='inherit' />,
+    component: NoteDeFrais, // Add the new route here
   },
 ];
 
