@@ -73,7 +73,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
             report_number: reportNumber,
             incident_date_time: currentDateTime,
             reporter_team: reportingTeam,
-            signature_date: new Date().toISOString().split('T')[0], 
+            signature_date: new Date().toISOString().split('T')[0],
         }));
 
         fetchEventDetails();
@@ -123,7 +123,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
         try {
             let attachmentsUrl = '';
             let additionalDocumentsUrl = '';
-            
+
             if (attachmentsFile) {
                 attachmentsUrl = await uploadFile(attachmentsFile, 'photographies-videos');
             }
@@ -132,8 +132,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
             }
 
             const signatureImage = signatureCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
-            const newFormData = { 
-                ...formData, 
+            const newFormData = {
+                ...formData,
                 reporter_signature: signatureImage,
                 attachments: attachmentsUrl,
                 additional_documents: additionalDocumentsUrl

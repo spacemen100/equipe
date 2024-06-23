@@ -14,7 +14,8 @@ import {
   ModalBody,
   ModalCloseButton,
   Image,
-  Divider
+  Divider,
+  Link
 } from '@chakra-ui/react';
 import { supabase } from './../../../../supabaseClient';
 import jsPDF from 'jspdf';
@@ -186,13 +187,17 @@ const IncidentReportsList = () => {
                 {selectedReport.attachments && (
                   <Box>
                     <Text><strong>Photographies et/ou vidéos:</strong></Text>
-                    <Image src={selectedReport.attachments} alt="Attachments" maxH="200px" />
+                    <Link href={selectedReport.attachments} isExternal>
+                      {selectedReport.attachments}
+                    </Link>
                   </Box>
                 )}
                 {selectedReport.additional_documents && (
                   <Box>
                     <Text><strong>Documents supplémentaires:</strong></Text>
-                    <Image src={selectedReport.additional_documents} alt="Additional Documents" maxH="200px" />
+                    <Link href={selectedReport.additional_documents} isExternal>
+                      {selectedReport.additional_documents}
+                    </Link>
                   </Box>
                 )}
                 <Divider />
