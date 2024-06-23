@@ -76,18 +76,18 @@ const IncidentReportView = ({ reportId }) => {
         {report.attachments_urls && (
           <Box>
             <Text><strong>Photographies et/ou vidéos:</strong></Text>
-            <Image src={report.attachments_urls} alt="Photographie" maxH="200px" />
+            <Image src={report.attachments_urls} alt="Photographie" maxH="100px" />
           </Box>
         )}
         {report.additional_documents_urls && (
           <Box>
             <Text><strong>Documents supplémentaires:</strong></Text>
-            <Image src={report.additional_documents_urls} alt="Document supplémentaire" maxH="200px" />
+            <Image src={report.additional_documents_urls} alt="Document supplémentaire" maxH="100px" />
           </Box>
         )}
         <Divider />
         <Heading size="md">Signature</Heading>
-        <Image src={report.reporter_signature} alt="Signature" maxH="200px" />
+        <Image src={report.reporter_signature} alt="Signature" maxH="100px" />
         <Text><strong>Date:</strong> {new Date(report.signature_date).toLocaleDateString()}</Text>
       </VStack>
     </Box>

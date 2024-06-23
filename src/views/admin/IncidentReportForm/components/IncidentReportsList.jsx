@@ -66,72 +66,86 @@ const IncidentReportsList = () => {
     setSelectedReport(null);
   };
 
-  const handleDownloadReport = () => {
+  const toDataURL = async (url) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleDownloadReport = async () => {
     if (!selectedReport) return;
 
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text("Rapport d'Incident", 20, 20);
+    doc.setFontSize(14);
+    doc.text("Rapport d'Incident", 10, 10);
+
+    doc.setFontSize(10);
+    doc.text(`Numéro de Rapport: ${selectedReport.report_number}`, 10, 20);
+    doc.text(`Date et Heure de l'Incident: ${new Date(selectedReport.incident_date_time).toLocaleString()}`, 10, 30);
+    doc.text(`Lieu de l'Incident: ${selectedReport.incident_location}`, 10, 40);
+    doc.text(`Équipe rapporteur: ${selectedReport.reporter_team}`, 10, 50);
+    doc.text(`Poste du Rapporteur: ${selectedReport.reporter_position}`, 10, 60);
+    doc.text(`Coordonnées: ${selectedReport.contact_info}`, 10, 70);
 
     doc.setFontSize(12);
-    doc.text(`Numéro de Rapport: ${selectedReport.report_number}`, 20, 30);
-    doc.text(`Date et Heure de l'Incident: ${new Date(selectedReport.incident_date_time).toLocaleString()}`, 20, 40);
-    doc.text(`Lieu de l'Incident: ${selectedReport.incident_location}`, 20, 50);
-    doc.text(`Équipe rapporteur: ${selectedReport.reporter_team}`, 20, 60);
-    doc.text(`Poste du Rapporteur: ${selectedReport.reporter_position}`, 20, 70);
-    doc.text(`Coordonnées: ${selectedReport.contact_info}`, 20, 80);
+    doc.text("Événement", 10, 80);
 
-    doc.setFontSize(16);
-    doc.text("Événement", 20, 90);
+    doc.setFontSize(10);
+    doc.text(`Nom de l'Événement: ${selectedReport.event_name}`, 10, 90);
 
     doc.setFontSize(12);
-    doc.text(`Nom de l'Événement: ${selectedReport.event_name}`, 20, 100);
+    doc.text("Personnes Impliquées et Témoins", 10, 100);
 
-    doc.setFontSize(16);
-    doc.text("Personnes Impliquées et Témoins", 20, 110);
-
-    doc.setFontSize(12);
-    doc.text(`Personnes impliquées: ${selectedReport.involved_persons}`, 20, 120);
-    doc.text(`Témoins: ${selectedReport.witnesses}`, 20, 130);
-
-    doc.setFontSize(16);
-    doc.text("Description de l'Incident", 20, 140);
+    doc.setFontSize(10);
+    doc.text(`Personnes impliquées: ${selectedReport.involved_persons}`, 10, 110);
+    doc.text(`Témoins: ${selectedReport.witnesses}`, 10, 120);
 
     doc.setFontSize(12);
-    doc.text(`Type d'Incident: ${selectedReport.incident_type}`, 20, 150);
-    doc.text(`Description détaillée: ${selectedReport.incident_description}`, 20, 160);
+    doc.text("Description de l'Incident", 10, 130);
 
-    doc.setFontSize(16);
-    doc.text("Évaluation des Dommages", 20, 170);
+    doc.setFontSize(10);
+    doc.text(`Type d'Incident: ${selectedReport.incident_type}`, 10, 140);
+    doc.text(`Description détaillée: ${selectedReport.incident_description}`, 10, 150);
 
     doc.setFontSize(12);
-    doc.text(`Dommages Matériels: ${selectedReport.material_damage}`, 20, 180);
-    doc.text(`Dommages Corporels: ${selectedReport.physical_damage}`, 20, 190);
+    doc.text("Évaluation des Dommages", 10, 160);
 
-    doc.setFontSize(16);
-    doc.text("Pièces Jointes et Documentation", 20, 200);
+    doc.setFontSize(10);
+    doc.text(`Dommages Matériels: ${selectedReport.material_damage}`, 10, 170);
+    doc.text(`Dommages Corporels: ${selectedReport.physical_damage}`, 10, 180);
+
+    doc.setFontSize(12);
+    doc.text("Pièces Jointes et Documentation", 10, 190);
+
+    const attachmentY = 200;
+    const imageSize = 25;
 
     if (selectedReport.attachments_urls) {
-      doc.setFontSize(12);
-      doc.text(`Photographies et/ou vidéos: ${selectedReport.attachments_urls}`, 20, 210);
+      const imageData = await toDataURL(selectedReport.attachments_urls);
+      doc.addImage(imageData, 'JPEG', 10, attachmentY, imageSize, imageSize);
     }
 
     if (selectedReport.additional_documents_urls) {
-      doc.setFontSize(12);
-      doc.text(`Documents supplémentaires: ${selectedReport.additional_documents_urls}`, 20, 220);
+      const imageData = await toDataURL(selectedReport.additional_documents_urls);
+      doc.addImage(imageData, 'JPEG', 45, attachmentY, imageSize, imageSize);
     }
 
-    doc.setFontSize(16);
-    doc.text("Signature", 20, 230);
-
     doc.setFontSize(12);
-    doc.text(`Date: ${new Date(selectedReport.signature_date).toLocaleDateString()}`, 20, 240);
+    doc.text("Signature", 10, 230);
+
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date(selectedReport.signature_date).toLocaleDateString()}`, 10, 240);
 
     // Optional: Add the signature image to the PDF
     if (selectedReport.reporter_signature) {
       const imgData = selectedReport.reporter_signature;
-      doc.addImage(imgData, 'PNG', 20, 250, 50, 20);
+      doc.addImage(imgData, 'PNG', 10, 250, 40, 15); // Adjust the size and position as needed
     }
 
     doc.save(`Rapport_${selectedReport.report_number}.pdf`);
@@ -186,18 +200,18 @@ const IncidentReportsList = () => {
                 {selectedReport.attachments_urls && (
                   <Box>
                     <Text><strong>Photographies et/ou vidéos:</strong></Text>
-                    <Image src={selectedReport.attachments_urls} alt="Photographie" maxH="200px" />
+                    <Image src={selectedReport.attachments_urls} alt="Photographie" maxH="100px" />
                   </Box>
                 )}
                 {selectedReport.additional_documents_urls && (
                   <Box>
                     <Text><strong>Documents supplémentaires:</strong></Text>
-                    <Image src={selectedReport.additional_documents_urls} alt="Document supplémentaire" maxH="200px" />
+                    <Image src={selectedReport.additional_documents_urls} alt="Document supplémentaire" maxH="100px" />
                   </Box>
                 )}
                 <Divider />
                 <Heading size="md">Signature</Heading>
-                <Image src={selectedReport.reporter_signature} alt="Signature" maxH="200px" />
+                <Image src={selectedReport.reporter_signature} alt="Signature" maxH="100px" />
                 <Text><strong>Date:</strong> {new Date(selectedReport.signature_date).toLocaleDateString()}</Text>
               </VStack>
             )}
