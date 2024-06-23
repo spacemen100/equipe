@@ -33,6 +33,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
         material_damage: '',
         physical_damage: '',
         attachments_urls: '',
+        additional_documents_urls: '',
         reporter_signature: '',
         signature_date: '',
         event_uuid: '',
@@ -40,6 +41,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
     });
 
     const [attachmentsFile, setAttachmentsFile] = useState(null);
+    const [additionalDocumentsFile, setAdditionalDocumentsFile] = useState(null);
     const signatureCanvasRef = useRef(null);
     const toast = useToast();
 
@@ -93,6 +95,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
         const { name, files } = e.target;
         if (name === 'attachments_urls') {
             setAttachmentsFile(files[0]);
+        } else if (name === 'additional_documents_urls') {
+            setAdditionalDocumentsFile(files[0]);
         }
     };
 
@@ -123,17 +127,23 @@ const IncidentReportForm = ({ reportingTeam }) => {
         e.preventDefault();
         try {
             let attachmentsUrl = '';
+            let additionalDocumentsUrl = '';
 
             if (attachmentsFile) {
                 attachmentsUrl = await uploadFile(attachmentsFile, 'photographies-videos');
                 console.log('Attachments URL:', attachmentsUrl);
+            }
+            if (additionalDocumentsFile) {
+                additionalDocumentsUrl = await uploadFile(additionalDocumentsFile, 'documents-supplementaires');
+                console.log('Additional Documents URL:', additionalDocumentsUrl);
             }
 
             const signatureImage = signatureCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
             const newFormData = {
                 ...formData,
                 reporter_signature: signatureImage,
-                attachments_urls: attachmentsUrl
+                attachments_urls: attachmentsUrl,
+                additional_documents_urls: additionalDocumentsUrl
             };
             
             // Log the formData for debugging
@@ -172,6 +182,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 material_damage: '',
                 physical_damage: '',
                 attachments_urls: '',
+                additional_documents_urls: '',
                 reporter_signature: '',
                 signature_date: new Date().toISOString().split('T')[0],
                 event_uuid: selectedEventId || '',
@@ -260,6 +271,10 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     <FormControl id="attachments_urls">
                         <FormLabel>Photographies et/ou vidéos</FormLabel>
                         <Input type="file" name="attachments_urls" onChange={handleFileChange} />
+                    </FormControl>
+                    <FormControl id="additional_documents_urls">
+                        <FormLabel>Documents supplémentaires (rapports médicaux, déclarations de témoins, etc.)</FormLabel>
+                        <Input type="file" name="additional_documents_urls" onChange={handleFileChange} />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Signature</Heading>
