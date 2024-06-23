@@ -32,8 +32,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
         incident_description: '',
         material_damage: '',
         physical_damage: '',
-        attachments: '',
-        additional_documents: '',
+        attachments_urls: '',
+        additional_documents_urls: '',
         reporter_signature: '',
         signature_date: '',
         event_uuid: '',
@@ -93,9 +93,9 @@ const IncidentReportForm = ({ reportingTeam }) => {
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
-        if (name === 'attachments') {
+        if (name === 'attachments_urls') {
             setAttachmentsFile(files[0]);
-        } else if (name === 'additional_documents') {
+        } else if (name === 'additional_documents_urls') {
             setAdditionalDocumentsFile(files[0]);
         }
     };
@@ -135,8 +135,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
             const newFormData = {
                 ...formData,
                 reporter_signature: signatureImage,
-                attachments: attachmentsUrl,
-                additional_documents: additionalDocumentsUrl
+                attachments_urls: attachmentsUrl,
+                additional_documents_urls: additionalDocumentsUrl
             };
             // eslint-disable-next-line
             const { data, error } = await supabase
@@ -171,8 +171,8 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 incident_description: '',
                 material_damage: '',
                 physical_damage: '',
-                attachments: '',
-                additional_documents: '',
+                attachments_urls: '',
+                additional_documents_urls: '',
                 reporter_signature: '',
                 signature_date: new Date().toISOString().split('T')[0],
                 event_uuid: selectedEventId || '',
@@ -258,13 +258,13 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Pièces Jointes et Documentation</Heading>
-                    <FormControl id="attachments">
+                    <FormControl id="attachments_urls">
                         <FormLabel>Photographies et/ou vidéos</FormLabel>
-                        <Input type="file" name="attachments" onChange={handleFileChange} />
+                        <Input type="file" name="attachments_urls" onChange={handleFileChange} />
                     </FormControl>
-                    <FormControl id="additional_documents">
+                    <FormControl id="additional_documents_urls">
                         <FormLabel>Documents supplémentaires (rapports médicaux, déclarations de témoins, etc.)</FormLabel>
-                        <Input type="file" name="additional_documents" onChange={handleFileChange} />
+                        <Input type="file" name="additional_documents_urls" onChange={handleFileChange} />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Signature</Heading>
