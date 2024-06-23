@@ -33,7 +33,6 @@ const IncidentReportForm = ({ reportingTeam }) => {
         material_damage: '',
         physical_damage: '',
         attachments_urls: '',
-        additional_documents_urls: '',
         reporter_signature: '',
         signature_date: '',
         event_uuid: '',
@@ -41,7 +40,6 @@ const IncidentReportForm = ({ reportingTeam }) => {
     });
 
     const [attachmentsFile, setAttachmentsFile] = useState(null);
-    const [additionalDocumentsFile, setAdditionalDocumentsFile] = useState(null);
     const signatureCanvasRef = useRef(null);
     const toast = useToast();
 
@@ -95,26 +93,29 @@ const IncidentReportForm = ({ reportingTeam }) => {
         const { name, files } = e.target;
         if (name === 'attachments_urls') {
             setAttachmentsFile(files[0]);
-        } else if (name === 'additional_documents_urls') {
-            setAdditionalDocumentsFile(files[0]);
         }
     };
 
     const uploadFile = async (file, bucket) => {
+        if (!file) {
+            console.error('No file to upload');
+            return '';
+        }
+
         const fileName = `${uuidv4()}-${file.name}`;
-        // eslint-disable-next-line
+        console.log(`Uploading file: ${fileName} to bucket: ${bucket}`);
+         // eslint-disable-next-line
         const { data, error } = await supabase.storage
             .from(bucket)
             .upload(fileName, file);
+
         if (error) {
-            throw error;
+            console.error('Upload error:', error);
+            return '';
         }
-        const { publicURL, error: urlError } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(fileName);
-        if (urlError) {
-            throw urlError;
-        }
+
+        const publicURL = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/${bucket}/${fileName}`;
+        console.log('Public URL:', publicURL);
         return publicURL;
     };
 
@@ -122,23 +123,22 @@ const IncidentReportForm = ({ reportingTeam }) => {
         e.preventDefault();
         try {
             let attachmentsUrl = '';
-            let additionalDocumentsUrl = '';
 
             if (attachmentsFile) {
                 attachmentsUrl = await uploadFile(attachmentsFile, 'photographies-videos');
-            }
-            if (additionalDocumentsFile) {
-                additionalDocumentsUrl = await uploadFile(additionalDocumentsFile, 'documents-supplementaires');
+                console.log('Attachments URL:', attachmentsUrl);
             }
 
             const signatureImage = signatureCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
             const newFormData = {
                 ...formData,
                 reporter_signature: signatureImage,
-                attachments_urls: attachmentsUrl,
-                additional_documents_urls: additionalDocumentsUrl
+                attachments_urls: attachmentsUrl
             };
-            // eslint-disable-next-line
+            
+            // Log the formData for debugging
+            console.log('Submitting formData:', newFormData);
+             // eslint-disable-next-line
             const { data, error } = await supabase
                 .from('vianney_incident_reports')
                 .insert([newFormData]);
@@ -172,7 +172,6 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 material_damage: '',
                 physical_damage: '',
                 attachments_urls: '',
-                additional_documents_urls: '',
                 reporter_signature: '',
                 signature_date: new Date().toISOString().split('T')[0],
                 event_uuid: selectedEventId || '',
@@ -261,10 +260,6 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     <FormControl id="attachments_urls">
                         <FormLabel>Photographies et/ou vidéos</FormLabel>
                         <Input type="file" name="attachments_urls" onChange={handleFileChange} />
-                    </FormControl>
-                    <FormControl id="additional_documents_urls">
-                        <FormLabel>Documents supplémentaires (rapports médicaux, déclarations de témoins, etc.)</FormLabel>
-                        <Input type="file" name="additional_documents_urls" onChange={handleFileChange} />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Signature</Heading>
