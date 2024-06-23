@@ -4,7 +4,6 @@ import { supabase } from './../../../../supabaseClient';
 import { useEvent } from './../../../../EventContext';
 
 function FicheBilanSUAP() {
-  // eslint-disable-next-line no-unused-vars
   const { setEventId, selectedEventId } = useEvent();
   const initialState = {
     inter_number: '',
@@ -64,7 +63,14 @@ function FicheBilanSUAP() {
       const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit number
       setFormData(prevState => ({ ...prevState, inter_number: randomNumber.toString() }));
     };
+    
+    const setCurrentDate = () => {
+      const currentDate = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+      setFormData(prevState => ({ ...prevState, date: currentDate }));
+    };
+    
     generateInterNumber();
+    setCurrentDate();
   }, []);
 
   const handleChange = (e) => {
@@ -80,6 +86,10 @@ function FicheBilanSUAP() {
         [id]: value
       }));
     }
+  };
+
+  const handleUuidChange = (e) => {
+    setEventId(e.target.value);
   };
 
   const handleSubmit = async () => {
@@ -200,6 +210,11 @@ function FicheBilanSUAP() {
           <Input type="time" id="arrive_hop" value={formData.arrive_hop} onChange={handleChange} />
         </FormControl>
       </SimpleGrid>
+
+      <FormControl my={5}>
+        <FormLabel>UUID de l'événement:</FormLabel>
+        <Input type="text" value={selectedEventId || ''} onChange={handleUuidChange} />
+      </FormControl>
 
       <Box bg="black" color="white" p={2} textAlign="center" my={5}>ÉTAT CIVIL VICTIME</Box>
 
