@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcComments, FcEditImage } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcComments, FcEditImage, FcHighPriority } from "react-icons/fc";
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -11,7 +11,8 @@ import Menu from "views/admin/Menu";
 import ChatComponent from "views/admin/ChatComponent";
 import IncidentReportForm from "views/admin/IncidentReportForm"; 
 import FicheBilanSUAP from "views/admin/FicheBilanSUAP"; 
-import NoteDeFrais from "views/admin/NoteDeFrais"; // Import the new component
+import NoteDeFrais from "views/admin/NoteDeFrais";
+import SOSAlerteDanger from "views/admin/SOSAlerteDanger"; // Import the new component
 
 const routes = [
   {
@@ -89,7 +90,14 @@ const routes = [
     layout: "/admin",
     path: "/note-de-frais",
     icon: <Icon as={FcEditImage} width='20px' height='20px' color='inherit' />,
-    component: NoteDeFrais, // Add the new route here
+    component: NoteDeFrais,
+  },
+  {
+    name: "SOS Alerte Danger", // Add the new route here
+    layout: "/admin",
+    path: "/sos-alerte-danger",
+    icon: <Icon as={FcHighPriority} width='20px' height='20px' color='inherit' />,
+    component: SOSAlerteDanger,
   },
 ];
 
