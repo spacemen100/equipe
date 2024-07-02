@@ -1,3 +1,4 @@
+// src/index.js or wherever your main entry file is
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'assets/css/App.css';
@@ -11,27 +12,29 @@ import theme from 'theme/theme';
 import { ThemeEditorProvider } from '@hypertheme-editor/chakra-ui';
 import { EventProvider } from './EventContext';
 import { TeamProvider } from './views/admin/InterfaceEquipe/TeamContext';
+import GpsPositionSimplified from './views/admin/InterfaceEquipe/components/GpsPositionSimplified';
 
 ReactDOM.render(
-	<ChakraProvider theme={theme}>
-		<EventProvider>
-			<TeamProvider>
-				<React.StrictMode>
-					<GPSPositionProvider>
-						<ThemeEditorProvider>
-							<HashRouter>
-								<Switch>
-									<Route path={`/auth`} component={AuthLayout} />
-									<Route path={`/admin`} component={AdminLayout} />
-									<Route path={`/rtl`} component={RtlLayout} />
-									<Redirect from='/' to='/admin' />
-								</Switch>
-							</HashRouter>
-						</ThemeEditorProvider>
-					</GPSPositionProvider>
-				</React.StrictMode>
-			</TeamProvider>
-		</EventProvider>
-	</ChakraProvider>,
-	document.getElementById('root')
+  <ChakraProvider theme={theme}>
+    <EventProvider>
+      <TeamProvider>
+        <React.StrictMode>
+          <GPSPositionProvider>
+            <ThemeEditorProvider>
+              <HashRouter>
+                <GpsPositionSimplified />
+                <Switch>
+                  <Route path={`/auth`} component={AuthLayout} />
+                  <Route path={`/admin`} component={AdminLayout} />
+                  <Route path={`/rtl`} component={RtlLayout} />
+                  <Redirect from='/' to='/admin' />
+                </Switch>
+              </HashRouter>
+            </ThemeEditorProvider>
+          </GPSPositionProvider>
+        </React.StrictMode>
+      </TeamProvider>
+    </EventProvider>
+  </ChakraProvider>,
+  document.getElementById('root')
 );
