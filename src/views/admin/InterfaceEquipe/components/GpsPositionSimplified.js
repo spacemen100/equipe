@@ -1,13 +1,13 @@
 // src/views/admin/InterfaceEquipe/components/GpsPositionSimplified.js
 import React, { useEffect, useState } from 'react';
 import { Box, Alert, AlertIcon, Text } from '@chakra-ui/react';
-import { useGPSPosition } from './../../../../GPSPositionContext'; // Import the custom hook
+import { Geolocation } from '@capacitor/geolocation';
 import { useTeam } from './../TeamContext'; // Import the useTeam hook
 import { supabase } from './../../../../supabaseClient'; // Import Supabase client
 
 const GpsPositionSimplified = () => {
   const { selectedTeam } = useTeam(); // Access the selected team using the hook
-  const gpsPosition = useGPSPosition(); // Access the GPS position using the hook
+  const [gpsPosition, setGpsPosition] = useState(null); // State to store the GPS position
   const [lastUpdateTime, setLastUpdateTime] = useState(null); // Store the last update time
 
   // Function to update latitude and longitude coordinates in the database
@@ -27,8 +27,46 @@ const GpsPositionSimplified = () => {
   };
 
   useEffect(() => {
+    const getCurrentPosition = async () => {
+      try {
+        const hasPermission = await Geolocation.requestPermissions();
+
+        if (hasPermission.location === 'granted') {
+          const position = await Geolocation.getCurrentPosition();
+          setGpsPosition({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        } else {
+          console.error('Location permission not granted');
+        }
+      } catch (error) {
+        console.error('Error getting current position:', error);
+      }
+    };
+
+    getCurrentPosition();
+
+    const watchPosition = Geolocation.watchPosition({}, (position, err) => {
+      if (position) {
+        setGpsPosition({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      } else if (err) {
+        console.error('Error watching position:', err);
+      }
+    });
+
+    return () => {
+      if (watchPosition) {
+        Geolocation.clearWatch({ id: watchPosition });
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!gpsPosition) {
-      // GPS position is not available, show an info message
       return;
     }
 

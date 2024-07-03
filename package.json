@@ -3,6 +3,7 @@
     "@capacitor/android": "^6.1.0",
     "@capacitor/cli": "^6.1.0",
     "@capacitor/core": "^6.1.0",
+    "@capacitor/geolocation": "^6.0.0",
     "@capacitor/ios": "^6.1.0",
     "@chakra-ui/icons": "^1.1.5",
     "@chakra-ui/react": "^2.8.2",
