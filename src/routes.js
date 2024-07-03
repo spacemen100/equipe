@@ -1,10 +1,10 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { FcSelfie, FcCalendar, FcDocument, FcConferenceCall, FcPackage, FcSettings, FcMenu, FcComments, FcEditImage, FcHighPriority } from "react-icons/fc";
+import { FcSelfie, FcCalendar, FcDocument, FcPackage, FcSettings, FcMenu, FcComments, FcEditImage, FcHighPriority } from "react-icons/fc";
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
-import Communication from "views/admin/Communication";
+//import Communication from "views/admin/Communication";
 import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
 import Menu from "views/admin/Menu"; 
@@ -43,13 +43,14 @@ const routes = [
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
     component: Documents,
   },
-  {
-    name: "Communication",
-    layout: "/admin",
-    path: "/communication",
-    icon: <Icon as={FcConferenceCall} width='20px' height='20px' color='inherit' />,
-    component: Communication,
-  },
+//  {
+  //  name: "Communication",
+  //  layout: "/admin",
+  //  path: "/communication",
+  //  icon: <Icon as={FcConferenceCall} width='20px' height='20px' color='inherit' />,
+  //  component: Communication,
+  //  hide: true, // Add the hide property
+//  },
   {
     name: "Matériels",
     layout: "/admin",
