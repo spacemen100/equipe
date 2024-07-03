@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Text,
   Button,
@@ -20,6 +20,12 @@ import {
   AlertDescription,
 } from '@chakra-ui/react';
 import { PhoneIcon, CheckIcon } from '@chakra-ui/icons';
+import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
+import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Import the useTeam hook
+import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
+
+const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000'; // Default team_id for "Aucune équipe"
+const DEFAULT_TEAM_NAME = 'Aucune équipe'; // Default team_name
 
 const AccidentDetected = () => {
   const [counter, setCounter] = useState(30); // 30 seconds countdown
@@ -27,31 +33,53 @@ const AccidentDetected = () => {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const [recordedChunks, setRecordedChunks] = useState([]);
+  const { teamUUID, selectedTeam } = useTeam(); // Use the useTeam hook to get teamUUID and selectedTeam
+  const { selectedEventId } = useEvent(); // Use the useEvent hook to get the selectedEventId
 
   const getCurrentLocation = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-      });
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
+    return new Promise((resolve, reject) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLatitude(position.coords.latitude);
+            setLongitude(position.coords.longitude);
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+            reject(error);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
+        reject(new Error('Geolocation not supported'));
+      }
+    });
   }, []);
 
-  const startRecording = useCallback(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then(stream => {
-        videoRef.current.srcObject = stream;
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        mediaRecorderRef.current.ondataavailable = handleDataAvailable;
-        mediaRecorderRef.current.start();
-      })
-      .catch(error => console.error('Error accessing media devices.', error));
-  }, []);
+  const saveAlertData = useCallback(async (lat, long, timeForUser) => {
+    const { data, error } = await supabase
+      .from('vianney_sos_alerts')
+      .insert([{
+        team_id: teamUUID || DEFAULT_TEAM_ID,
+        latitude: lat,
+        longitude: long,
+        created_at: new Date().toISOString(),
+        time_for_user: timeForUser,
+        url: '',
+        team_name: selectedTeam || DEFAULT_TEAM_NAME,
+        event_id: selectedEventId,
+      }]);
+
+    if (error) {
+      console.error('Error inserting data:', error);
+    } else {
+      console.log('Data inserted successfully:', data);
+    }
+  }, [teamUUID, selectedTeam, selectedEventId]);
 
   useEffect(() => {
     let timer;
@@ -60,60 +88,43 @@ const AccidentDetected = () => {
         setCounter((prevCounter) => prevCounter - 1);
       }, 1000);
     } else if (counter === 0) {
-      setStep(3);
-      getCurrentLocation();
-      startRecording();
+      (async () => {
+        setStep(3);
+        try {
+          const location = await getCurrentLocation();
+          const currentTime = new Date().toISOString();
+          saveAlertData(location.latitude, location.longitude, currentTime);
+        } catch (error) {
+          console.error('Error in location:', error);
+        }
+      })();
     }
     return () => clearInterval(timer);
-  }, [counter, step, getCurrentLocation, startRecording]);
+  }, [counter, step, getCurrentLocation, saveAlertData]);
 
   const triggerSOS = () => {
     setStep(2);
   };
 
-  const confirmSOS = () => {
+  const confirmSOS = async () => {
     setStep(3);
-    getCurrentLocation();
-    startRecording();
+    try {
+      const location = await getCurrentLocation();
+      const currentTime = new Date().toISOString();
+      saveAlertData(location.latitude, location.longitude, currentTime);
+    } catch (error) {
+      console.error('Error in location:', error);
+    }
   };
 
   const cancelAlert = () => {
     setCounter(30);
     setStep(1);
-    stopRecording();
     onClose();
-  };
-
-  const handleDataAvailable = (event) => {
-    if (event.data.size > 0) {
-      setRecordedChunks(prev => prev.concat(event.data));
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-    }
-  };
-
-  const downloadRecording = () => {
-    const blob = new Blob(recordedChunks, {
-      type: 'video/webm',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    document.body.appendChild(a);
-    a.style = 'display: none';
-    a.href = url;
-    a.download = 'sos_recording.webm';
-    a.click();
-    window.URL.revokeObjectURL(url);
   };
 
   return (
     <Center height="100vh" bg="gray.50" p={4}>
-      <video ref={videoRef} style={{ display: 'none' }} autoPlay />
       {step === 1 && (
         <VStack spacing={8} bg="white" p={6} rounded="md" shadow="md">
           <Text fontSize="2xl" fontWeight="bold">
@@ -184,9 +195,6 @@ const AccidentDetected = () => {
               )}
             </AlertDescription>
           </Alert>
-          <Button colorScheme="blue" onClick={downloadRecording}>
-            Télécharger l'enregistrement
-          </Button>
         </VStack>
       )}
 
