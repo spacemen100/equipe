@@ -12,12 +12,27 @@ import {
   Heading,
   Text,
   Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { RiMapPinUserFill } from "react-icons/ri";
 import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
+import ReactDOMServer from 'react-dom/server'; // Import ReactDOMServer
 
 const SOSAlertsView = () => {
   const [alerts, setAlerts] = useState([]);
   const [selectedUrl, setSelectedUrl] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState(null); // Store the selected location
+  const { isOpen, onOpen, onClose } = useDisclosure(); // Modal control for map
   const { selectedEventId } = useEvent(); // Get the selected event ID from the context
 
   useEffect(() => {
@@ -40,6 +55,21 @@ const SOSAlertsView = () => {
     }
   };
 
+  const openMap = (latitude, longitude) => {
+    setSelectedLocation({ latitude, longitude });
+    onOpen();
+  };
+
+  const createCustomIcon = () => {
+    return L.divIcon({
+      html: ReactDOMServer.renderToString(<RiMapPinUserFill style={{ color: 'red', fontSize: '24px' }} />),
+      className: 'custom-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 24],
+      popupAnchor: [0, -24],
+    });
+  };
+
   return (
     <VStack spacing={8} width="100%" p={4}>
       <Heading as="h1" size="xl">
@@ -53,8 +83,8 @@ const SOSAlertsView = () => {
               <Th>Latitude</Th>
               <Th>Longitude</Th>
               <Th>Created At</Th>
-              <Th>Event ID</Th>
               <Th>Recording</Th>
+              <Th>Map</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -64,7 +94,6 @@ const SOSAlertsView = () => {
                 <Td>{alert.latitude}</Td>
                 <Td>{alert.longitude}</Td>
                 <Td>{new Date(alert.created_at).toLocaleString()}</Td>
-                <Td>{alert.event_id}</Td>
                 <Td>
                   {alert.url ? (
                     <Button
@@ -76,6 +105,14 @@ const SOSAlertsView = () => {
                   ) : (
                     'No Recording'
                   )}
+                </Td>
+                <Td>
+                  <Button
+                    colorScheme="teal"
+                    onClick={() => openMap(alert.latitude, alert.longitude)}
+                  >
+                    View Map
+                  </Button>
                 </Td>
               </Tr>
             ))}
@@ -98,6 +135,40 @@ const SOSAlertsView = () => {
           </Button>
         </Box>
       )}
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Map</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedLocation && (
+              <MapContainer
+                center={[selectedLocation.latitude, selectedLocation.longitude]}
+                zoom={13}
+                style={{ height: '400px', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker 
+                  position={[selectedLocation.latitude, selectedLocation.longitude]}
+                  icon={createCustomIcon()}
+                >
+                  <Popup>
+                    Location: {selectedLocation.latitude}, {selectedLocation.longitude}
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };
