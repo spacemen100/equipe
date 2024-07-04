@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Text,
   Button,
@@ -33,6 +33,10 @@ const AccidentDetected = () => {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [alertId, setAlertId] = useState(null); // Store the ID of the inserted alert
   const { teamUUID, selectedTeam } = useTeam(); // Use the useTeam hook to get teamUUID and selectedTeam
   const { selectedEventId } = useEvent(); // Use the useEvent hook to get the selectedEventId
 
@@ -41,6 +45,7 @@ const AccidentDetected = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            console.log('Location obtained:', position.coords); // Debug log
             setLatitude(position.coords.latitude);
             setLongitude(position.coords.longitude);
             resolve({
@@ -60,7 +65,22 @@ const AccidentDetected = () => {
     });
   }, []);
 
+  const startRecording = useCallback(() => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        console.log('Media stream obtained:', stream); // Debug log
+        videoRef.current.srcObject = stream;
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+        mediaRecorderRef.current.start();
+        // Stop recording after 10 seconds (10,000 milliseconds)
+        setTimeout(stopRecording, 10000);
+      })
+      .catch(error => console.error('Error accessing media devices:', error));
+  }, []);
+
   const saveAlertData = useCallback(async (lat, long, timeForUser) => {
+    console.log('Saving alert data:', { lat, long, timeForUser }); // Debug log
     const { data, error } = await supabase
       .from('vianney_sos_alerts')
       .insert([{
@@ -69,17 +89,53 @@ const AccidentDetected = () => {
         longitude: long,
         created_at: new Date().toISOString(),
         time_for_user: timeForUser,
-        url: '',
+        url: '', // Empty URL initially
         team_name: selectedTeam || DEFAULT_TEAM_NAME,
         event_id: selectedEventId,
-      }]);
+      }])
+      .select();
 
     if (error) {
       console.error('Error inserting data:', error);
     } else {
       console.log('Data inserted successfully:', data);
+      if (data && data.length > 0) {
+        setAlertId(data[0].id); // Store the ID of the inserted alert
+      }
     }
   }, [teamUUID, selectedTeam, selectedEventId]);
+
+  const updateAlertData = async (id, videoUrl) => {
+    console.log('Updating alert data with URL:', { id, videoUrl }); // Debug log
+    const { data, error } = await supabase
+      .from('vianney_sos_alerts')
+      .update({ url: videoUrl })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating data:', error);
+    } else {
+      console.log('Data updated successfully:', data);
+    }
+  };
+
+  const uploadVideoToSupabase = async (blob) => {
+    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
+    console.log('Uploading video:', fileName); // Debug log
+    const { data, error } = await supabase
+      .storage
+      .from('sos-alerts-video')
+      .upload(fileName, blob);
+
+    if (error) {
+      console.error('Error uploading video:', error);
+      return null;
+    } else {
+      const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
+      console.log('Video uploaded:', videoUrl); // Debug log
+      return videoUrl;
+    }
+  };
 
   useEffect(() => {
     let timer;
@@ -93,14 +149,23 @@ const AccidentDetected = () => {
         try {
           const location = await getCurrentLocation();
           const currentTime = new Date().toISOString();
-          saveAlertData(location.latitude, location.longitude, currentTime);
+          await saveAlertData(location.latitude, location.longitude, currentTime);
+          startRecording();
+          // Wait for 10 seconds before uploading video and updating alert data
+          setTimeout(async () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoUrl = await uploadVideoToSupabase(blob);
+            if (videoUrl && alertId) {
+              await updateAlertData(alertId, videoUrl);
+            }
+          }, 10000);
         } catch (error) {
-          console.error('Error in location:', error);
+          console.error('Error in location or recording:', error);
         }
       })();
     }
     return () => clearInterval(timer);
-  }, [counter, step, getCurrentLocation, saveAlertData]);
+  }, [counter, step, getCurrentLocation, startRecording, saveAlertData, recordedChunks, alertId]);
 
   const triggerSOS = () => {
     setStep(2);
@@ -111,20 +176,60 @@ const AccidentDetected = () => {
     try {
       const location = await getCurrentLocation();
       const currentTime = new Date().toISOString();
-      saveAlertData(location.latitude, location.longitude, currentTime);
+      await saveAlertData(location.latitude, location.longitude, currentTime);
+      startRecording();
+      // Wait for 10 seconds before uploading video and updating alert data
+      setTimeout(async () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const videoUrl = await uploadVideoToSupabase(blob);
+        if (videoUrl && alertId) {
+          await updateAlertData(alertId, videoUrl);
+        }
+      }, 10000);
     } catch (error) {
-      console.error('Error in location:', error);
+      console.error('Error in location or recording:', error);
     }
   };
 
   const cancelAlert = () => {
     setCounter(30);
     setStep(1);
+    stopRecording();
     onClose();
+  };
+
+  const handleDataAvailable = (event) => {
+    if (event.data.size > 0) {
+      console.log('Data available from media recorder:', event.data); // Debug log
+      setRecordedChunks(prev => prev.concat(event.data));
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      console.log('Recording stopped'); // Debug log
+    }
+  };
+
+  const downloadRecording = () => {
+    const blob = new Blob(recordedChunks, {
+      type: 'video/webm',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style = 'display: none';
+    a.href = url;
+    a.download = 'sos_recording.webm';
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
     <Center height="100vh" bg="gray.50" p={4}>
+      <video ref={videoRef} style={{ display: 'none' }} autoPlay />
       {step === 1 && (
         <VStack spacing={8} bg="white" p={6} rounded="md" shadow="md">
           <Text fontSize="2xl" fontWeight="bold">
@@ -195,6 +300,9 @@ const AccidentDetected = () => {
               )}
             </AlertDescription>
           </Alert>
+          <Button colorScheme="blue" onClick={downloadRecording}>
+            Télécharger l'enregistrement
+          </Button>
         </VStack>
       )}
 
