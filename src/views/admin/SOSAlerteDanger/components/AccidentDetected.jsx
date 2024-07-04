@@ -18,6 +18,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Input,
 } from '@chakra-ui/react';
 import { PhoneIcon, CheckIcon } from '@chakra-ui/icons';
 import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
@@ -37,6 +38,7 @@ const AccidentDetected = () => {
   const mediaRecorderRef = useRef(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [alertId, setAlertId] = useState(null); // Store the ID of the inserted alert
+  const [videoUrl, setVideoUrl] = useState(''); // Store the video URL
   const { teamUUID, selectedTeam } = useTeam(); // Use the useTeam hook to get teamUUID and selectedTeam
   const { selectedEventId } = useEvent(); // Use the useEvent hook to get the selectedEventId
 
@@ -133,6 +135,7 @@ const AccidentDetected = () => {
     } else {
       const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
       console.log('Video uploaded:', videoUrl); // Debug log
+      setVideoUrl(videoUrl); // Set the video URL state
       return videoUrl;
     }
   };
@@ -166,6 +169,13 @@ const AccidentDetected = () => {
     }
     return () => clearInterval(timer);
   }, [counter, step, getCurrentLocation, startRecording, saveAlertData, recordedChunks, alertId]);
+
+  useEffect(() => {
+    // Update the alert data with the video URL once the URL is available
+    if (videoUrl && alertId) {
+      updateAlertData(alertId, videoUrl);
+    }
+  }, [videoUrl, alertId]);
 
   const triggerSOS = () => {
     setStep(2);
@@ -303,6 +313,14 @@ const AccidentDetected = () => {
           <Button colorScheme="blue" onClick={downloadRecording}>
             Télécharger l'enregistrement
           </Button>
+          {videoUrl && (
+            <VStack spacing={4}>
+              <Text fontSize="md" fontWeight="bold">
+                URL de l'enregistrement :
+              </Text>
+              <Input value={videoUrl} isReadOnly />
+            </VStack>
+          )}
         </VStack>
       )}
 
