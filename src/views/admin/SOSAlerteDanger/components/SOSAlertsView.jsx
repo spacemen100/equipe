@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
+import { supabase } from './../../../../supabaseClient'; // Ajustez l'importation selon la structure de votre projet
 import {
   Box,
   Table,
@@ -25,15 +25,16 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { RiMapPinUserFill } from "react-icons/ri";
-import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
-import ReactDOMServer from 'react-dom/server'; // Import ReactDOMServer
+import { useEvent } from './../../../../EventContext'; // Importer le hook useEvent
+import ReactDOMServer from 'react-dom/server'; // Importer ReactDOMServer
 
 const SOSAlertsView = () => {
   const [alerts, setAlerts] = useState([]);
   const [selectedUrl, setSelectedUrl] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState(null); // Store the selected location
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Modal control for map
-  const { selectedEventId } = useEvent(); // Get the selected event ID from the context
+  const [selectedLocation, setSelectedLocation] = useState(null); // Stocker la localisation sélectionnée
+  const { isOpen: isMapOpen, onOpen: onMapOpen, onClose: onMapClose } = useDisclosure(); // Contrôle du modal pour la carte
+  const { isOpen: isVideoOpen, onOpen: onVideoOpen, onClose: onVideoClose } = useDisclosure(); // Contrôle du modal pour la vidéo
+  const { selectedEventId } = useEvent(); // Obtenir l'ID de l'événement sélectionné à partir du contexte
 
   useEffect(() => {
     if (selectedEventId) {
@@ -49,7 +50,7 @@ const SOSAlertsView = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching alerts:', error);
+      console.error('Erreur lors de la récupération des alertes :', error);
     } else {
       setAlerts(data);
     }
@@ -57,7 +58,12 @@ const SOSAlertsView = () => {
 
   const openMap = (latitude, longitude) => {
     setSelectedLocation({ latitude, longitude });
-    onOpen();
+    onMapOpen();
+  };
+
+  const openVideo = (url) => {
+    setSelectedUrl(url);
+    onVideoOpen();
   };
 
   const createCustomIcon = () => {
@@ -70,40 +76,41 @@ const SOSAlertsView = () => {
     });
   };
 
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('fr-FR', options);
+  };
+
   return (
     <VStack spacing={8} width="100%" p={4}>
       <Heading as="h1" size="xl">
-        SOS Alerts
+        Alertes SOS
       </Heading>
       {selectedEventId ? (
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Team Name</Th>
-              <Th>Latitude</Th>
-              <Th>Longitude</Th>
-              <Th>Created At</Th>
-              <Th>Recording</Th>
-              <Th>Map</Th>
+              <Th>Nom de l'équipe</Th>
+              <Th>Créé à</Th>
+              <Th>Enregistrement</Th>
+              <Th>Carte</Th>
             </Tr>
           </Thead>
           <Tbody>
             {alerts.map((alert) => (
               <Tr key={alert.id}>
                 <Td>{alert.team_name}</Td>
-                <Td>{alert.latitude}</Td>
-                <Td>{alert.longitude}</Td>
-                <Td>{new Date(alert.created_at).toLocaleString()}</Td>
+                <Td>{formatDate(alert.created_at)}</Td>
                 <Td>
                   {alert.url ? (
                     <Button
                       colorScheme="blue"
-                      onClick={() => setSelectedUrl(alert.url)}
+                      onClick={() => openVideo(alert.url)}
                     >
-                      View Recording
+                      Voir l'enregistrement
                     </Button>
                   ) : (
-                    'No Recording'
+                    'Pas d\'enregistrement'
                   )}
                 </Td>
                 <Td>
@@ -111,7 +118,7 @@ const SOSAlertsView = () => {
                     colorScheme="teal"
                     onClick={() => openMap(alert.latitude, alert.longitude)}
                   >
-                    View Map
+                    Voir la carte
                   </Button>
                 </Td>
               </Tr>
@@ -119,26 +126,36 @@ const SOSAlertsView = () => {
           </Tbody>
         </Table>
       ) : (
-        <Text>Select an event to view related SOS alerts</Text>
+        <Text>Sélectionnez un événement pour voir les alertes SOS associées</Text>
       )}
-      {selectedUrl && (
-        <Box width="100%">
-          <Heading as="h2" size="lg" mt={8} mb={4}>
-            Recording
-          </Heading>
-          <video controls width="100%">
-            <source src={selectedUrl} type="video/webm" />
-            Your browser does not support the video tag.
-          </video>
-          <Button mt={4} onClick={() => setSelectedUrl('')}>
-            Close
-          </Button>
-        </Box>
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      
+      <Modal isOpen={isVideoOpen} onClose={onVideoClose} size="xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Map</ModalHeader>
+          <ModalHeader>Enregistrement</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedUrl && (
+              <Box width="100%">
+                <video controls width="100%">
+                  <source src={selectedUrl} type="video/webm" />
+                  Votre navigateur ne supporte pas la balise vidéo.
+                </video>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onVideoClose}>
+              Fermer
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      
+      <Modal isOpen={isMapOpen} onClose={onMapClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Carte</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {selectedLocation && (
@@ -149,22 +166,22 @@ const SOSAlertsView = () => {
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
                 />
                 <Marker 
                   position={[selectedLocation.latitude, selectedLocation.longitude]}
                   icon={createCustomIcon()}
                 >
                   <Popup>
-                    Location: {selectedLocation.latitude}, {selectedLocation.longitude}
+                    Localisation : {selectedLocation.latitude}, {selectedLocation.longitude}
                   </Popup>
                 </Marker>
               </MapContainer>
             )}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Close
+            <Button colorScheme="blue" mr={3} onClick={onMapClose}>
+              Fermer
             </Button>
           </ModalFooter>
         </ModalContent>
