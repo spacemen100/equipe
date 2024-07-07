@@ -255,7 +255,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     </FormControl>
                     <FormControl id="contact_info" isRequired>
                         <FormLabel>Coordonnées (Téléphone et Email)</FormLabel>
-                        <Input name="contact_info" value={formData.contact_info} onChange={handleChange} readOnly />
+                        <Input name="contact_info" value={formData.contact_info} onChange={handleChange} />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Personnes Impliquées et Témoins</Heading>
