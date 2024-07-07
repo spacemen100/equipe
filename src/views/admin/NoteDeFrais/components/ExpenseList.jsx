@@ -13,7 +13,7 @@ import supabase from './../../../../supabaseClient';
 import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Assuming you have a TeamContext
 
 const ExpenseList = () => {
-  const { selectedTeam } = useTeam(); // Get the selected team from context
+  const { teamUUID } = useTeam(); // Get the teamUUID from context
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -24,7 +24,7 @@ const ExpenseList = () => {
         let { data, error } = await supabase
           .from('vianney_expenses_reimbursement')
           .select('*')
-          .eq('team_id', selectedTeam.id); // Filter by selected team
+          .eq('team_id', teamUUID); // Filter by team UUID
 
         if (error) {
           throw error;
@@ -44,10 +44,10 @@ const ExpenseList = () => {
       }
     };
 
-    if (selectedTeam) {
+    if (teamUUID) {
       fetchExpenses();
     }
-  }, [selectedTeam, toast]);
+  }, [teamUUID, toast]);
 
   if (loading) {
     return (
