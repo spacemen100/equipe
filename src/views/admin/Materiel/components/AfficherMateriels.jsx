@@ -248,7 +248,7 @@ const AfficherMateriels = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </InputGroup>
-      <InputGroup marginBottom="4">
+      <InputGroup marginBottom="4" style={{ display: 'none' }}> {/* Hides the input field */}
         <InputLeftElement pointerEvents="none" children={<FaSearch color="gray.300" />} />
         <Input
           placeholder="Rechercher une équipe..."
