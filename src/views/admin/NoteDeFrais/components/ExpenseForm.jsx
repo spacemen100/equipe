@@ -595,6 +595,7 @@ const Etape4 = ({ expenses, setExpenses }) => {
 
 const ExpenseForm = () => {
   const { selectedEventId } = useEvent();
+          // eslint-disable-next-line
   const { selectedTeam, teamUUID } = useTeam(); // Assume useTeam provides teamUUID
   const [data, setData] = useState({
     volunteer_last_name: '',
