@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionButton,
   AccordionPanel,
+  AccordionIcon,
   Box,
   Button,
   HStack,
@@ -26,16 +27,16 @@ import {
   ModalCloseButton,
   useDisclosure,
   useToast,
-  Image
+  Image,
 } from '@chakra-ui/react';
-import { EditIcon, AddIcon } from '@chakra-ui/icons';
+import { AddIcon } from '@chakra-ui/icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { v4 as uuidv4 } from 'uuid';
 import supabase from './../../../../supabaseClient';
 import ExpenseSummaryPDF from './ExpenseSummaryPDF';
 import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
 import { useEvent } from './../../../../EventContext';
-import { FaFilePdf } from "react-icons/fa6";
+import { FaFilePdf } from 'react-icons/fa6';
 
 // Custom Accordion Button
 const CustomAccordionButton = ({ number, title }) => (
@@ -48,14 +49,12 @@ const CustomAccordionButton = ({ number, title }) => (
         {title}
       </Box>
     </HStack>
-    <Button size="sm" leftIcon={<EditIcon />} variant="outline">
-      Modifier
-    </Button>
+    <AccordionIcon />
   </HStack>
 );
 
 // Step 1: Volunteer Information
-const Etape1 = ({ data, setData }) => {
+const Etape1 = ({ data, setData, onNext }) => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setData((prevData) => ({ ...prevData, [id]: value }));
@@ -68,9 +67,7 @@ const Etape1 = ({ data, setData }) => {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      let { error: uploadError } = await supabase.storage
-        .from('notedefrais')
-        .upload(filePath, file);
+      let { error: uploadError } = await supabase.storage.from('notedefrais').upload(filePath, file);
 
       if (uploadError) {
         console.error('Erreur de téléchargement:', uploadError);
@@ -80,9 +77,7 @@ const Etape1 = ({ data, setData }) => {
     }
   };
 
-  const fileUrl = data.rib
-    ? `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${data.rib}`
-    : '';
+  const fileUrl = data.rib ? `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${data.rib}` : '';
 
   return (
     <Box mt="10" p="6" boxShadow="lg" borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white">
@@ -194,7 +189,21 @@ const Etape1 = ({ data, setData }) => {
             </FormLabel>
             <Box position="relative" height="100px">
               <Input type="file" opacity="0" position="absolute" top="0" left="0" height="100%" width="100%" zIndex="2" onChange={handleFileChange} />
-              <Box position="absolute" top="0" left="0" height="100%" width="100%" bg="white" borderRadius="md" borderWidth="1px" borderColor="gray.300" display="flex" alignItems="center" justifyContent="center" zIndex="1">
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                height="100%"
+                width="100%"
+                bg="white"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="gray.300"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                zIndex="1"
+              >
                 Cliquez ici pour ajouter une photo ou un PDF
               </Box>
             </Box>
@@ -206,7 +215,7 @@ const Etape1 = ({ data, setData }) => {
       </Grid>
 
       <Box textAlign="right" mt="6">
-        <Button colorScheme="blue" type="button">
+        <Button colorScheme="blue" type="button" onClick={onNext}>
           Suivant
         </Button>
       </Box>
@@ -214,9 +223,8 @@ const Etape1 = ({ data, setData }) => {
   );
 };
 
-
 // Step 2: Vehicle Information
-const Etape2 = ({ data, setData }) => {
+const Etape2 = ({ data, setData, onNext }) => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setData((prevData) => ({ ...prevData, [id]: value }));
@@ -229,9 +237,7 @@ const Etape2 = ({ data, setData }) => {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      let { error: uploadError } = await supabase.storage
-        .from('notedefrais')
-        .upload(filePath, file);
+      let { error: uploadError } = await supabase.storage.from('notedefrais').upload(filePath, file);
 
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
@@ -241,8 +247,7 @@ const Etape2 = ({ data, setData }) => {
     }
   };
 
-  const getFileUrl = (filename) =>
-    filename ? `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${filename}` : '';
+  const getFileUrl = (filename) => (filename ? `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${filename}` : '');
 
   return (
     <Box mt="10" p="6" boxShadow="lg" borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white">
@@ -337,11 +342,27 @@ const Etape2 = ({ data, setData }) => {
             </FormLabel>
             <Box position="relative" height="100px">
               <Input type="file" opacity="0" position="absolute" top="0" left="0" height="100%" width="100%" zIndex="2" onChange={(e) => handleFileChange(e, 'departure_odometer')} />
-              <Box position="absolute" top="0" left="0" height="100%" width="100%" bg="white" borderRadius="md" borderWidth="1px" borderColor="gray.300" display="flex" alignItems="center" justifyContent="center" zIndex="1">
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                height="100%"
+                width="100%"
+                bg="white"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="gray.300"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                zIndex="1"
+              >
                 Cliquez ici pour ajouter une photo ou un PDF
               </Box>
             </Box>
-            {data.departure_odometer && <Image src={getFileUrl(data.departure_odometer)} alt="Departure Odometer Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />}
+            {data.departure_odometer && (
+              <Image src={getFileUrl(data.departure_odometer)} alt="Departure Odometer Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />
+            )}
           </FormControl>
         </GridItem>
 
@@ -352,11 +373,27 @@ const Etape2 = ({ data, setData }) => {
             </FormLabel>
             <Box position="relative" height="100px">
               <Input type="file" opacity="0" position="absolute" top="0" left="0" height="100%" width="100%" zIndex="2" onChange={(e) => handleFileChange(e, 'return_odometer')} />
-              <Box position="absolute" top="0" left="0" height="100%" width="100%" bg="white" borderRadius="md" borderWidth="1px" borderColor="gray.300" display="flex" alignItems="center" justifyContent="center" zIndex="1">
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                height="100%"
+                width="100%"
+                bg="white"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="gray.300"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                zIndex="1"
+              >
                 Cliquez ici pour ajouter une photo ou un PDF
               </Box>
             </Box>
-            {data.return_odometer && <Image src={getFileUrl(data.return_odometer)} alt="Return Odometer Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />}
+            {data.return_odometer && (
+              <Image src={getFileUrl(data.return_odometer)} alt="Return Odometer Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />
+            )}
           </FormControl>
         </GridItem>
 
@@ -367,7 +404,21 @@ const Etape2 = ({ data, setData }) => {
             </FormLabel>
             <Box position="relative" height="100px">
               <Input type="file" opacity="0" position="absolute" top="0" left="0" height="100%" width="100%" zIndex="2" onChange={(e) => handleFileChange(e, 'carte_grise')} />
-              <Box position="absolute" top="0" left="0" height="100%" width="100%" bg="white" borderRadius="md" borderWidth="1px" borderColor="gray.300" display="flex" alignItems="center" justifyContent="center" zIndex="1">
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                height="100%"
+                width="100%"
+                bg="white"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="gray.300"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                zIndex="1"
+              >
                 Cliquez ici pour ajouter une photo ou un PDF
               </Box>
             </Box>
@@ -377,7 +428,7 @@ const Etape2 = ({ data, setData }) => {
       </Grid>
 
       <Box textAlign="right" mt="6">
-        <Button colorScheme="blue" type="button">
+        <Button colorScheme="blue" type="button" onClick={onNext}>
           Suivant
         </Button>
       </Box>
@@ -386,7 +437,7 @@ const Etape2 = ({ data, setData }) => {
 };
 
 // Step 3: Trip Information
-const Etape3 = ({ trips, setTrips }) => {
+const Etape3 = ({ trips, setTrips, onNext }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newTripName, setNewTripName] = useState('');
   const [newTripDistance, setNewTripDistance] = useState('');
@@ -394,9 +445,7 @@ const Etape3 = ({ trips, setTrips }) => {
 
   const handleAddTrip = () => {
     if (editingTrip !== null) {
-      const updatedTrips = trips.map((trip, index) =>
-        index === editingTrip ? { name: newTripName, distance: parseInt(newTripDistance) } : trip
-      );
+      const updatedTrips = trips.map((trip, index) => (index === editingTrip ? { name: newTripName, distance: parseInt(newTripDistance) } : trip));
       setTrips(updatedTrips);
     } else {
       setTrips([...trips, { name: newTripName, distance: parseInt(newTripDistance) }]);
@@ -420,7 +469,9 @@ const Etape3 = ({ trips, setTrips }) => {
         <Flex key={index} justifyContent="space-between" alignItems="center" mb="4">
           <Text fontWeight="bold">{trip.name}</Text>
           <Text color="green.500">{trip.distance} KM</Text>
-          <Button size="sm" type="button" onClick={() => handleEditTrip(index)}>Modifier</Button>
+          <Button size="sm" type="button" onClick={() => handleEditTrip(index)}>
+            Modifier
+          </Button>
         </Flex>
       ))}
 
@@ -432,7 +483,7 @@ const Etape3 = ({ trips, setTrips }) => {
       </Flex>
 
       <Box textAlign="right" mt="6">
-        <Button colorScheme="blue" type="button">
+        <Button colorScheme="blue" type="button" onClick={onNext}>
           Suivant
         </Button>
       </Box>
@@ -445,19 +496,11 @@ const Etape3 = ({ trips, setTrips }) => {
           <ModalBody>
             <FormControl id="newTripName" mb="4">
               <FormLabel>Nom du trajet</FormLabel>
-              <Input
-                placeholder="Ex. Paris-Lyon"
-                value={newTripName}
-                onChange={(e) => setNewTripName(e.target.value)}
-              />
+              <Input placeholder="Ex. Paris-Lyon" value={newTripName} onChange={(e) => setNewTripName(e.target.value)} />
             </FormControl>
             <FormControl id="newTripDistance">
               <FormLabel>Distance (KM)</FormLabel>
-              <Input
-                placeholder="Ex. 500"
-                value={newTripDistance}
-                onChange={(e) => setNewTripDistance(e.target.value)}
-              />
+              <Input placeholder="Ex. 500" value={newTripDistance} onChange={(e) => setNewTripDistance(e.target.value)} />
             </FormControl>
           </ModalBody>
 
@@ -465,7 +508,9 @@ const Etape3 = ({ trips, setTrips }) => {
             <Button colorScheme="blue" mr="3" onClick={handleAddTrip}>
               {editingTrip !== null ? 'Modifier' : 'Ajouter'}
             </Button>
-            <Button variant="ghost" onClick={onClose}>Annuler</Button>
+            <Button variant="ghost" onClick={onClose}>
+              Annuler
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -474,7 +519,7 @@ const Etape3 = ({ trips, setTrips }) => {
 };
 
 // Step 4: Expense Information
-const Etape4 = ({ expenses, setExpenses }) => {
+const Etape4 = ({ expenses, setExpenses, onNext }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newExpenseName, setNewExpenseName] = useState('');
   const [newExpenseCost, setNewExpenseCost] = useState('');
@@ -496,9 +541,7 @@ const Etape4 = ({ expenses, setExpenses }) => {
       fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      let { error: uploadError } = await supabase.storage
-        .from('notedefrais')
-        .upload(filePath, newExpenseFile);
+      let { error: uploadError } = await supabase.storage.from('notedefrais').upload(filePath, newExpenseFile);
 
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
@@ -534,9 +577,18 @@ const Etape4 = ({ expenses, setExpenses }) => {
           <Text fontWeight="bold">{expense.name}</Text>
           <Text color="green.500">{expense.cost.toFixed(2)} €</Text>
           {expense.fileName && (
-            <Image src={`https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${expense.fileName}`} alt="Expense File Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />
+            <Image
+              src={`https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${expense.fileName}`}
+              alt="Expense File Preview"
+              mt="4"
+              boxSize="200px"
+              objectFit="cover"
+              borderRadius="md"
+            />
           )}
-          <Button size="sm" type="button" onClick={() => handleEditExpense(index)}>Modifier</Button>
+          <Button size="sm" type="button" onClick={() => handleEditExpense(index)}>
+            Modifier
+          </Button>
         </Flex>
       ))}
 
@@ -548,7 +600,7 @@ const Etape4 = ({ expenses, setExpenses }) => {
       </Flex>
 
       <Box textAlign="right" mt="6">
-        <Button colorScheme="blue" type="button">
+        <Button colorScheme="blue" type="button" onClick={onNext}>
           Suivant
         </Button>
       </Box>
@@ -561,19 +613,11 @@ const Etape4 = ({ expenses, setExpenses }) => {
           <ModalBody>
             <FormControl id="newExpenseName" mb="4">
               <FormLabel>Nom de la dépense</FormLabel>
-              <Input
-                placeholder="Ex. Péage Paris-Lyon"
-                value={newExpenseName}
-                onChange={(e) => setNewExpenseName(e.target.value)}
-              />
+              <Input placeholder="Ex. Péage Paris-Lyon" value={newExpenseName} onChange={(e) => setNewExpenseName(e.target.value)} />
             </FormControl>
             <FormControl id="newExpenseCost">
               <FormLabel>Coût (€)</FormLabel>
-              <Input
-                placeholder="Ex. 50.00"
-                value={newExpenseCost}
-                onChange={(e) => setNewExpenseCost(e.target.value)}
-              />
+              <Input placeholder="Ex. 50.00" value={newExpenseCost} onChange={(e) => setNewExpenseCost(e.target.value)} />
             </FormControl>
             <FormControl id="newExpenseFile" mt="4">
               <FormLabel>Fichier</FormLabel>
@@ -585,7 +629,9 @@ const Etape4 = ({ expenses, setExpenses }) => {
             <Button colorScheme="blue" mr="3" onClick={handleAddExpense}>
               {editingExpense !== null ? 'Modifier' : 'Ajouter'}
             </Button>
-            <Button variant="ghost" onClick={onClose}>Annuler</Button>
+            <Button variant="ghost" onClick={onClose}>
+              Annuler
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -615,16 +661,17 @@ const ExpenseForm = () => {
   const [expenses, setExpenses] = useState([]);
   const [showDownloadLink, setShowDownloadLink] = useState(false);
   const toast = useToast();
+  const [activeIndex, setActiveIndex] = useState(0); // State to manage active accordion index
 
   useEffect(() => {
     if (selectedEventId) {
-      setData(prevData => ({ ...prevData, event_id: selectedEventId }));
+      setData((prevData) => ({ ...prevData, event_id: selectedEventId }));
     }
   }, [selectedEventId]);
 
   useEffect(() => {
     if (teamUUID) {
-      setData(prevData => ({ ...prevData, team_id: teamUUID }));
+      setData((prevData) => ({ ...prevData, team_id: teamUUID }));
     }
   }, [teamUUID]);
 
@@ -634,18 +681,18 @@ const ExpenseForm = () => {
       ...data,
       trips: JSON.stringify(trips),
       expenses: JSON.stringify(expenses),
-      total: expenses.reduce((acc, expense) => acc + (expense.cost || 0), 0) + trips.reduce((acc, trip) => acc + (trip.distance || 0) * 0.515, 0),
+      total:
+        expenses.reduce((acc, expense) => acc + (expense.cost || 0), 0) +
+        trips.reduce((acc, trip) => acc + (trip.distance || 0) * 0.515, 0),
     };
 
-    const { error } = await supabase
-      .from('vianney_expenses_reimbursement')
-      .insert([formattedData]);
+    const { error } = await supabase.from('vianney_expenses_reimbursement').insert([formattedData]);
 
     if (error) {
       toast({
-        title: "Erreur de soumission.",
+        title: 'Erreur de soumission.',
         description: `Erreur: ${error.message}`,
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -659,17 +706,17 @@ const ExpenseForm = () => {
 
       if (fetchError) {
         toast({
-          title: "Erreur de récupération des données.",
+          title: 'Erreur de récupération des données.',
           description: `Erreur: ${fetchError.message}`,
-          status: "error",
+          status: 'error',
           duration: 5000,
           isClosable: true,
         });
       } else {
         toast({
-          title: "Soumission réussie.",
-          description: "Vos données ont été soumises avec succès.",
-          status: "success",
+          title: 'Soumission réussie.',
+          description: 'Vos données ont été soumises avec succès.',
+          status: 'success',
           duration: 5000,
           isClosable: true,
         });
@@ -686,7 +733,7 @@ const ExpenseForm = () => {
           return_odometer: '',
           carte_grise: '',
           event_id: null,
-          team_id: null
+          team_id: null,
         });
         setTrips([]);
         setExpenses([]);
@@ -700,7 +747,7 @@ const ExpenseForm = () => {
 
   return (
     <>
-      <Accordion allowToggle>
+      <Accordion index={activeIndex} onChange={(index) => setActiveIndex(index)} allowToggle>
         <AccordionItem>
           <h2>
             <AccordionButton as={Box}>
@@ -708,7 +755,7 @@ const ExpenseForm = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            <Etape1 data={data} setData={setData} />
+            <Etape1 data={data} setData={setData} onNext={() => setActiveIndex(1)} />
           </AccordionPanel>
         </AccordionItem>
 
@@ -719,7 +766,7 @@ const ExpenseForm = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            <Etape2 data={data} setData={setData} />
+            <Etape2 data={data} setData={setData} onNext={() => setActiveIndex(2)} />
           </AccordionPanel>
         </AccordionItem>
 
@@ -730,7 +777,7 @@ const ExpenseForm = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            <Etape3 trips={trips} setTrips={setTrips} />
+            <Etape3 trips={trips} setTrips={setTrips} onNext={() => setActiveIndex(3)} />
           </AccordionPanel>
         </AccordionItem>
 
@@ -741,7 +788,7 @@ const ExpenseForm = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            <Etape4 expenses={expenses} setExpenses={setExpenses} />
+            <Etape4 expenses={expenses} setExpenses={setExpenses} onNext={() => setActiveIndex(4)} />
           </AccordionPanel>
         </AccordionItem>
 
@@ -762,13 +809,7 @@ const ExpenseForm = () => {
                   fileName="note_de_frais.pdf"
                 >
                   {({ loading }) => (
-                    <Button
-                      leftIcon={<FaFilePdf />}
-                      colorScheme="red"
-                      variant="solid"
-                      size="lg"
-                      height="50px"
-                    >
+                    <Button leftIcon={<FaFilePdf />} colorScheme="red" variant="solid" size="lg" height="50px">
                       {loading ? 'Préparation du PDF...' : 'Télécharger le PDF'}
                     </Button>
                   )}
