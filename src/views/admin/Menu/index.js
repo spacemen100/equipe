@@ -7,14 +7,14 @@ const Menu = () => {
   const history = useHistory();
 
   const menuItems = [
-    { icon: FcSelfie, label: "Gestion opérationnelle", path: "/admin/gestion-operationnelle" },
+    { icon: FcSelfie, label: "Gestion opé", path: "/admin/gestion-operationnelle" },
     { icon: FcCalendar, label: "Emploi du temps", path: "/admin/emploi-du-temps" },
     { icon: FcDocument, label: "Documents", path: "/admin/documents" },
     // { icon: FcConferenceCall, label: "Communication", path: "/admin/communication" }, // Communication item hidden
     { icon: FcSupport, label: "Matériel", path: "/admin/materiels" },
-    { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
+    { icon: FcSettings, label: "Params", path: "/admin/parametres" },
     { icon: FcComments, label: "Chat", path: "/admin/chat" },
-    { icon: FcDocument, label: "Rapport d'incident", path: "/admin/rapport-incident" },
+    { icon: FcDocument, label: "Rapport incident", path: "/admin/rapport-incident" },
     { icon: FcDocument, label: "Fiche Bilan SUAP", path: "/admin/fiche-bilan-suap" },
     { icon: FcEditImage, label: "Note de frais", path: "/admin/note-de-frais" },
     { icon: FcHighPriority, label: "SOS Alerte Danger", path: "/admin/sos-alerte-danger" }, // Added link to SOS Alerte Danger
