@@ -10,8 +10,10 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import supabase from './../../../../supabaseClient';
+import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Assuming you have a TeamContext
 
 const ExpenseList = () => {
+  const { selectedTeam } = useTeam(); // Get the selected team from context
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -21,7 +23,8 @@ const ExpenseList = () => {
       try {
         let { data, error } = await supabase
           .from('vianney_expenses_reimbursement')
-          .select('*');
+          .select('*')
+          .eq('team_id', selectedTeam.id); // Filter by selected team
 
         if (error) {
           throw error;
@@ -41,8 +44,10 @@ const ExpenseList = () => {
       }
     };
 
-    fetchExpenses();
-  }, [toast]);
+    if (selectedTeam) {
+      fetchExpenses();
+    }
+  }, [selectedTeam, toast]);
 
   if (loading) {
     return (
