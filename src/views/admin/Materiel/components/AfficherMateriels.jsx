@@ -29,6 +29,24 @@ const AfficherMateriels = () => {
     const [loadingTeams, setLoadingTeams] = useState(false);
     const { selectedEventId } = useEvent();
     const [selectedEventName, setSelectedEventName] = useState('');
+    const [teamSearchTerm, setTeamSearchTerm] = useState('');
+        // eslint-disable-next-line no-unused-vars
+    const [filteredTeams, setFilteredTeams] = useState([]);
+
+    const filteredMateriels = materiels.filter(materiel => {
+        // Si aucun terme de recherche d'équipe n'est défini, montrer tous les matériels
+        if (teamSearchTerm === '') return true;
+        // Trouver l'équipe associée au matériel
+        const team = teams.find(team => team.id === materiel.associated_team_id);
+        // Vérifier si le terme de recherche est inclus dans le nom de l'équipe associée
+        return team ? team.name_of_the_team.toLowerCase().includes(teamSearchTerm.toLowerCase()) : false;
+    }).filter((materiel) => {
+        // Convertir en minuscules pour la comparaison insensible à la casse
+        const searchTermLower = searchTerm.toLowerCase();
+        // Vérifier si le terme de recherche est inclus dans le nom ou la description
+        return materiel.nom.toLowerCase().includes(searchTermLower) ||
+            (materiel.description && materiel.description.toLowerCase().includes(searchTermLower));
+    });
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -230,14 +248,21 @@ const AfficherMateriels = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </InputGroup>
+            <InputGroup marginBottom="4">
+                <InputLeftElement pointerEvents="none" children={<FaSearch color="gray.300" />} />
+                <Input
+                    placeholder="Rechercher une équipe..."
+                    value={teamSearchTerm}
+                    onChange={(e) => {
+                        setTeamSearchTerm(e.target.value);
+                        // Filtrer les équipes en fonction du terme de recherche
+                        const searchTermLower = e.target.value.toLowerCase();
+                        setFilteredTeams(teams.filter(team => team.name_of_the_team.toLowerCase().includes(searchTermLower)));
+                    }}
+                />
+            </InputGroup>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing="20px">
-                {materiels.filter((materiel) => {
-                    // Convertir en minuscules pour la comparaison insensible à la casse
-                    const searchTermLower = searchTerm.toLowerCase();
-                    // Vérifier si le terme de recherche est inclus dans le nom ou la description
-                    return materiel.nom.toLowerCase().includes(searchTermLower) ||
-                           (materiel.description && materiel.description.toLowerCase().includes(searchTermLower));
-                }).map((materiel) => (
+                {filteredMateriels.map((materiel) => (
                     <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
                         <VStack spacing="4">
                             <Badge colorScheme="orange">{materiel.nom}</Badge>
@@ -346,5 +371,5 @@ const AfficherMateriels = () => {
         </Box>
     );
 };
-    
+
 export default AfficherMateriels;
