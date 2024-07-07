@@ -6,10 +6,10 @@ import {
   List,
   ListItem,
   Text,
-  Button,
-  useColorMode,
+  HStack,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { FaLinkedin } from "react-icons/fa"; // Import LinkedIn icon
 
 export default function Footer() {
   const textColor = useColorModeValue("gray.400", "white");
@@ -34,14 +34,26 @@ export default function Footer() {
           xl: "start",
         }}
         mb={{ base: "20px", xl: "0px" }}>
-        {" "}
-        &copy; {1900 + new Date().getYear()}
-        <Text as='span' fontWeight='500' ms='4px'>
-        PROTECTO. Tout droit réservé. Fait avec amour par Guigui et Vianney
-          
-        </Text>
+        &copy; {1900 + new Date().getYear()} PROTECTO. Tout droit réservé. Fait avec amour par 
+        <HStack as="span" spacing="4px" ml="4px">
+          <Text as='span' fontWeight='500'>
+            Vianney
+          </Text>
+          <Link href='https://fr.linkedin.com/in/vianney-r-630a1a204' isExternal>
+            <FaLinkedin size='16px' />
+          </Link>
+          <Text as='span' fontWeight='500' ml='4px'>
+            et
+          </Text>
+          <Text as='span' fontWeight='500'>
+            Guillaume
+          </Text>
+          <Link href='https://fr.linkedin.com/in/guillaume-r%C3%A9cipon-baaba685' isExternal>
+            <FaLinkedin size='16px' />
+          </Link>
+        </HStack>
       </Text>
-      <List display='flex'>        
+      <List display='flex'>
         <ListItem>
           <Link
             fontWeight='500'
