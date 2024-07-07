@@ -55,7 +55,7 @@ const CustomAccordionButton = ({ number, title }) => (
 );
 
 // Step 1: Volunteer Information
-const Etape1 = ({ data, setData, events, teams }) => {
+const Etape1 = ({ data, setData }) => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setData((prevData) => ({ ...prevData, [id]: value }));
@@ -83,18 +83,6 @@ const Etape1 = ({ data, setData, events, teams }) => {
   const fileUrl = data.rib
     ? `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/notedefrais/${data.rib}`
     : '';
-
-  useEffect(() => {
-    if (data.team_id && teams.length > 0) {
-      const selectedTeam = teams.find(team => team.id === data.team_id);
-      if (selectedTeam) {
-        setData(prevData => ({
-          ...prevData,
-          event_id: selectedTeam.event_id
-        }));
-      }
-    }
-  }, [data.team_id, teams, setData]);
 
   return (
     <Box mt="10" p="6" boxShadow="lg" borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white">
@@ -213,6 +201,8 @@ const Etape1 = ({ data, setData, events, teams }) => {
             {fileUrl && <Image src={fileUrl} alt="RIB Preview" mt="4" boxSize="200px" objectFit="cover" borderRadius="md" />}
           </FormControl>
         </GridItem>
+        {/* Hidden team_id input */}
+        <Input type="hidden" id="team_id" value={data.team_id || ''} onChange={handleChange} />
       </Grid>
 
       <Box textAlign="right" mt="6">
@@ -604,8 +594,8 @@ const Etape4 = ({ expenses, setExpenses }) => {
 };
 
 const ExpenseForm = () => {
-  const { events, selectedEventId } = useEvent();
-  const { teams } = useTeam();
+  const { selectedEventId } = useEvent();
+  const { selectedTeam, teamUUID } = useTeam(); // Assume useTeam provides teamUUID
   const [data, setData] = useState({
     volunteer_last_name: '',
     volunteer_first_name: '',
@@ -618,7 +608,7 @@ const ExpenseForm = () => {
     return_odometer: '',
     carte_grise: '',
     event_id: selectedEventId || null,
-    team_id: null
+    team_id: teamUUID || null, // Set team_id here
   });
   const [trips, setTrips] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -630,6 +620,12 @@ const ExpenseForm = () => {
       setData(prevData => ({ ...prevData, event_id: selectedEventId }));
     }
   }, [selectedEventId]);
+
+  useEffect(() => {
+    if (teamUUID) {
+      setData(prevData => ({ ...prevData, team_id: teamUUID }));
+    }
+  }, [teamUUID]);
 
   const handleSubmit = async () => {
     const formattedData = {
@@ -711,7 +707,7 @@ const ExpenseForm = () => {
             </AccordionButton>
           </h2>
           <AccordionPanel pb={4}>
-            <Etape1 data={data} setData={setData} events={events} teams={teams} />
+            <Etape1 data={data} setData={setData} />
           </AccordionPanel>
         </AccordionItem>
 

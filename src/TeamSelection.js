@@ -53,7 +53,7 @@ const TeamSelection = ({ onTeamSelected }) => {
     setSelectedTeam(teamName);
     setShowAlert(false);
     setShowDropdown(false);
-    onTeamSelected(teamName); // Call the callback with the selected team
+    onTeamSelected && onTeamSelected(teamName); // Call the callback with the selected team if it exists
   };
 
   const toggleDropdown = () => {
