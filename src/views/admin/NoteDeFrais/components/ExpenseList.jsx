@@ -8,9 +8,12 @@ import {
   Image,
   Spinner,
   useToast,
+  Button,
 } from '@chakra-ui/react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import supabase from './../../../../supabaseClient';
 import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Assuming you have a TeamContext
+import ExpenseSummaryPDF from './ExpenseSummaryPDF'; // Import the PDF component
 
 const ExpenseList = () => {
   const { teamUUID } = useTeam(); // Get the teamUUID from context
@@ -171,6 +174,24 @@ const ExpenseList = () => {
                     )}
                   </Box>
                 ))}
+              </GridItem>
+              <GridItem colSpan={2}>
+                <Flex justifyContent="flex-end">
+                  <PDFDownloadLink
+                    document={<ExpenseSummaryPDF data={expense} trips={JSON.parse(expense.trips || '[]')} expenses={JSON.parse(expense.expenses || '[]')} />}
+                    fileName={`expense_summary_${expense.id}.pdf`}
+                  >
+                    {({ loading }) =>
+                      loading ? (
+                        <Button isLoading>Loading...</Button>
+                      ) : (
+                        <Button colorScheme="blue">
+                          Download PDF
+                        </Button>
+                      )
+                    }
+                  </PDFDownloadLink>
+                </Flex>
               </GridItem>
             </Grid>
           </Box>
