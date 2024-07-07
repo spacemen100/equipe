@@ -68,6 +68,27 @@ const IncidentReportForm = ({ reportingTeam }) => {
             }
         };
 
+        const fetchTeamDetails = async () => {
+            const { data, error } = await supabase
+                .from('vianney_teams')
+                .select('team_members')
+                .eq('name_of_the_team', reportingTeam)
+                .single();
+            if (error) {
+                console.error('Error fetching team details:', error);
+            } else {
+                const teamMembers = data.team_members;
+                const leader = teamMembers.find(member => member.isLeader);
+                if (leader) {
+                    const contactInfo = `${leader.firstname} ${leader.familyname}, Téléphone: ${leader.phone}, Mail: ${leader.mail}`;
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        contact_info: contactInfo
+                    }));
+                }
+            }
+        };
+
         setFormData((prevFormData) => ({
             ...prevFormData,
             report_number: reportNumber,
@@ -77,6 +98,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
         }));
 
         fetchEventDetails();
+        fetchTeamDetails();
     }, [reportingTeam, selectedEventId]);
 
     const handleChange = (e) => {
@@ -145,8 +167,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
                 attachments_urls: attachmentsUrl,
                 additional_documents_urls: additionalDocumentsUrl
             };
-            
-            // Log the formData for debugging
+
             console.log('Submitting formData:', newFormData);
              // eslint-disable-next-line
             const { data, error } = await supabase
@@ -234,7 +255,7 @@ const IncidentReportForm = ({ reportingTeam }) => {
                     </FormControl>
                     <FormControl id="contact_info" isRequired>
                         <FormLabel>Coordonnées (Téléphone et Email)</FormLabel>
-                        <Input name="contact_info" value={formData.contact_info} onChange={handleChange} />
+                        <Input name="contact_info" value={formData.contact_info} onChange={handleChange} readOnly />
                     </FormControl>
                     <Divider />
                     <Heading size="md" alignSelf="flex-start">Personnes Impliquées et Témoins</Heading>
