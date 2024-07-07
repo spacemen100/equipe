@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTeam } from './../InterfaceEquipe/TeamContext';
-import { useEvent } from '../../../EventContext'; // Import useEvent context
-import {
-  Box,
-  Badge,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  Select,
-  Button,
-  CloseButton,
-  Spacer,
-  Text,
-} from '@chakra-ui/react';
+import { useEvent } from '../../../EventContext';
+import { Box, Badge, Alert, AlertIcon, AlertTitle, AlertDescription, Select, Button, CloseButton, Spacer, Text } from '@chakra-ui/react';
 import { supabase } from './../../../supabaseClient';
 import TeamMembersDisplay from './../InterfaceEquipe/components/TeamMembersDisplay';
-
 import UrgentAlerts from './../InterfaceEquipe/components/UrgentAlerts';
 import Materiel from './Materiel';
 
 const Materiels = () => {
   const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
-  const { selectedEventId } = useEvent(); // Get selected event ID from useEvent context
+  const { selectedEventId } = useEvent();
   const leaders = teamMembers.filter(member => member.isLeader);
   const [showAlert, setShowAlert] = useState(!selectedTeam);
   const [showDropdown, setShowDropdown] = useState(true);
@@ -31,14 +18,10 @@ const Materiels = () => {
     async function fetchTeamData() {
       try {
         let query = supabase.from('vianney_teams').select('id, name_of_the_team');
-
-        // If selectedEventId is available, filter teams by event_id
         if (selectedEventId) {
           query = query.eq('event_id', selectedEventId);
         }
-
         const { data, error } = await query;
-
         if (error) {
           throw error;
         }
@@ -47,7 +30,6 @@ const Materiels = () => {
         console.error('Error fetching team data:', error);
       }
     }
-
     fetchTeamData();
   }, [selectedEventId, setTeamData]);
 
@@ -68,19 +50,13 @@ const Materiels = () => {
         <Alert status="error" mb="4" minHeight="100px">
           <AlertIcon />
           <AlertTitle>Attention!</AlertTitle>
-          <AlertDescription>
-            Sélectionnez une équipe est obligatoire
-          </AlertDescription>
+          <AlertDescription>Sélectionnez une équipe est obligatoire</AlertDescription>
           <CloseButton onClick={() => setShowAlert(false)} position="absolute" right="8px" top="8px" />
         </Alert>
       )}
       {showDropdown ? (
         <>
-          <Select
-            value={selectedTeam}
-            onChange={handleTeamSelection}
-            placeholder="Selectionnez une équipe"
-          >
+          <Select value={selectedTeam} onChange={handleTeamSelection} placeholder="Selectionnez une équipe">
             {teamData.map((team) => (
               <option key={team.id} value={team.name_of_the_team}>
                 {team.name_of_the_team}
@@ -89,9 +65,7 @@ const Materiels = () => {
           </Select>
         </>
       ) : (
-        <Button onClick={toggleDropdown} size="sm" fontSize="sm">
-          Afficher le menu déroulant
-        </Button>
+        <Button onClick={toggleDropdown} size="sm" fontSize="sm">Afficher le menu déroulant</Button>
       )}
       <Spacer />
       {selectedTeam && (
@@ -105,7 +79,6 @@ const Materiels = () => {
       )}
       <TeamMembersDisplay />
       <Materiel />
-      
     </Box>
   );
 };
