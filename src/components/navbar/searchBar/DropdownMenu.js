@@ -102,7 +102,7 @@ const DropdownMenu = () => {
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, [teamUUID]);
+  }, [teamUUID, toast]);
 
   const handleSelect = (event) => {
     setSelectedItem(event.event_name);
