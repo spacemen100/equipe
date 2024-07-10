@@ -45,6 +45,7 @@ const DropdownMenu = () => {
   const [alertData, setAlertData] = useState(null);
 
   const { setEventId, selectedEventId } = useEvent();
+       // eslint-disable-next-line
   const { selectedTeam, teamUUID } = useTeam();
   const toast = useToast();
 
