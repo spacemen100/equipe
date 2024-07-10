@@ -83,7 +83,7 @@ const DropdownMenu = () => {
         if (data.length > 0) {
           setAlertData(data[0]); // Show the first unresolved alert for the team
           toast({
-            title: 'Alerte non résolue: Merci de vous rendre au lieu indiqué pour un soutient',
+            title: 'Alerte non résolue: Merci de vous rendre au lieu indiqué ',
             description: 'Une alerte non résolue a été trouvée pour votre équipe.',
             status: 'warning',
             duration: 5000,
@@ -203,7 +203,7 @@ const DropdownMenu = () => {
               <Badge colorScheme="red" px={4} py={2} borderRadius="md">
                 <HStack spacing={2}>
                   <MdSos />
-                  <Text>Alerte non résolue</Text>
+                  <Text>Alerte non résolue : Merci de vous rendre au lieu indiqué pour un soutient</Text>
                 </HStack>
               </Badge>
             </ModalHeader>
