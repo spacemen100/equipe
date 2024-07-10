@@ -83,7 +83,7 @@ const DropdownMenu = () => {
         if (data.length > 0) {
           setAlertData(data[0]); // Show the first unresolved alert for the team
           toast({
-            title: 'Alerte non résolue',
+            title: 'Alerte non résolue: Merci de vous rendre au lieu indiqué pour un soutient',
             description: 'Une alerte non résolue a été trouvée pour votre équipe.',
             status: 'warning',
             duration: 5000,
