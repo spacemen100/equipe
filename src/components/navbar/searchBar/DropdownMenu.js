@@ -16,11 +16,21 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
+  Badge,
+  HStack,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { createClient } from '@supabase/supabase-js';
 import { FcExpand, FcCollapse, FcAdvance } from 'react-icons/fc';
 import { useEvent } from './../../../EventContext';
 import { useTeam } from './../../../views/admin/InterfaceEquipe/TeamContext';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import ReactDOMServer from 'react-dom/server';
+import { RiMapPinUserFill } from 'react-icons/ri';
+import { MdOutlineAccessTime, MdSos } from 'react-icons/md';
+import { FaUserShield } from 'react-icons/fa';
 
 const supabaseUrl = 'https://hvjzemvfstwwhhahecwu.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2anplbXZmc3R3d2hoYWhlY3d1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MTQ4Mjc3MCwiZXhwIjoyMDA3MDU4NzcwfQ.6jThCX2eaUjl2qt4WE3ykPbrh6skE8drYcmk-UCNDSw';
@@ -117,6 +127,27 @@ const DropdownMenu = () => {
     return () => clearInterval(intervalId);
   }, [isEventSelected]);
 
+  const createCustomIcon = () => {
+    return L.divIcon({
+      html: ReactDOMServer.renderToString(<RiMapPinUserFill style={{ color: 'red', fontSize: '24px' }} />),
+      className: 'custom-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 24],
+      popupAnchor: [0, -24],
+    });
+  };
+
+  const formatDateTime = (dateTime) => {
+    return new Date(dateTime).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  };
+
   return (
     <Box>
       <Menu>
@@ -164,10 +195,65 @@ const DropdownMenu = () => {
       </Modal>
 
       {alertData && (
-        <Alert status="warning" mt={2}>
-          <AlertIcon />
-          Une alerte non résolue a été trouvée pour votre équipe.
-        </Alert>
+        <Modal isOpen={true} onClose={() => setAlertData(null)} size="xl">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>
+              <Badge colorScheme="red" px={4} py={2} borderRadius="md">
+                <HStack spacing={2}>
+                  <MdSos />
+                  <Text>Alerte non résolue</Text>
+                </HStack>
+              </Badge>
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <HStack spacing={4}>
+                <FaUserShield />
+                <Badge colorScheme="blue">{alertData.team_name}</Badge>
+              </HStack>
+              <HStack spacing={4} mt={4}>
+                <MdOutlineAccessTime />
+                <Badge colorScheme="green">{formatDateTime(alertData.created_at)}</Badge>
+              </HStack>
+              {alertData.url && (
+                <Box mt={4}>
+                  <video controls width="100%">
+                    <source src={alertData.url} type="video/webm" />
+                    Votre navigateur ne supporte pas la balise vidéo.
+                  </video>
+                </Box>
+              )}
+              {alertData.latitude && alertData.longitude && (
+                <Box mt={4}>
+                  <MapContainer
+                    center={[alertData.latitude, alertData.longitude]}
+                    zoom={13}
+                    style={{ height: '300px', width: '100%' }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
+                    />
+                    <Marker
+                      position={[alertData.latitude, alertData.longitude]}
+                      icon={createCustomIcon()}
+                    >
+                      <Popup>
+                        Localisation de l'alerte
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </Box>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={() => setAlertData(null)}>
+                Fermer
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
     </Box>
   );
