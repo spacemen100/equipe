@@ -75,8 +75,8 @@ const AccidentDetected = () => {
         mediaRecorderRef.current = new MediaRecorder(stream);
         mediaRecorderRef.current.ondataavailable = handleDataAvailable;
         mediaRecorderRef.current.start();
-        // Stop recording after 10 seconds (10,000 milliseconds)
-        setTimeout(stopRecording, 10000);
+        // Stop recording after 100 seconds (100,000 milliseconds)
+        setTimeout(stopRecording, 100000);
       })
       .catch(error => console.error('Error accessing media devices:', error));
   }, []);

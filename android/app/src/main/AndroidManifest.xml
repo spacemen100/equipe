@@ -33,6 +33,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Service to handle notifications -->
+        <service
+            android:name=".NotificationService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.yourapp.NOTIFICATION_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
     <!-- Permissions -->
@@ -41,4 +50,5 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>
