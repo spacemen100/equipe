@@ -1,109 +1,82 @@
-// src/views/admin/InterfaceEquipe/components/TeamSelection.js
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Badge,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Select,
+  Input,
   Button,
-  CloseButton,
-  Spacer,
-  Text,
+  FormControl,
+  FormLabel,
+  useToast
 } from '@chakra-ui/react';
-import { useTeam } from './views/admin/InterfaceEquipe/TeamContext';
-import { useEvent } from './EventContext';
 import { supabase } from './supabaseClient';
-import TeamMembersDisplay from './views/admin/InterfaceEquipe/components/TeamMembersDisplay';
-import UrgentAlerts from './views/admin/InterfaceEquipe/components/UrgentAlerts';
 
 const TeamSelection = ({ onTeamSelected }) => {
-  const { teamMembers, selectedTeam, setSelectedTeam, teamData, setTeamData } = useTeam();
-  const { selectedEventId } = useEvent();
-  const leaders = teamMembers.filter(member => member.isLeader);
-  const [showAlert, setShowAlert] = useState(!selectedTeam);
-  const [showDropdown, setShowDropdown] = useState(true);
+  const [teamName, setTeamName] = useState('');
+  const [password, setPassword] = useState('');
+  const [teamData, setTeamData] = useState([]);
+  const toast = useToast();
 
   useEffect(() => {
-    async function fetchTeamData() {
+    const fetchTeams = async () => {
       try {
-        let query = supabase.from('vianney_teams').select('id, name_of_the_team');
-
-        if (selectedEventId) {
-          query = query.eq('event_id', selectedEventId);
-        }
-
-        const { data, error } = await query;
+        const { data, error } = await supabase
+          .from('vianney_teams')
+          .select('name_of_the_team');
 
         if (error) {
           throw error;
         }
+
         setTeamData(data);
       } catch (error) {
-        console.error('Error fetching team data:', error);
+        console.error('Error fetching teams:', error);
       }
+    };
+
+    fetchTeams();
+  }, []);
+
+  const handleSubmit = () => {
+    if (!teamName || !password) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez entrer le nom de l\'équipe et le mot de passe',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
     }
-
-    fetchTeamData();
-  }, [selectedEventId, setTeamData]);
-
-  const handleTeamSelection = (event) => {
-    const teamName = event.target.value;
-    setSelectedTeam(teamName);
-    setShowAlert(false);
-    setShowDropdown(false);
-    onTeamSelected && onTeamSelected(teamName); // Call the callback with the selected team if it exists
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    onTeamSelected(teamName, password);
   };
 
   return (
-    <Box>
-      <UrgentAlerts />
-      {showAlert && (
-        <Alert status="error" mb="4" minHeight="100px">
-          <AlertIcon />
-          <AlertTitle>Attention!</AlertTitle>
-          <AlertDescription>
-            Sélectionnez une équipe est obligatoire
-          </AlertDescription>
-          <CloseButton onClick={() => setShowAlert(false)} position="absolute" right="8px" top="8px" />
-        </Alert>
-      )}
-      {showDropdown ? (
-        <>
-          <Select
-            value={selectedTeam}
-            onChange={handleTeamSelection}
-            placeholder="Selectionnez une équipe"
-          >
-            {teamData.map((team) => (
-              <option key={team.id} value={team.name_of_the_team}>
-                {team.name_of_the_team}
-              </option>
-            ))}
-          </Select>
-        </>
-      ) : (
-        <Button onClick={toggleDropdown} size="sm" fontSize="sm">
-          Afficher le menu déroulant
-        </Button>
-      )}
-      <Spacer />
-      {selectedTeam && (
-        <Badge colorScheme="green" mb="2">
-          L'équipe que vous avez sélectionnée est : {selectedTeam} avec le chef d'équipe : {leaders.map((leader, index) => (
-            <Box key={index}>
-              <Text fontWeight="bold">{leader.firstname} {leader.familyname}</Text>
-            </Box>
+    <Box width="100%" maxWidth="400px" position="relative">
+      <FormControl>
+        <FormLabel>Nom de l'équipe</FormLabel>
+        <Select
+          placeholder="Selectionnez une équipe"
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value)}
+        >
+          {teamData.map((team) => (
+            <option key={team.name_of_the_team} value={team.name_of_the_team}>
+              {team.name_of_the_team}
+            </option>
           ))}
-        </Badge>
-      )}
-      <TeamMembersDisplay />
+        </Select>
+      </FormControl>
+      <FormControl mt={4} position="relative" zIndex={10}>
+        <FormLabel>Mot de passe</FormLabel>
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </FormControl>
+      <Button mt={4} width="100%" onClick={handleSubmit}>
+        Se Connecter
+      </Button>
     </Box>
   );
 };

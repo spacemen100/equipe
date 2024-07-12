@@ -22,7 +22,7 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react';
 import { createClient } from '@supabase/supabase-js';
-import { FcExpand, FcCollapse, FcAdvance } from 'react-icons/fc';
+import { FcExpand, FcCollapse } from 'react-icons/fc';
 import { useEvent } from './../../../EventContext';
 import { useTeam } from './../../../views/admin/InterfaceEquipe/TeamContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -42,11 +42,12 @@ const DropdownMenu = () => {
   const [eventList, setEventList] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isEventSelected, setIsEventSelected] = useState(false);
+  // eslint-disable-next-line
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [alertData, setAlertData] = useState(null);
 
   const { setEventId, selectedEventId } = useEvent();
-       // eslint-disable-next-line
+  // eslint-disable-next-line
   const { selectedTeam, teamUUID } = useTeam();
   const toast = useToast();
 
@@ -200,22 +201,6 @@ const DropdownMenu = () => {
         </Alert>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Sélectionnez un évênement</ModalHeader>
-          <ModalBody>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              Veuillez sélectionner un événement pour continuer.&nbsp;   <FcAdvance />
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={() => setIsModalOpen(false)}>
-              Fermer
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
 
       {alertData && (
         <Modal isOpen={true} onClose={() => setAlertData(null)} size="xl">
