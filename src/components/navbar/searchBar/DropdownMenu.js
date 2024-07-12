@@ -117,7 +117,7 @@ const DropdownMenu = () => {
   };
 
   useEffect(() => {
-    // Check if a team is selected every 30 seconds
+    // Check if a team is selected every 10 seconds
     const intervalId = setInterval(async () => {
       if (teamUUID && !isEventSelected) {
         try {
@@ -134,7 +134,10 @@ const DropdownMenu = () => {
           if (data && data.event_id) {
             const event = eventList.find((e) => e.event_id === data.event_id);
             if (event) {
-              handleSelect(event);
+              setSelectedItem(event.event_name);
+              setEventId(event.event_id);
+              setIsEventSelected(true);
+              setIsModalOpen(false);
             }
           }
         } catch (error) {
@@ -145,7 +148,7 @@ const DropdownMenu = () => {
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, [teamUUID, isEventSelected, eventList]);
+  }, [teamUUID, isEventSelected, eventList, setEventId]);
 
   const createCustomIcon = () => {
     return L.divIcon({
