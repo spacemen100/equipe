@@ -5,7 +5,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Button,
   FormControl,
   FormLabel,
@@ -14,7 +13,8 @@ import {
   useDisclosure,
   Flex,
   Box,
-  useToast
+  useToast,
+  Spinner
 } from '@chakra-ui/react';
 import { useTeam } from './views/admin/InterfaceEquipe/TeamContext';
 import { useEvent } from './EventContext';
@@ -29,6 +29,7 @@ const TeamSelectionModal = () => {
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
   const [teamData, setTeamData] = useState([]);
+  const [loading, setLoading] = useState(false); // Nouvel état pour gérer la visibilité du spinner
   const toast = useToast();
 
   useEffect(() => {
@@ -70,6 +71,7 @@ const TeamSelectionModal = () => {
           setTeamUUID(data.id); // Mettre à jour le TeamContext avec l'UUID de l'équipe
           setTeamMembers(data.team_members); // Mettre à jour les membres de l'équipe
           setTeamSelected(true);
+          setLoading(true); // Afficher le spinner
         } else {
           toast({
             title: 'Erreur',
@@ -95,6 +97,7 @@ const TeamSelectionModal = () => {
   useEffect(() => {
     if (teamSelected) {
       const timer = setTimeout(() => {
+        setLoading(false); // Cacher le spinner
         onClose();
       }, 10000);
 
@@ -103,9 +106,9 @@ const TeamSelectionModal = () => {
   }, [teamSelected, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xxl" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent width="100vw" height="100vh" maxWidth="100vw" maxHeight="100vh">
         <ModalHeader>Selectionnez votre équipe</ModalHeader>
         <ModalBody>
           <Flex
@@ -139,17 +142,13 @@ const TeamSelectionModal = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </FormControl>
-              <Button mt={4} width="100%" onClick={handleTeamSelected}>
+              <Button mt={4} width="100%" onClick={handleTeamSelected} disabled={loading}>
+                {loading ? <Spinner size="sm" mr={2} /> : null}
                 Se Connecter
               </Button>
             </Box>
           </Flex>
         </ModalBody>
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={onClose}>
-            Fermer
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );
