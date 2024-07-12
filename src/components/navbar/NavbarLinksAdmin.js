@@ -1,5 +1,6 @@
 import { FcHome } from "react-icons/fc";
 import { VscBellDot, VscBell } from "react-icons/vsc";
+import { MdSos } from "react-icons/md";
 import {
   Flex,
   Image,
@@ -71,14 +72,22 @@ export default function HeaderLinks(props) {
         onClick={() => history.push('/admin/menu')} // Adjust the path as needed
         ml="10px"
       />
-      <IconButton
-        aria-label="Notifications"
-        icon={hasNotification ? <VscBellDot /> : <VscBell />}
-        size="lg"
-        variant="ghost"
-        ml="10px"
-        onClick={() => setHasNotification(!hasNotification)} // Toggle notification state for demonstration
-      />
+      <Flex alignItems="center">
+        <IconButton
+          aria-label="Notifications"
+          icon={hasNotification ? <VscBellDot /> : <VscBell />}
+          size="lg"
+          variant="ghost"
+          ml="10px"
+          onClick={() => setHasNotification(!hasNotification)} // Toggle notification state for demonstration
+        />
+        {hasNotification && (
+          <MdSos 
+            style={{ color: 'red', marginLeft: '10px', fontSize: '24px', cursor: 'pointer' }} 
+            onClick={() => history.push('/admin/sos-alerte-danger')}
+          />
+        )}
+      </Flex>
     </Flex>
   );
 }
