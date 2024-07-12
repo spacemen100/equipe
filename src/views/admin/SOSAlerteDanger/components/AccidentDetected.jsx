@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import {
   Text,
   Button,
@@ -24,6 +24,7 @@ import { PhoneIcon, CheckIcon } from '@chakra-ui/icons';
 import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
 import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Import the useTeam hook
 import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
+import { MediaContext } from '../../../../MediaContext';
 
 const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000'; // Default team_id for "Aucune équipe"
 const DEFAULT_TEAM_NAME = 'Aucune équipe'; // Default team_name
@@ -34,7 +35,7 @@ const AccidentDetected = () => {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const videoRef = useRef(null);
+  const { stream, videoRef } = useContext(MediaContext);
   const mediaRecorderRef = useRef(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [alertId, setAlertId] = useState(null); // Store the ID of the inserted alert
@@ -67,19 +68,32 @@ const AccidentDetected = () => {
     });
   }, []);
 
-  const startRecording = useCallback(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then(stream => {
-        console.log('Media stream obtained:', stream); // Debug log
-        videoRef.current.srcObject = stream;
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        mediaRecorderRef.current.ondataavailable = handleDataAvailable;
-        mediaRecorderRef.current.start();
-        // Stop recording after 100 seconds (100,000 milliseconds)
-        setTimeout(stopRecording, 100000);
-      })
-      .catch(error => console.error('Error accessing media devices:', error));
+  const handleDataAvailable = useCallback((event) => {
+    if (event.data.size > 0) {
+      console.log('Data available from media recorder:', event.data); // Debug log
+      setRecordedChunks(prev => prev.concat(event.data));
+    }
   }, []);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      console.log('Recording stopped'); // Debug log
+    }
+  }, [videoRef]);
+
+  const startRecording = useCallback(() => {
+    if (stream) {
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+      mediaRecorderRef.current.start();
+      // Stop recording after 100 seconds (100,000 milliseconds)
+      setTimeout(stopRecording, 100000);
+    }
+  }, [stream, handleDataAvailable, stopRecording]);
 
   const saveAlertData = useCallback(async (lat, long, timeForUser) => {
     console.log('Saving alert data:', { lat, long, timeForUser }); // Debug log
@@ -154,14 +168,14 @@ const AccidentDetected = () => {
           const currentTime = new Date().toISOString();
           await saveAlertData(location.latitude, location.longitude, currentTime);
           startRecording();
-          // Wait for 10 seconds before uploading video and updating alert data
+          // Wait for 3 seconds before uploading video and updating alert data
           setTimeout(async () => {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
             const videoUrl = await uploadVideoToSupabase(blob);
             if (videoUrl && alertId) {
               await updateAlertData(alertId, videoUrl);
             }
-          }, 10000);
+          }, 3000);
         } catch (error) {
           console.error('Error in location or recording:', error);
         }
@@ -206,21 +220,6 @@ const AccidentDetected = () => {
     setStep(1);
     stopRecording();
     onClose();
-  };
-
-  const handleDataAvailable = (event) => {
-    if (event.data.size > 0) {
-      console.log('Data available from media recorder:', event.data); // Debug log
-      setRecordedChunks(prev => prev.concat(event.data));
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-      console.log('Recording stopped'); // Debug log
-    }
   };
 
   const downloadRecording = () => {
