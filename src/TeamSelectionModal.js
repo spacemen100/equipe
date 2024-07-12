@@ -6,7 +6,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerBody,
-  DrawerCloseButton,
   useDisclosure,
   Flex
 } from '@chakra-ui/react';
@@ -63,7 +62,7 @@ const TeamSelectionModal = () => {
     <Drawer isOpen={isOpen} onClose={onClose} size="full">
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton />
+
         <DrawerHeader>Selectionnez votre équipe</DrawerHeader>
         <DrawerBody>
           <Flex
