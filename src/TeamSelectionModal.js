@@ -1,13 +1,14 @@
 // src/TeamSelectionModal.js
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerCloseButton,
+  useDisclosure,
+  Flex
 } from '@chakra-ui/react';
 import TeamSelection from './TeamSelection';
 import { useTeam } from './views/admin/InterfaceEquipe/TeamContext';
@@ -59,16 +60,23 @@ const TeamSelectionModal = () => {
   }, [teamSelected, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Selectionnez votre équipe</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <TeamSelection onTeamSelected={handleTeamSelected} />
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <Drawer isOpen={isOpen} onClose={onClose} size="full">
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader>Selectionnez votre équipe</DrawerHeader>
+        <DrawerBody>
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            height="100%"
+          >
+            <TeamSelection onTeamSelected={handleTeamSelected} />
+          </Flex>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
