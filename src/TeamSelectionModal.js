@@ -135,7 +135,7 @@ const TeamSelectionModal = () => {
                 </Select>
               </FormControl>
               <FormControl mt={4}>
-                <FormLabel>Mot de passe</FormLabel>
+                <FormLabel>Mot de passe (123)</FormLabel>
                 <Input
                   type="text"
                   value={password}
