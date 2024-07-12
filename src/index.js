@@ -18,8 +18,8 @@ import TeamSelectionModal from './TeamSelectionModal'; // Importer le modal de s
 
 ReactDOM.render(
   <ChakraProvider theme={theme}>
-    <EventProvider>
-      <TeamProvider>
+    <TeamProvider>
+      <EventProvider>
         <React.StrictMode>
           <GPSPositionProvider>
             <ThemeEditorProvider>
@@ -38,8 +38,8 @@ ReactDOM.render(
             </ThemeEditorProvider>
           </GPSPositionProvider>
         </React.StrictMode>
-      </TeamProvider>
-    </EventProvider>
+      </EventProvider>
+    </TeamProvider>
   </ChakraProvider>,
   document.getElementById('root')
 );

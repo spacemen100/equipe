@@ -1,3 +1,4 @@
+// src/views/admin/InterfaceEquipe/components/TeamSelection.js
 import React, { useEffect, useState } from 'react';
 import {
   Box,

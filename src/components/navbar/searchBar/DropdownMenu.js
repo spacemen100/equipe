@@ -1,3 +1,4 @@
+// src/DropdownMenu.js
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -116,17 +117,35 @@ const DropdownMenu = () => {
   };
 
   useEffect(() => {
-    // Check if an event is selected every 30 seconds
-    const intervalId = setInterval(() => {
-      if (!isEventSelected) {
-        // Reload the page if no event is selected
-        window.location.reload();
+    // Check if a team is selected every 30 seconds
+    const intervalId = setInterval(async () => {
+      if (teamUUID && !isEventSelected) {
+        try {
+          const { data, error } = await supabase
+            .from('vianney_teams')
+            .select('event_id')
+            .eq('id', teamUUID)
+            .single();
+
+          if (error) {
+            throw error;
+          }
+
+          if (data && data.event_id) {
+            const event = eventList.find((e) => e.event_id === data.event_id);
+            if (event) {
+              handleSelect(event);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching event for team:', error.message);
+        }
       }
-    }, 30000); // 30 seconds in milliseconds
+    }, 10000); // 10 seconds in milliseconds
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, [isEventSelected]);
+  }, [teamUUID, isEventSelected, eventList]);
 
   const createCustomIcon = () => {
     return L.divIcon({

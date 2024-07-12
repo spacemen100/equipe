@@ -11,27 +11,48 @@ import {
 } from '@chakra-ui/react';
 import TeamSelection from './TeamSelection';
 import { useTeam } from './views/admin/InterfaceEquipe/TeamContext';
+import { useEvent } from './EventContext';
+import { supabase } from './supabaseClient';
 
 const TeamSelectionModal = () => {
-  const { selectedTeam } = useTeam();
+  const { setSelectedTeam, setTeamUUID, setTeamMembers } = useTeam();
+  const { setEventId } = useEvent();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [teamSelected, setTeamSelected] = useState(false);
 
   useEffect(() => {
-    if (!selectedTeam) {
-      onOpen();
-    }
-  }, [selectedTeam, onOpen]);
+    onOpen();
+  }, [onOpen]);
 
-  const handleTeamSelected = (teamName) => {
-    setTeamSelected(true);
+  const handleTeamSelected = async (teamName) => {
+    try {
+      const { data, error } = await supabase
+        .from('vianney_teams')
+        .select('id, event_id, team_members')
+        .eq('name_of_the_team', teamName)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setEventId(data.event_id); // Mettre à jour le EventContext avec l'event_id
+        setSelectedTeam(teamName); // Mettre à jour le TeamContext avec le nom de l'équipe
+        setTeamUUID(data.id); // Mettre à jour le TeamContext avec l'UUID de l'équipe
+        setTeamMembers(data.team_members); // Mettre à jour les membres de l'équipe
+        setTeamSelected(true);
+      }
+    } catch (error) {
+      console.error('Error fetching team data:', error);
+    }
   };
 
   useEffect(() => {
     if (teamSelected) {
       const timer = setTimeout(() => {
         onClose();
-      }, 3000);
+      }, 10000);
 
       return () => clearTimeout(timer);
     }
