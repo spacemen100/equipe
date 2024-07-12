@@ -14,6 +14,7 @@ import { EventProvider } from './EventContext';
 import { TeamProvider } from './views/admin/InterfaceEquipe/TeamContext';
 import GpsPositionSimplified from './views/admin/InterfaceEquipe/components/GpsPositionSimplified';
 import { MediaProvider } from './MediaContext';
+import TeamSelectionModal from './TeamSelectionModal'; // Importer le modal de sélection de l'équipe
 
 ReactDOM.render(
   <ChakraProvider theme={theme}>
@@ -25,6 +26,7 @@ ReactDOM.render(
               <MediaProvider>
                 <HashRouter>
                   <GpsPositionSimplified />
+                  <TeamSelectionModal /> {/* Afficher le modal au démarrage */}
                   <Switch>
                     <Route path={`/auth`} component={AuthLayout} />
                     <Route path={`/admin`} component={AdminLayout} />
