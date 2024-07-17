@@ -160,29 +160,11 @@ const AccidentDetected = () => {
       timer = setInterval(() => {
         setCounter((prevCounter) => prevCounter - 1);
       }, 1000);
-    } else if (counter === 0) {
-      (async () => {
-        setStep(3);
-        try {
-          const location = await getCurrentLocation();
-          const currentTime = new Date().toISOString();
-          await saveAlertData(location.latitude, location.longitude, currentTime);
-          startRecording();
-          // Wait for 3 seconds before uploading video and updating alert data
-          setTimeout(async () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const videoUrl = await uploadVideoToSupabase(blob);
-            if (videoUrl && alertId) {
-              await updateAlertData(alertId, videoUrl);
-            }
-          }, 3000);
-        } catch (error) {
-          console.error('Error in location or recording:', error);
-        }
-      })();
+    } else if (counter === 0 && step === 2) {
+      confirmSOS();
     }
     return () => clearInterval(timer);
-  }, [counter, step, getCurrentLocation, startRecording, saveAlertData, recordedChunks, alertId]);
+  }, [counter, step]);
 
   useEffect(() => {
     // Update the alert data with the video URL once the URL is available
@@ -193,6 +175,7 @@ const AccidentDetected = () => {
 
   const triggerSOS = () => {
     setStep(2);
+    setCounter(30); // Reset the counter to 30 seconds when SOS is triggered
   };
 
   const confirmSOS = async () => {
