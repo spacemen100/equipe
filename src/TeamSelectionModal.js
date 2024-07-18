@@ -99,7 +99,7 @@ const TeamSelectionModal = () => {
       const timer = setTimeout(() => {
         setLoading(false); // Cacher le spinner
         onClose();
-      }, 10000);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }

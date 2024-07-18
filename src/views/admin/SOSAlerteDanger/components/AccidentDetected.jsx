@@ -164,6 +164,7 @@ const AccidentDetected = () => {
       confirmSOS();
     }
     return () => clearInterval(timer);
+    // eslint-disable-next-line
   }, [counter, step]);
 
   useEffect(() => {
