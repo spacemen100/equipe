@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 const VideoRecorder = ({ uuid }) => {
   const [recording, setRecording] = useState(false);
@@ -14,13 +14,14 @@ const VideoRecorder = ({ uuid }) => {
     }
   }, [uuid]);
 
-  useEffect(() => {
-    if (localUUID) {
-      startRecording();
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
     }
-  }, [localUUID]);
+    setRecording(false);
+  }, []);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     if (!localUUID) {
       alert('Please enter a UUID before starting the recording.');
       return;
@@ -50,12 +51,13 @@ const VideoRecorder = ({ uuid }) => {
     setTimeout(() => {
       stopRecording();
     }, 10000); // Stop recording after 10 seconds
-  };
+  }, [localUUID, stopRecording]);
 
-  const stopRecording = () => {
-    mediaRecorderRef.current.stop();
-    setRecording(false);
-  };
+  useEffect(() => {
+    if (localUUID) {
+      startRecording();
+    }
+  }, [localUUID, startRecording]);
 
   const downloadVideo = () => {
     const a = document.createElement('a');
