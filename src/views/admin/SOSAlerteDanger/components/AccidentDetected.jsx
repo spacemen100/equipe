@@ -19,6 +19,7 @@ import {
   AlertTitle,
   AlertDescription,
   Input,
+  Box
 } from '@chakra-ui/react';
 import { PhoneIcon, CheckIcon } from '@chakra-ui/icons';
 import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
@@ -220,15 +221,19 @@ const AccidentDetected = () => {
             </AlertDescription>
           </Alert>
           {supabaseURL && (
+            <Box display="none">
             <VStack spacing={4}>
               <Text fontSize="md" fontWeight="bold">
                 Supabase URL :
               </Text>
               <Input value={supabaseURL} isReadOnly />
             </VStack>
+            </Box>
           )}
-          {/* Include the VideoRecorder component here */}
-          <VideoRecorder uuid={alertId} setSupabaseURL={setSupabaseURL} />
+          {/* Hidden VideoRecorder component */}
+          <Box display="none">
+            <VideoRecorder uuid={alertId} setSupabaseURL={setSupabaseURL} />
+          </Box>
         </VStack>
       )}
 
