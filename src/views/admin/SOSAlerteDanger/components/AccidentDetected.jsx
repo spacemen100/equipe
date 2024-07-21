@@ -25,6 +25,7 @@ import { supabase } from './../../../../supabaseClient'; // Adjust the import ac
 import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Import the useTeam hook
 import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
 import { MediaContext } from '../../../../MediaContext';
+import VideoRecorder from './VideoRecorder'; // Adjust the import according to your project structure
 
 const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000'; // Default team_id for "Aucune équipe"
 const DEFAULT_TEAM_NAME = 'Aucune équipe'; // Default team_name
@@ -304,6 +305,8 @@ const AccidentDetected = () => {
               <Input value={videoUrl} isReadOnly />
             </VStack>
           )}
+          {/* Include the VideoRecorder component here */}
+          <VideoRecorder />
         </VStack>
       )}
 
