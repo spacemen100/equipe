@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
 
 const VideoRecorder = ({ uuid }) => {
   const [recording, setRecording] = useState(false);
@@ -44,6 +45,7 @@ const VideoRecorder = ({ uuid }) => {
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
       const url = URL.createObjectURL(blob);
       setVideoURL(url);
+      uploadVideoToSupabase(blob); // Upload the video to Supabase after recording stops
       stream.getTracks().forEach(track => track.stop());
     };
 
@@ -66,26 +68,26 @@ const VideoRecorder = ({ uuid }) => {
     a.click();
   };
 
-  const uploadVideo = async () => {
-    if (!videoURL) {
-      alert('No video to upload.');
-      return;
-    }
-
-    const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-    const formData = new FormData();
-    formData.append('video', blob, 'recorded_video.webm');
-    formData.append('uuid', localUUID);
-
+  const uploadVideoToSupabase = async (blob) => {
+    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
     try {
-      const response = await fetch('https://your-server-endpoint.com/vianney_sos_alerts', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
-      alert(`Upload successful: ${result.message}`);
+      const { data, error } = await supabase
+        .storage
+        .from('sos-alerts-video')
+        .upload(fileName, blob);
+
+      if (error) {
+        console.error('Error uploading video:', error);
+        alert('Error uploading video');
+      } else {
+        const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
+        console.log('Video uploaded:', videoUrl);
+        setVideoURL(videoUrl); // Set the video URL state
+        alert('Video uploaded successfully');
+      }
     } catch (error) {
-      alert(`Upload failed: ${error.message}`);
+      console.error('Unexpected error uploading video:', error);
+      alert('Unexpected error uploading video');
     }
   };
 
@@ -110,7 +112,6 @@ const VideoRecorder = ({ uuid }) => {
         <div>
           <video src={videoURL} controls style={{ width: '400px' }}></video>
           <button onClick={downloadVideo}>Download Video</button>
-          <button onClick={uploadVideo}>Upload Video</button>
         </div>
       )}
     </div>
