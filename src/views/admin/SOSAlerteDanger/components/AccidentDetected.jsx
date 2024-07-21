@@ -41,6 +41,7 @@ const AccidentDetected = () => {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [alertId, setAlertId] = useState(null); // Store the ID of the inserted alert
   const [videoUrl, setVideoUrl] = useState(''); // Store the video URL
+  const [supabaseURL, setSupabaseURL] = useState(''); // State for Supabase URL
   const { teamUUID, selectedTeam } = useTeam(); // Use the useTeam hook to get teamUUID and selectedTeam
   const { selectedEventId } = useEvent(); // Use the useEvent hook to get the selectedEventId
 
@@ -122,7 +123,7 @@ const AccidentDetected = () => {
     }
   }, [teamUUID, selectedTeam, selectedEventId]);
 
-  const updateAlertData = async (id, videoUrl) => {
+  const updateAlertData = useCallback(async (id, videoUrl) => {
     console.log('Updating alert data with URL:', { id, videoUrl }); // Debug log
     const { data, error } = await supabase
       .from('vianney_sos_alerts')
@@ -134,7 +135,7 @@ const AccidentDetected = () => {
     } else {
       console.log('Data updated successfully:', data);
     }
-  };
+  }, []);
 
   const uploadVideoToSupabase = async (blob) => {
     const fileName = `sos_recording_${new Date().toISOString()}.webm`;
@@ -173,7 +174,14 @@ const AccidentDetected = () => {
     if (videoUrl && alertId) {
       updateAlertData(alertId, videoUrl);
     }
-  }, [videoUrl, alertId]);
+  }, [videoUrl, alertId, updateAlertData]);
+
+  useEffect(() => {
+    // Update the alert data with the Supabase URL once it's available
+    if (supabaseURL && alertId) {
+      updateAlertData(alertId, supabaseURL);
+    }
+  }, [supabaseURL, alertId, updateAlertData]);
 
   const triggerSOS = () => {
     setStep(2);
@@ -305,8 +313,16 @@ const AccidentDetected = () => {
               <Input value={videoUrl} isReadOnly />
             </VStack>
           )}
+          {supabaseURL && (
+            <VStack spacing={4}>
+              <Text fontSize="md" fontWeight="bold">
+                Supabase URL :
+              </Text>
+              <Input value={supabaseURL} isReadOnly />
+            </VStack>
+          )}
           {/* Include the VideoRecorder component here */}
-          <VideoRecorder uuid={alertId} />
+          <VideoRecorder uuid={alertId} setSupabaseURL={setSupabaseURL} />
         </VStack>
       )}
 
