@@ -14,6 +14,12 @@ const VideoRecorder = ({ uuid }) => {
     }
   }, [uuid]);
 
+  useEffect(() => {
+    if (localUUID) {
+      startRecording();
+    }
+  }, [localUUID]);
+
   const startRecording = async () => {
     if (!localUUID) {
       alert('Please enter a UUID before starting the recording.');
@@ -90,6 +96,7 @@ const VideoRecorder = ({ uuid }) => {
           type="text"
           value={localUUID}
           onChange={(e) => setLocalUUID(e.target.value)}
+          readOnly
         />
       </div>
       <video ref={videoRef} autoPlay muted style={{ width: '400px' }}></video>
