@@ -3,11 +3,16 @@ import React, { useState, useRef } from 'react';
 const VideoRecorder = () => {
   const [recording, setRecording] = useState(false);
   const [videoURL, setVideoURL] = useState(null);
+  const [uuid, setUUID] = useState('');
   const videoRef = useRef();
   const mediaRecorderRef = useRef();
   const recordedChunksRef = useRef([]);
 
   const startRecording = async () => {
+    if (!uuid) {
+      alert('Please enter a UUID before starting the recording.');
+      return;
+    }
     setRecording(true);
     recordedChunksRef.current = [];
 
@@ -32,7 +37,7 @@ const VideoRecorder = () => {
     mediaRecorderRef.current.start();
     setTimeout(() => {
       stopRecording();
-    }, 10000); // Arrête l'enregistrement après 10 secondes
+    }, 10000); // Stop recording after 10 seconds
   };
 
   const stopRecording = () => {
@@ -47,8 +52,40 @@ const VideoRecorder = () => {
     a.click();
   };
 
+  const uploadVideo = async () => {
+    if (!videoURL) {
+      alert('No video to upload.');
+      return;
+    }
+
+    const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+    const formData = new FormData();
+    formData.append('video', blob, 'recorded_video.webm');
+    formData.append('uuid', uuid);
+
+    try {
+      const response = await fetch('https://your-server-endpoint.com/vianney_sos_alerts', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      alert(`Upload successful: ${result.message}`);
+    } catch (error) {
+      alert(`Upload failed: ${error.message}`);
+    }
+  };
+
   return (
     <div>
+      <div>
+        <label htmlFor="uuid">UUID:</label>
+        <input
+          id="uuid"
+          type="text"
+          value={uuid}
+          onChange={(e) => setUUID(e.target.value)}
+        />
+      </div>
       <video ref={videoRef} autoPlay muted style={{ width: '400px' }}></video>
       <div>
         {!recording && <button onClick={startRecording}>Start Recording</button>}
@@ -58,6 +95,7 @@ const VideoRecorder = () => {
         <div>
           <video src={videoURL} controls style={{ width: '400px' }}></video>
           <button onClick={downloadVideo}>Download Video</button>
+          <button onClick={uploadVideo}>Upload Video</button>
         </div>
       )}
     </div>
