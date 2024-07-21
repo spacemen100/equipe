@@ -1,15 +1,21 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-const VideoRecorder = () => {
+const VideoRecorder = ({ uuid }) => {
   const [recording, setRecording] = useState(false);
   const [videoURL, setVideoURL] = useState(null);
-  const [uuid, setUUID] = useState('');
+  const [localUUID, setLocalUUID] = useState('');
   const videoRef = useRef();
   const mediaRecorderRef = useRef();
   const recordedChunksRef = useRef([]);
 
+  useEffect(() => {
+    if (uuid) {
+      setLocalUUID(uuid);
+    }
+  }, [uuid]);
+
   const startRecording = async () => {
-    if (!uuid) {
+    if (!localUUID) {
       alert('Please enter a UUID before starting the recording.');
       return;
     }
@@ -61,7 +67,7 @@ const VideoRecorder = () => {
     const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
     const formData = new FormData();
     formData.append('video', blob, 'recorded_video.webm');
-    formData.append('uuid', uuid);
+    formData.append('uuid', localUUID);
 
     try {
       const response = await fetch('https://your-server-endpoint.com/vianney_sos_alerts', {
@@ -82,8 +88,8 @@ const VideoRecorder = () => {
         <input
           id="uuid"
           type="text"
-          value={uuid}
-          onChange={(e) => setUUID(e.target.value)}
+          value={localUUID}
+          onChange={(e) => setLocalUUID(e.target.value)}
         />
       </div>
       <video ref={videoRef} autoPlay muted style={{ width: '400px' }}></video>

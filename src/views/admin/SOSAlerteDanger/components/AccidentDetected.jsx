@@ -306,7 +306,7 @@ const AccidentDetected = () => {
             </VStack>
           )}
           {/* Include the VideoRecorder component here */}
-          <VideoRecorder />
+          <VideoRecorder uuid={alertId} />
         </VStack>
       )}
 
