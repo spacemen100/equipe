@@ -4,6 +4,7 @@ import { supabase } from './../../../../supabaseClient'; // Adjust the import ac
 const VideoRecorder = ({ uuid }) => {
   const [recording, setRecording] = useState(false);
   const [videoURL, setVideoURL] = useState(null);
+  const [supabaseURL, setSupabaseURL] = useState(''); // State for Supabase URL
   const [localUUID, setLocalUUID] = useState('');
   const videoRef = useRef();
   const mediaRecorderRef = useRef();
@@ -82,7 +83,7 @@ const VideoRecorder = ({ uuid }) => {
       } else {
         const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
         console.log('Video uploaded:', videoUrl);
-        setVideoURL(videoUrl); // Set the video URL state
+        setSupabaseURL(videoUrl); // Set the Supabase URL state
         alert('Video uploaded successfully');
       }
     } catch (error) {
@@ -112,6 +113,18 @@ const VideoRecorder = ({ uuid }) => {
         <div>
           <video src={videoURL} controls style={{ width: '400px' }}></video>
           <button onClick={downloadVideo}>Download Video</button>
+        </div>
+      )}
+      {supabaseURL && (
+        <div>
+          <label htmlFor="supabaseURL">Supabase URL:</label>
+          <input
+            id="supabaseURL"
+            type="text"
+            value={supabaseURL}
+            readOnly
+            style={{ width: '400px' }}
+          />
         </div>
       )}
     </div>
