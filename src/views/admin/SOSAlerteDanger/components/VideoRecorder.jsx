@@ -22,6 +22,29 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     setRecording(false);
   }, []);
 
+  const uploadVideoToSupabase = useCallback(async (blob) => {
+    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
+    try {
+      const { data, error } = await supabase
+        .storage
+        .from('sos-alerts-video')
+        .upload(fileName, blob);
+
+      if (error) {
+        console.error('Error uploading video:', error);
+        alert('Error uploading video');
+      } else {
+        const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
+        console.log('Video uploaded:', videoUrl);
+        setSupabaseURL(videoUrl); // Set the Supabase URL state in parent component
+        alert('Video uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Unexpected error uploading video:', error);
+      alert('Unexpected error uploading video');
+    }
+  }, [setSupabaseURL]);
+
   const startRecording = useCallback(async () => {
     if (!localUUID) {
       alert('Please enter a UUID before starting the recording.');
@@ -53,7 +76,7 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     setTimeout(() => {
       stopRecording();
     }, 10000); // Stop recording after 10 seconds
-  }, [localUUID, stopRecording]);
+  }, [localUUID, stopRecording, uploadVideoToSupabase]);
 
   useEffect(() => {
     if (localUUID) {
@@ -66,29 +89,6 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     a.href = videoURL;
     a.download = 'recorded_video.webm';
     a.click();
-  };
-
-  const uploadVideoToSupabase = async (blob) => {
-    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
-    try {
-      const { data, error } = await supabase
-        .storage
-        .from('sos-alerts-video')
-        .upload(fileName, blob);
-
-      if (error) {
-        console.error('Error uploading video:', error);
-        alert('Error uploading video');
-      } else {
-        const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
-        console.log('Video uploaded:', videoUrl);
-        setSupabaseURL(videoUrl); // Set the Supabase URL state in parent component
-        alert('Video uploaded successfully');
-      }
-    } catch (error) {
-      console.error('Unexpected error uploading video:', error);
-      alert('Unexpected error uploading video');
-    }
   };
 
   return (
