@@ -8,7 +8,6 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
   const videoRef = useRef();
   const mediaRecorderRef = useRef();
   const recordedChunksRef = useRef([]);
-  const canvasRef = useRef();
 
   useEffect(() => {
     if (uuid) {
@@ -46,18 +45,6 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     }
   }, [setSupabaseURL]);
 
-  const getMediaDevices = async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(device => device.kind === 'videoinput');
-  };
-
-  const getMediaStream = async (deviceId) => {
-    return await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: deviceId ? { exact: deviceId } : undefined },
-      audio: true // Including audio stream
-    });
-  };
-
   const startRecording = useCallback(async () => {
     if (!localUUID) {
       alert('Please enter a UUID before starting the recording.');
@@ -66,49 +53,13 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     setRecording(true);
     recordedChunksRef.current = [];
 
-    const videoDevices = await getMediaDevices();
-    if (videoDevices.length < 2) {
-      alert('This device does not have multiple cameras.');
-      return;
-    }
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: true,
+      audio: true // Requesting audio along with video
+    });
+    videoRef.current.srcObject = stream;
 
-    const frontCamera = videoDevices.find(device => device.label.toLowerCase().includes('front'));
-    const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back'));
-
-    if (!frontCamera || !backCamera) {
-      alert('Front or back camera not found.');
-      return;
-    }
-
-    const frontStream = await getMediaStream(frontCamera.deviceId);
-    const backStream = await getMediaStream(backCamera.deviceId);
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const frontVideo = document.createElement('video');
-    const backVideo = document.createElement('video');
-
-    frontVideo.srcObject = frontStream;
-    backVideo.srcObject = backStream;
-    frontVideo.play();
-    backVideo.play();
-
-    const drawVideo = () => {
-      ctx.drawImage(frontVideo, 0, 0, canvas.width, canvas.height / 2);
-      ctx.drawImage(backVideo, 0, canvas.height / 2, canvas.width, canvas.height / 2);
-      requestAnimationFrame(drawVideo);
-    };
-
-    frontVideo.onloadedmetadata = () => {
-      canvas.width = Math.max(frontVideo.videoWidth, backVideo.videoWidth);
-      canvas.height = frontVideo.videoHeight + backVideo.videoHeight;
-      drawVideo();
-    };
-
-    const combinedStream = canvas.captureStream();
-    videoRef.current.srcObject = combinedStream;
-
-    mediaRecorderRef.current = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+    mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
     mediaRecorderRef.current.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -121,14 +72,13 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
       const url = URL.createObjectURL(blob);
       setVideoURL(url);
       uploadVideoToSupabase(blob); // Upload the video to Supabase after recording stops
-      frontStream.getTracks().forEach(track => track.stop());
-      backStream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => track.stop());
     };
 
     mediaRecorderRef.current.start();
     setTimeout(() => {
       stopRecording();
-    }, 100000); // Stop recording after 100 seconds
+    }, 10000); // Stop recording after 10 seconds
   }, [localUUID, stopRecording, uploadVideoToSupabase]);
 
   useEffect(() => {
@@ -167,7 +117,6 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
           <button onClick={downloadVideo}>Download Video</button>
         </div>
       )}
-      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
     </div>
   );
 };
