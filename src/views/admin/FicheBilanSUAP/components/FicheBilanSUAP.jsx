@@ -588,7 +588,7 @@ function FicheBilanSUAP({ teamName }) {
       </Grid>
 
       <Box bg="black" color="white" p={2} textAlign="center" my={5}>BESOIN ET POSITION D'ÉVACUATION</Box>
-      <SimpleGrid columns={2} spacing={5} my={5}>
+      <SimpleGrid columns={1} spacing={5} my={5}>
         <FormControl>
           <FormLabel>Besoin moyen évacuation ?</FormLabel>
           <RadioGroup id="besoin_evacuation" value={formData.besoin_evacuation} onChange={(value) => setFormData({ ...formData, besoin_evacuation: value })}>
