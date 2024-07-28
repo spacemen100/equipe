@@ -53,7 +53,10 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     setRecording(true);
     recordedChunksRef.current = [];
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: true,
+      audio: true // Requesting audio along with video
+    });
     videoRef.current.srcObject = stream;
 
     mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
