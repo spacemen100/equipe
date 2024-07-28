@@ -30,7 +30,7 @@ function MessagerieWhatsappChat() {
     const [alertToDelete, setAlertToDelete] = useState(null);
     const [password, setPassword] = useState('');
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
-    const [isImageEnlarged, setIsImageEnlarged] = useState(false);
+
     const [showAlert, setShowAlert] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -312,34 +312,44 @@ function MessagerieWhatsappChat() {
         if (isRecording) {
             mediaRecorder.stop();
         } else {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = (event) => {
-                setAudioChunks((prev) => [...prev, event.data]);
-            };
-            recorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                setSelectedAudio(audioBlob);
-                setAudioChunks([]);
-                stream.getTracks().forEach((track) => track.stop());
-            };
-            recorder.start();
-            setMediaRecorder(recorder);
-        }
-        setIsRecording(!isRecording);
-    };
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream);
+                
+                recorder.ondataavailable = (event) => {
+                    setAudioChunks((prev) => [...prev, event.data]);
+                };
 
-    const handleDeleteFile = () => {
-        setSelectedFile(null);
-        setPreviewImage(null);
+                recorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    setSelectedAudio(audioBlob);
+                    setAudioChunks([]);
+                    stream.getTracks().forEach((track) => track.stop());
+                };
+
+                recorder.start();
+                setMediaRecorder(recorder);
+                setIsRecording(true);
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                toast({
+                    title: "Erreur",
+                    description: "Nous n'avons pas pu accéder au microphone. Veuillez vérifier les permissions.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+        }
     };
 
     const handleDeleteAudio = () => {
         setSelectedAudio(null);
     };
-    // eslint-disable-next-line
-    const toggleImageSize = () => {
-        setIsImageEnlarged(!isImageEnlarged);
+
+    const handleDeleteFile = () => {
+        setSelectedFile(null);
+        setPreviewImage(null);
     };
 
     return (
