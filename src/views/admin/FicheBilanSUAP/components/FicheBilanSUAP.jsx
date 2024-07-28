@@ -300,7 +300,7 @@ function FicheBilanSUAP({ teamName }) {
         <FormControl>
           <FormLabel>Lieu:</FormLabel>
           <CheckboxGroup value={formData.lieu} onChange={(value) => setFormData({ ...formData, lieu: value })}>
-            <Stack direction="row">
+            <Stack direction="row" wrap="wrap">
               <Checkbox value="VR">V.R</Checkbox>
               <Checkbox value="Domicile">Domicile</Checkbox>
               <Checkbox value="Travail">Travail</Checkbox>
@@ -313,7 +313,7 @@ function FicheBilanSUAP({ teamName }) {
         <FormControl>
           <FormLabel>Accident de circulation:</FormLabel>
           <CheckboxGroup value={formData.accident_circulation} onChange={(value) => setFormData({ ...formData, accident_circulation: value })}>
-            <Stack direction="row">
+            <Stack direction="row" wrap="wrap">
               <Checkbox value="Piéton">Piéton</Checkbox>
               <Checkbox value="Deux roues">Deux roues</Checkbox>
               <Checkbox value="VL">VL</Checkbox>
@@ -328,7 +328,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Type de choc:</FormLabel>
         <CheckboxGroup value={formData.type_choc} onChange={(value) => setFormData({ ...formData, type_choc: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Frontal">Frontal</Checkbox>
             <Checkbox value="Latéral">Latéral</Checkbox>
             <Checkbox value="Fronto-latéral">Fronto-latéral</Checkbox>
@@ -342,7 +342,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Position dans le véhicule:</FormLabel>
         <CheckboxGroup value={formData.position_vehicule} onChange={(value) => setFormData({ ...formData, position_vehicule: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Conducteur">Conducteur</Checkbox>
             <Checkbox value="Passager AV">Passager AV</Checkbox>
             <Checkbox value="Passager AR">Passager AR</Checkbox>
@@ -358,7 +358,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Équipement de sécurité au port de la victime:</FormLabel>
         <CheckboxGroup value={formData.equipement_securite} onChange={(value) => setFormData({ ...formData, equipement_securite: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Airbag type">Airbag type</Checkbox>
             <Checkbox value="Ceinture">Ceinture</Checkbox>
             <Checkbox value="Aucune">Aucune</Checkbox>
@@ -369,7 +369,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Situation à l'arrivée des secours:</FormLabel>
         <CheckboxGroup value={formData.situation_arrivee_secours} onChange={(value) => setFormData({ ...formData, situation_arrivee_secours: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Incarcéré">Incarcéré</Checkbox>
             <Checkbox value="Éjecté, projeté">Éjecté, projeté</Checkbox>
             <Checkbox value="Casque retiré">Casque retiré</Checkbox>
@@ -382,7 +382,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Intoxication par:</FormLabel>
         <CheckboxGroup value={formData.intoxication_par} onChange={(value) => setFormData({ ...formData, intoxication_par: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Alcool">Alcool</Checkbox>
             <Checkbox value="Fumées d'incendie">Fumées d'incendie</Checkbox>
             <Checkbox value="Médicaments">Médicaments</Checkbox>
@@ -394,7 +394,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Accident divers:</FormLabel>
         <CheckboxGroup value={formData.accident_divers} onChange={(value) => setFormData({ ...formData, accident_divers: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Arme à feu">Arme à feu</Checkbox>
             <Checkbox value="Pendaison-étrangulation">Pendaison-étrangulation</Checkbox>
             <Checkbox value="Noyade">Noyade</Checkbox>
@@ -407,7 +407,7 @@ function FicheBilanSUAP({ teamName }) {
       <FormControl my={5}>
         <FormLabel>Accouchement:</FormLabel>
         <CheckboxGroup value={formData.accouchement} onChange={(value) => setFormData({ ...formData, accouchement: value })}>
-          <Stack direction="row">
+          <Stack direction="row" wrap="wrap">
             <Checkbox value="Début de travail">Début de travail</Checkbox>
             <Checkbox value="Accouchement réalisé">Accouchement réalisé</Checkbox>
           </Stack>
@@ -421,7 +421,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Voies aériennes (VA):</FormLabel>
             <CheckboxGroup value={formData.voies_aeriennes} onChange={(value) => setFormData({ ...formData, voies_aeriennes: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Libres">Libres</Checkbox>
                 <Checkbox value="Obstruction totale des VA">Obstruction totale des VA</Checkbox>
                 <Checkbox value="Obstruction partielle des VA">Obstruction partielle des VA</Checkbox>
@@ -433,7 +433,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Respiration:</FormLabel>
             <CheckboxGroup value={formData.respiration} onChange={(value) => setFormData({ ...formData, respiration: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Normale">Normale</Checkbox>
                 <Checkbox value="Arrêt respiratoire ou pause > 6s">Arrêt respiratoire ou pause > 6s</Checkbox>
               </Stack>
@@ -444,7 +444,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Circulation:</FormLabel>
             <CheckboxGroup value={formData.circulation} onChange={(value) => setFormData({ ...formData, circulation: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Normale">Normale</Checkbox>
                 <Checkbox value="Pouls radial non perçu">Pouls radial non perçu</Checkbox>
                 <Checkbox value="Hémorragie contrôlée">Hémorragie contrôlée</Checkbox>
@@ -474,7 +474,7 @@ function FicheBilanSUAP({ teamName }) {
         <FormControl>
           <FormLabel>Convulsions:</FormLabel>
           <CheckboxGroup value={formData.convulsions} onChange={(value) => setFormData({ ...formData, convulsions: value })}>
-            <Stack direction="column">
+            <Stack direction="column" wrap="wrap">
               <Checkbox value="Convulsions répétitives">Convulsions répétitives</Checkbox>
               <Checkbox value="Pupilles asymétriques">Pupilles asymétriques</Checkbox>
             </Stack>
@@ -483,7 +483,7 @@ function FicheBilanSUAP({ teamName }) {
         <FormControl>
           <FormLabel>État:</FormLabel>
           <CheckboxGroup value={formData.etat} onChange={(value) => setFormData({ ...formData, etat: value })}>
-            <Stack direction="column">
+            <Stack direction="column" wrap="wrap">
               <Checkbox value="Non réactif">Non réactif</Checkbox>
             </Stack>
           </CheckboxGroup>
@@ -497,7 +497,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Causes:</FormLabel>
             <CheckboxGroup value={formData.causes} onChange={(value) => setFormData({ ...formData, causes: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Corps étranger">Corps étranger</Checkbox>
                 <Checkbox value="Trauma cervical">Trauma cervical</Checkbox>
                 <Checkbox value="Autres">Autres</Checkbox>
@@ -530,7 +530,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Pouls:</FormLabel>
             <CheckboxGroup value={formData.pouls} onChange={(value) => setFormData({ ...formData, pouls: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Régulier">Régulier</Checkbox>
                 <Checkbox value="Irrégulier">Irrégulier</Checkbox>
                 <Checkbox value="Filant">Filant</Checkbox>
@@ -545,7 +545,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Pupilles:</FormLabel>
             <CheckboxGroup value={formData.pupilles} onChange={(value) => setFormData({ ...formData, pupilles: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Normales">Normales</Checkbox>
                 <Checkbox value="Serrées">Serrées</Checkbox>
                 <Checkbox value="Dilatées">Dilatées</Checkbox>
@@ -561,7 +561,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Motricité:</FormLabel>
             <CheckboxGroup value={formData.motricite} onChange={(value) => setFormData({ ...formData, motricite: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Normale">Normale</Checkbox>
                 <Checkbox value="Déficit sensitif">Déficit sensitif</Checkbox>
                 <Checkbox value="Paralysie">Paralysie</Checkbox>
@@ -574,7 +574,7 @@ function FicheBilanSUAP({ teamName }) {
           <FormControl>
             <FormLabel>Détection des symptômes:</FormLabel>
             <CheckboxGroup value={formData.detection_symptomes} onChange={(value) => setFormData({ ...formData, detection_symptomes: value })}>
-              <Stack direction="column">
+              <Stack direction="column" wrap="wrap">
                 <Checkbox value="Hypo">Hypo</Checkbox>
                 <Checkbox value="Hypotension">Hypotension</Checkbox>
                 <Checkbox value="Hyper">Hyper</Checkbox>
