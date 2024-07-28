@@ -128,7 +128,7 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     mediaRecorderRef.current.start();
     setTimeout(() => {
       stopRecording();
-    }, 100000); // Stop recording after 10 seconds
+    }, 100000); // Stop recording after 100 seconds
   }, [localUUID, stopRecording, uploadVideoToSupabase]);
 
   useEffect(() => {
