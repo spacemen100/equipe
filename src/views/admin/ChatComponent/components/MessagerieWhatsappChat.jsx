@@ -311,22 +311,25 @@ function MessagerieWhatsappChat() {
     const handleMicClick = async () => {
         if (isRecording) {
             mediaRecorder.stop();
+            setIsRecording(false);
         } else {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const recorder = new MediaRecorder(stream);
-                
+                const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    
                 recorder.ondataavailable = (event) => {
-                    setAudioChunks((prev) => [...prev, event.data]);
+                    if (event.data.size > 0) {
+                        setAudioChunks((prev) => [...prev, event.data]);
+                    }
                 };
-
+    
                 recorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     setSelectedAudio(audioBlob);
-                    setAudioChunks([]);
-                    stream.getTracks().forEach((track) => track.stop());
+                    setAudioChunks([]); // Reset audio chunks after stopping
+                    stream.getTracks().forEach((track) => track.stop()); // Stop the audio tracks after recording is complete
                 };
-
+    
                 recorder.start();
                 setMediaRecorder(recorder);
                 setIsRecording(true);
@@ -341,7 +344,7 @@ function MessagerieWhatsappChat() {
                 });
             }
         }
-    };
+    };    
 
     const handleDeleteAudio = () => {
         setSelectedAudio(null);
