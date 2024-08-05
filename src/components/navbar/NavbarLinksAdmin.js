@@ -7,20 +7,22 @@ import {
   Menu,
   MenuList,
   useColorModeValue,
-  IconButton
+  IconButton,
+  Badge
 } from '@chakra-ui/react';
 import DropdownMenu from 'components/navbar/searchBar/DropdownMenu';
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { useHistory } from "react-router-dom";
+import { useUnreadMessages } from './../../UnreadMessagesContext'; // Import the context hook
 // Assets
 import navImage from 'assets/img/layout/Navbar.png';
 import routes from 'routes.js';
 
 export default function HeaderLinks(props) {
   const { secondary } = props;
-  const history = useHistory();  // Hook useHistory pour accéder à l'historique de navigation
+  const history = useHistory();
 
   // Chakra Color Mode
   let menuBg = useColorModeValue('white', 'navy.800');
@@ -29,8 +31,11 @@ export default function HeaderLinks(props) {
     '14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
   );
 
-  // État pour les notifications
+  // State for notifications
   const [hasNotification, setHasNotification] = useState(true);
+  
+  // Get the unread message count from the context
+  const unreadCount = useUnreadMessages();
 
   return (
     <Flex
@@ -72,7 +77,7 @@ export default function HeaderLinks(props) {
         onClick={() => history.push('/admin/menu')} // Adjust the path as needed
         ml="10px"
       />
-      <Flex alignItems="center">
+      <Flex alignItems="center" position="relative">
         <IconButton
           aria-label="Notifications"
           icon={hasNotification ? <VscBellDot /> : <VscBell />}
@@ -81,6 +86,22 @@ export default function HeaderLinks(props) {
           ml="10px"
           onClick={() => setHasNotification(!hasNotification)} // Toggle notification state for demonstration
         />
+        <Badge
+          colorScheme="red"
+          borderRadius="full"
+          position="absolute"
+          top="-2px"
+          left="-2px" // Adjust the positioning as needed
+          fontSize="0.7em"
+          minWidth="18px"
+          h="18px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex="9999" // Ensure the badge is above other elements
+        >
+          {unreadCount}
+        </Badge>
         {hasNotification && (
           <MdSos 
             style={{ color: 'red', marginLeft: '10px', fontSize: '24px', cursor: 'pointer' }} 

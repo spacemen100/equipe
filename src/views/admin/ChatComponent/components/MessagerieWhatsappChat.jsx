@@ -8,6 +8,7 @@ import { FcDeleteDatabase } from "react-icons/fc";
 import Card from "components/card/Card";
 import { useEvent } from '../../../../EventContext';
 import { useTeam } from './../../InterfaceEquipe/TeamContext';
+import { BsCheck2All } from "react-icons/bs";
 
 import { supabase, supabaseUrl } from './../../../../supabaseClient';
 
@@ -143,17 +144,30 @@ function MessagerieWhatsappChat() {
                 .select('*')
                 .eq('event_id', selectedEventId)
                 .order('timestamp', { ascending: true });
-
+    
             if (error) {
                 console.error('Error fetching alerts:', error);
                 return;
             }
-
+    
+            // Filtering out messages that the current team hasn't read yet
+            const unreadMessages = data.filter(alert => !alert.read_by_teams.includes(selectedTeam));
+    
+            for (const alert of unreadMessages) {
+                const updatedReadByTeams = [...alert.read_by_teams, selectedTeam]; // Add the current team UUID to the list
+    
+                await supabase
+                    .from('vianney_chat_messages')
+                    .update({ read_by_teams: updatedReadByTeams })
+                    .eq('id', alert.id);
+            }
+    
             setAlerts(data);
         } catch (error) {
             console.error('Error fetching alerts:', error);
         }
-    }, [selectedEventId]);
+    }, [selectedEventId, selectedTeam]);
+       
 
     useEffect(() => {
         fetchAlerts();
@@ -170,9 +184,11 @@ function MessagerieWhatsappChat() {
     };
 
     const handleTeamSelection = (event) => {
-        setSelectedTeam(event.target.value);
+        const selectedUUID = event.target.value; // Ensure this value is the UUID of the selected team
+        setSelectedTeam(selectedUUID);
         setShowAlert(false);
     };
+    
 
     const handleSubmit = async () => {
         if (!selectedTeam) {
@@ -361,85 +377,91 @@ function MessagerieWhatsappChat() {
 
                 <Box flex='1' overflowY='auto' p={4} bg='#f5f5f5'>
                     <VStack spacing={4} align='stretch'>
-                        {alerts.map((alert, index) => {
-                            const isOwnMessage = alert.team_name === selectedTeam;
+                    {alerts.map((alert, index) => {
+    const isOwnMessage = alert.team_name === selectedTeam;
+    const hasBeenRead = alert.read_by_teams.includes(selectedTeam);
 
-                            return (
-                                <Flex
-                                    key={index}
-                                    justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
-                                    mb={2}
-                                    alignItems="flex-start"
-                                >
-                                    {!isOwnMessage && (
-                                        <Avatar
-                                            name={alert.team_name}
-                                            bg="blue.500"
-                                            color="white"
-                                            size="sm"
-                                            mr={4}
-                                        />
-                                    )}
-                                    <Box
-                                        maxWidth="70%"
-                                        bg={isOwnMessage ? 'green.100' : 'white'}
-                                        color={isOwnMessage ? 'black' : 'black'}
-                                        p={3}
-                                        borderRadius="lg"
-                                        boxShadow="md"
-                                        position="relative"
-                                        _before={!isOwnMessage ? {
-                                            content: '""',
-                                            position: 'absolute',
-                                            top: '0',
-                                            left: '-12px',  // Décalé de -24px à -12px
-                                            width: '0',
-                                            height: '0',
-                                            borderStyle: 'solid',
-                                            borderWidth: '0 12px 12px 0',
-                                            borderColor: 'transparent white transparent transparent',
-                                        } : {
-                                            content: '""',
-                                            position: 'absolute',
-                                            top: '0',
-                                            right: '-12px',  // Position the triangle at the top right
-                                            width: '0',
-                                            height: '0',
-                                            borderStyle: 'solid',
-                                            borderWidth: '12px 12px 0 0',
-                                            borderColor: 'green.100 ',
-                                        }}
-                                        borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
-                                        borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
-                                    >
-                                        {!isOwnMessage && (
-                                            <Text fontWeight="bold" fontSize="sm" mb={1}>
-                                                {alert.team_name}
-                                            </Text>
-                                        )}
-                                        <Text>{alert.alert_text}</Text>
-                                        {alert.image_url && (
-                                            <Image
-                                                src={alert.image_url}
-                                                alt="Message image"
-                                                maxHeight="200px"
-                                                borderRadius="md"
-                                                mt={2}
-                                            />
-                                        )}
-                                        {alert.audio_url && (
-                                            <audio controls>
-                                                <source src={alert.audio_url} type="audio/webm" />
-                                                Your browser does not support the audio element.
-                                            </audio>
-                                        )}
-                                        <Text fontSize="xs" color="gray.500" textAlign="right" mt={1}>
-                                            {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </Text>
-                                    </Box>
-                                </Flex>
-                            );
-                        })}
+    return (
+        <Flex
+            key={index}
+            justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
+            mb={2}
+            alignItems="flex-start"
+        >
+            {!isOwnMessage && (
+                <Avatar
+                    name={alert.team_name}
+                    bg="blue.500"
+                    color="white"
+                    size="sm"
+                    mr={4}
+                />
+            )}
+            <Box
+                maxWidth="70%"
+                bg={isOwnMessage ? 'green.100' : 'white'}
+                color={isOwnMessage ? 'black' : 'black'}
+                p={3}
+                borderRadius="lg"
+                boxShadow="md"
+                position="relative"
+                _before={!isOwnMessage ? {
+                    content: '""',
+                    position: 'absolute',
+                    top: '0',
+                    left: '-12px',
+                    width: '0',
+                    height: '0',
+                    borderStyle: 'solid',
+                    borderWidth: '0 12px 12px 0',
+                    borderColor: 'transparent white transparent transparent',
+                } : {
+                    content: '""',
+                    position: 'absolute',
+                    top: '0',
+                    right: '-12px',
+                    width: '0',
+                    height: '0',
+                    borderStyle: 'solid',
+                    borderWidth: '12px 12px 0 0',
+                    borderColor: 'green.100 ',
+                }}
+                borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
+                borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
+            >
+                {!isOwnMessage && (
+                    <Text fontWeight="bold" fontSize="sm" mb={1}>
+                        {alert.team_name}
+                    </Text>
+                )}
+                <Text>{alert.alert_text}</Text>
+                {alert.image_url && (
+                    <Image
+                        src={alert.image_url}
+                        alt="Message image"
+                        maxHeight="200px"
+                        borderRadius="md"
+                        mt={2}
+                    />
+                )}
+                {alert.audio_url && (
+                    <audio controls>
+                        <source src={alert.audio_url} type="audio/webm" />
+                        Your browser does not support the audio element.
+                    </audio>
+                )}
+                <Flex justifyContent="space-between" alignItems="center" mt={2}>
+                    <Text fontSize="xs" color="gray.500">
+                        {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                    {hasBeenRead && (
+                        <BsCheck2All color="blue" />
+                    )}
+                </Flex>
+            </Box>
+        </Flex>
+    );
+})}
                         <div ref={messagesEndRef} />
                     </VStack>
                 </Box>
@@ -455,17 +477,17 @@ function MessagerieWhatsappChat() {
                 )}
                 {showAlert && !selectedTeam && (
                     <Select
-                        value={selectedTeam}
-                        onChange={handleTeamSelection}
-                        placeholder="Selectionnez une équipe"
-                        mb={4}
-                    >
-                        {teamData.map((team) => (
-                            <option key={team.id} value={team.name_of_the_team}>
-                                {team.name_of_the_team}
-                            </option>
-                        ))}
-                    </Select>
+                    value={selectedTeam}
+                    onChange={handleTeamSelection}
+                    placeholder="Selectionnez une équipe"
+                    mb={4}
+                >
+                    {teamData.map((team) => (
+                        <option key={team.id} value={team.id}> {/* Using team.id (UUID) as the value */}
+                            {team.name_of_the_team}
+                        </option>
+                    ))}
+                </Select>                
                 )}
 
                 <Box p={4} borderTop='1px solid #e0e0e0' bg='white' width='100%' position="sticky" bottom="0">

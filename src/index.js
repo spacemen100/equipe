@@ -11,10 +11,28 @@ import { ChakraProvider } from '@chakra-ui/react';
 import theme from 'theme/theme';
 import { ThemeEditorProvider } from '@hypertheme-editor/chakra-ui';
 import { EventProvider } from './EventContext';
-import { TeamProvider } from './views/admin/InterfaceEquipe/TeamContext';
+import { TeamProvider, useTeam } from './views/admin/InterfaceEquipe/TeamContext';
 import GpsPositionSimplified from './views/admin/InterfaceEquipe/components/GpsPositionSimplified';
 import { MediaProvider } from './MediaContext';
-import TeamSelectionModal from './TeamSelectionModal'; // Importer le modal de sélection de l'équipe
+import TeamSelectionModal from './TeamSelectionModal';
+import { UnreadMessagesProvider } from './UnreadMessagesContext'; // Importer le contexte pour les messages non lus
+
+const App = () => {
+  const { selectedTeam } = useTeam(); // Assuming useTeam provides the selected team's UUID
+
+  return (
+    <UnreadMessagesProvider selectedTeam={selectedTeam}>
+      <GpsPositionSimplified />
+      <TeamSelectionModal /> {/* Afficher le modal au démarrage */}
+      <Switch>
+        <Route path={`/auth`} component={AuthLayout} />
+        <Route path={`/admin`} component={AdminLayout} />
+        <Route path={`/rtl`} component={RtlLayout} />
+        <Redirect from='/' to='/admin' />
+      </Switch>
+    </UnreadMessagesProvider>
+  );
+};
 
 ReactDOM.render(
   <ChakraProvider theme={theme}>
@@ -25,14 +43,7 @@ ReactDOM.render(
             <ThemeEditorProvider>
               <MediaProvider>
                 <HashRouter>
-                  <GpsPositionSimplified />
-                  <TeamSelectionModal /> {/* Afficher le modal au démarrage */}
-                  <Switch>
-                    <Route path={`/auth`} component={AuthLayout} />
-                    <Route path={`/admin`} component={AdminLayout} />
-                    <Route path={`/rtl`} component={RtlLayout} />
-                    <Redirect from='/' to='/admin' />
-                  </Switch>
+                  <App />
                 </HashRouter>
               </MediaProvider>
             </ThemeEditorProvider>
