@@ -24,6 +24,7 @@ function MessagerieWhatsappChat() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingAlert, setEditingAlert] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+     // eslint-disable-next-line 
     const [alertToDelete, setAlertToDelete] = useState(null);
     const [password, setPassword] = useState('');
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
