@@ -17,9 +17,6 @@ function MessagerieWhatsappChat() {
     const { selectedEventId } = useEvent();
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
-    const [selectedAudio, setSelectedAudio] = useState(null);
-        // eslint-disable-next-line
-    const [audioUrl, setAudioUrl] = useState('');
     const [alerts, setAlerts] = useState([]);
     const [newAlertText, setNewAlertText] = useState('');
     const toast = useToast();
@@ -27,20 +24,18 @@ function MessagerieWhatsappChat() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingAlert, setEditingAlert] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    // eslint-disable-next-line
     const [alertToDelete, setAlertToDelete] = useState(null);
     const [password, setPassword] = useState('');
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
 
     const [showAlert, setShowAlert] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
-    const [mediaRecorder, setMediaRecorder] = useState(null);
-    const [audioChunks, setAudioChunks] = useState([]);
-
+    const [videoURL, setVideoURL] = useState(null);
+    const videoRef = useRef(null); // Initialize videoRef correctly
+    const mediaRecorderRef = useRef(null);
+    const recordedChunksRef = useRef([]);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
-        // eslint-disable-next-line
-    const audioInputRef = useRef(null);
 
     const handlePasswordChange = (event) => {
         const inputPassword = event.target.value;
@@ -167,7 +162,6 @@ function MessagerieWhatsappChat() {
             console.error('Error fetching alerts:', error);
         }
     }, [selectedEventId, selectedTeam]);
-       
 
     useEffect(() => {
         fetchAlerts();
@@ -188,7 +182,112 @@ function MessagerieWhatsappChat() {
         setSelectedTeam(selectedUUID);
         setShowAlert(false);
     };
-    
+
+    const startRecording = async () => {
+        setIsRecording(true);
+        recordedChunksRef.current = [];
+
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true,
+            audio: true // Requesting audio along with video
+        });
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+        }
+
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunksRef.current.push(event.data);
+            }
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            setVideoURL(url);
+            uploadVideoToSupabase(blob); // Upload the video to Supabase after recording stops
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.stop();
+        }
+        setIsRecording(false);
+    };
+
+    const uploadVideoToSupabase = async (blob) => {
+        const fileName = `chat_video_${new Date().toISOString()}.webm`;
+        try {
+            const { data, error } = await supabase
+                .storage
+                .from('chat-audio')
+                .upload(fileName, blob);
+
+            if (error) {
+                console.error('Error uploading video:', error);
+                toast({
+                    title: "Erreur",
+                    description: "Nous n'avons pas pu téléverser la vidéo.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            } else {
+                const videoUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${data.path}`;
+                console.log('Video uploaded:', videoUrl);
+
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('vianney_chat_messages')
+                    .insert([
+                        {
+                            alert_text: 'Video Message',
+                            user_id: uuidv4(),
+                            solved_or_not: 'info',
+                            details: details,
+                            event_id: selectedEventId,
+                            audio_url: videoUrl, // Storing the video URL in the audio_url field
+                            team_name: selectedTeam,
+                        },
+                    ]);
+
+                if (insertError) {
+                    console.error('Error saving video message:', insertError);
+                    toast({
+                        title: "Erreur",
+                        description: "Nous n'avons pas pu enregistrer la vidéo.",
+                        status: "error",
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                } else {
+                    setAlerts([...alerts, { ...insertedData[0], timestamp: new Date().toISOString() }]);
+                    toast({
+                        title: "Vidéo ajoutée",
+                        description: "Votre vidéo a été ajoutée avec succès.",
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Unexpected error uploading video:', error);
+            toast({
+                title: "Erreur",
+                description: "Une erreur inattendue s'est produite lors du téléversement de la vidéo.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
 
     const handleSubmit = async () => {
         if (!selectedTeam) {
@@ -203,12 +302,11 @@ function MessagerieWhatsappChat() {
             return;
         }
 
-        if (newAlertText.trim() !== '' || selectedFile || selectedAudio) {
+        if (newAlertText.trim() !== '' || selectedFile) {
             const fakeUUID = uuidv4(); // Use UUID v4 to generate a unique user_id for the demo
 
             try {
                 let imageUrl = ''; // Initialize imageUrl variable
-                let audioUrl = ''; // Initialize audioUrl variable
 
                 if (selectedFile) {
                     const fileExtension = selectedFile.name.split('.').pop();
@@ -229,25 +327,6 @@ function MessagerieWhatsappChat() {
                     imageUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-images/${filePath}`;
                 }
 
-                if (selectedAudio) {
-                    const fileExtension = 'webm';
-                    const fileName = `${uuidv4()}.${fileExtension}`;
-                    const filePath = `${fakeUUID}/${fileName}`;
-
-                    let { error: uploadError } = await supabase.storage
-                        .from('chat-audio')
-                        .upload(filePath, selectedAudio, {
-                            cacheControl: '3600',
-                            upsert: false,
-                        });
-
-                    if (uploadError) {
-                        throw new Error(`Failed to upload audio: ${uploadError.message}`);
-                    }
-
-                    audioUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${filePath}`;
-                }
-
                 const { data, error } = await supabase
                     .from('vianney_chat_messages')
                     .insert([
@@ -258,7 +337,6 @@ function MessagerieWhatsappChat() {
                             details: details,
                             event_id: selectedEventId,
                             image_url: imageUrl,
-                            audio_url: audioUrl,
                             team_name: selectedTeam,
                         },
                     ]);
@@ -277,7 +355,6 @@ function MessagerieWhatsappChat() {
                 setDetails('');
                 setSelectedFile(null);
                 setPreviewImage(null);
-                setSelectedAudio(null);
 
                 toast({
                     title: "Alerte ajoutée",
@@ -312,58 +389,9 @@ function MessagerieWhatsappChat() {
             setSelectedFile(file);
         }
     };
-    // eslint-disable-next-line
-    const handleAudioChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setSelectedAudio(file);
-        }
-    };
 
     const handlePlusClick = () => {
         fileInputRef.current.click();
-    };
-
-    const handleMicClick = async () => {
-        if (isRecording) {
-            mediaRecorder.stop();
-            setIsRecording(false);
-        } else {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-    
-                recorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        setAudioChunks((prev) => [...prev, event.data]);
-                    }
-                };
-    
-                recorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    setSelectedAudio(audioBlob);
-                    setAudioChunks([]); // Reset audio chunks after stopping
-                    stream.getTracks().forEach((track) => track.stop()); // Stop the audio tracks after recording is complete
-                };
-    
-                recorder.start();
-                setMediaRecorder(recorder);
-                setIsRecording(true);
-            } catch (err) {
-                console.error('Error accessing microphone:', err);
-                toast({
-                    title: "Erreur",
-                    description: "Nous n'avons pas pu accéder au microphone. Veuillez vérifier les permissions.",
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                });
-            }
-        }
-    };    
-
-    const handleDeleteAudio = () => {
-        setSelectedAudio(null);
     };
 
     const handleDeleteFile = () => {
@@ -378,90 +406,90 @@ function MessagerieWhatsappChat() {
                 <Box flex='1' overflowY='auto' p={4} bg='#f5f5f5'>
                     <VStack spacing={4} align='stretch'>
                     {alerts.map((alert, index) => {
-    const isOwnMessage = alert.team_name === selectedTeam;
-    const hasBeenRead = alert.read_by_teams.includes(selectedTeam);
+                        const isOwnMessage = alert.team_name === selectedTeam;
+                        const hasBeenRead = alert.read_by_teams.includes(selectedTeam);
 
-    return (
-        <Flex
-            key={index}
-            justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
-            mb={2}
-            alignItems="flex-start"
-        >
-            {!isOwnMessage && (
-                <Avatar
-                    name={alert.team_name}
-                    bg="blue.500"
-                    color="white"
-                    size="sm"
-                    mr={4}
-                />
-            )}
-            <Box
-                maxWidth="70%"
-                bg={isOwnMessage ? 'green.100' : 'white'}
-                color={isOwnMessage ? 'black' : 'black'}
-                p={3}
-                borderRadius="lg"
-                boxShadow="md"
-                position="relative"
-                _before={!isOwnMessage ? {
-                    content: '""',
-                    position: 'absolute',
-                    top: '0',
-                    left: '-12px',
-                    width: '0',
-                    height: '0',
-                    borderStyle: 'solid',
-                    borderWidth: '0 12px 12px 0',
-                    borderColor: 'transparent white transparent transparent',
-                } : {
-                    content: '""',
-                    position: 'absolute',
-                    top: '0',
-                    right: '-12px',
-                    width: '0',
-                    height: '0',
-                    borderStyle: 'solid',
-                    borderWidth: '12px 12px 0 0',
-                    borderColor: 'green.100 ',
-                }}
-                borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
-                borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
-            >
-                {!isOwnMessage && (
-                    <Text fontWeight="bold" fontSize="sm" mb={1}>
-                        {alert.team_name}
-                    </Text>
-                )}
-                <Text>{alert.alert_text}</Text>
-                {alert.image_url && (
-                    <Image
-                        src={alert.image_url}
-                        alt="Message image"
-                        maxHeight="200px"
-                        borderRadius="md"
-                        mt={2}
-                    />
-                )}
-                {alert.audio_url && (
-                    <audio controls>
-                        <source src={alert.audio_url} type="audio/webm" />
-                        Your browser does not support the audio element.
-                    </audio>
-                )}
-                <Flex justifyContent="space-between" alignItems="center" mt={2}>
-                    <Text fontSize="xs" color="gray.500">
-                        {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
-                    {hasBeenRead && (
-                        <BsCheck2All color="blue" />
-                    )}
-                </Flex>
-            </Box>
-        </Flex>
-    );
-})}
+                        return (
+                            <Flex
+                                key={index}
+                                justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
+                                mb={2}
+                                alignItems="flex-start"
+                            >
+                                {!isOwnMessage && (
+                                    <Avatar
+                                        name={alert.team_name}
+                                        bg="blue.500"
+                                        color="white"
+                                        size="sm"
+                                        mr={4}
+                                    />
+                                )}
+                                <Box
+                                    maxWidth="70%"
+                                    bg={isOwnMessage ? 'green.100' : 'white'}
+                                    color={isOwnMessage ? 'black' : 'black'}
+                                    p={3}
+                                    borderRadius="lg"
+                                    boxShadow="md"
+                                    position="relative"
+                                    _before={!isOwnMessage ? {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: '0',
+                                        left: '-12px',
+                                        width: '0',
+                                        height: '0',
+                                        borderStyle: 'solid',
+                                        borderWidth: '0 12px 12px 0',
+                                        borderColor: 'transparent white transparent transparent',
+                                    } : {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: '0',
+                                        right: '-12px',
+                                        width: '0',
+                                        height: '0',
+                                        borderStyle: 'solid',
+                                        borderWidth: '12px 12px 0 0',
+                                        borderColor: 'green.100 ',
+                                    }}
+                                    borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
+                                    borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
+                                >
+                                    {!isOwnMessage && (
+                                        <Text fontWeight="bold" fontSize="sm" mb={1}>
+                                            {alert.team_name}
+                                        </Text>
+                                    )}
+                                    <Text>{alert.alert_text}</Text>
+                                    {alert.image_url && (
+                                        <Image
+                                            src={alert.image_url}
+                                            alt="Message image"
+                                            maxHeight="200px"
+                                            borderRadius="md"
+                                            mt={2}
+                                        />
+                                    )}
+                                    {alert.audio_url && (
+                                        <video controls>
+                                            <source src={alert.audio_url} type="video/webm" />
+                                            Your browser does not support the video element.
+                                        </video>
+                                    )}
+                                    <Flex justifyContent="space-between" alignItems="center" mt={2}>
+                                        <Text fontSize="xs" color="gray.500">
+                                            {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Text>
+                                        {hasBeenRead && (
+                                            <BsCheck2All color="blue" />
+                                        )}
+                                    </Flex>
+                                </Box>
+                            </Flex>
+                        );
+                    })}
                         <div ref={messagesEndRef} />
                     </VStack>
                 </Box>
@@ -477,17 +505,17 @@ function MessagerieWhatsappChat() {
                 )}
                 {showAlert && !selectedTeam && (
                     <Select
-                    value={selectedTeam}
-                    onChange={handleTeamSelection}
-                    placeholder="Selectionnez une équipe"
-                    mb={4}
-                >
-                    {teamData.map((team) => (
-                        <option key={team.id} value={team.id}> {/* Using team.id (UUID) as the value */}
-                            {team.name_of_the_team}
-                        </option>
-                    ))}
-                </Select>                
+                        value={selectedTeam}
+                        onChange={handleTeamSelection}
+                        placeholder="Selectionnez une équipe"
+                        mb={4}
+                    >
+                        {teamData.map((team) => (
+                            <option key={team.id} value={team.id}> {/* Using team.id (UUID) as the value */}
+                                {team.name_of_the_team}
+                            </option>
+                        ))}
+                    </Select>                
                 )}
 
                 <Box p={4} borderTop='1px solid #e0e0e0' bg='white' width='100%' position="sticky" bottom="0">
@@ -505,21 +533,9 @@ function MessagerieWhatsappChat() {
                             />
                         </Box>
                     )}
-                    {selectedAudio && (
+                    {videoURL && (
                         <Box mb={4} position="relative">
-                            <audio controls>
-                                <source src={URL.createObjectURL(selectedAudio)} type="audio/webm" />
-                                Your browser does not support the audio element.
-                            </audio>
-                            <IconButton
-                                icon={<FcDeleteDatabase />}
-                                position="absolute"
-                                top="0"
-                                right="0"
-                                size="sm"
-                                colorScheme="red"
-                                onClick={handleDeleteAudio}
-                            />
+                            <video src={videoURL} controls style={{ width: '100%' }}></video>
                         </Box>
                     )}
                     <Flex width='100%' alignItems='center'>
@@ -547,7 +563,7 @@ function MessagerieWhatsappChat() {
                             flex='1'
                             variant="outline"
                             colorScheme="blue"
-                            onClick={handleMicClick}
+                            onClick={isRecording ? stopRecording : startRecording}
                         />
                         <Input
                             placeholder="Entrez un message..."
