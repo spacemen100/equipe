@@ -31,8 +31,7 @@ function MessagerieWhatsappChat() {
 
     const [showAlert, setShowAlert] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
-    const [videoURL, setVideoURL] = useState(null);
-    const videoRef = useRef(null); // Initialize videoRef correctly
+    const videoRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const recordedChunksRef = useRef([]);
     const messagesEndRef = useRef(null);
@@ -146,11 +145,10 @@ function MessagerieWhatsappChat() {
                 return;
             }
     
-            // Filtering out messages that the current team hasn't read yet
             const unreadMessages = data.filter(alert => !alert.read_by_teams.includes(selectedTeam));
     
             for (const alert of unreadMessages) {
-                const updatedReadByTeams = [...alert.read_by_teams, selectedTeam]; // Add the current team UUID to the list
+                const updatedReadByTeams = [...alert.read_by_teams, selectedTeam];
     
                 await supabase
                     .from('vianney_chat_messages')
@@ -166,8 +164,8 @@ function MessagerieWhatsappChat() {
 
     useEffect(() => {
         fetchAlerts();
-        const intervalId = setInterval(fetchAlerts, 6000); // Refresh every 6 seconds
-        return () => clearInterval(intervalId); // Cleanup on component unmount
+        const intervalId = setInterval(fetchAlerts, 6000); 
+        return () => clearInterval(intervalId); 
     }, [fetchAlerts]);
 
     useEffect(() => {
@@ -179,7 +177,7 @@ function MessagerieWhatsappChat() {
     };
 
     const handleTeamSelection = (event) => {
-        const selectedUUID = event.target.value; // Ensure this value is the UUID of the selected team
+        const selectedUUID = event.target.value;
         setSelectedTeam(selectedUUID);
         setShowAlert(false);
     };
@@ -190,7 +188,7 @@ function MessagerieWhatsappChat() {
 
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: true,
-            audio: true // Requesting audio along with video
+            audio: true 
         });
 
         if (videoRef.current) {
@@ -205,11 +203,15 @@ function MessagerieWhatsappChat() {
             }
         };
 
-        mediaRecorderRef.current.onstop = () => {
+        mediaRecorderRef.current.onstop = async () => {
             const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            setVideoURL(url);
-            uploadVideoToSupabase(blob); // Upload the video to Supabase after recording stops
+
+            try {
+                await uploadVideoToSupabase(blob);
+            } catch (error) {
+                console.error('Upload failed:', error);
+            }
+            
             stream.getTracks().forEach(track => track.stop());
         };
 
@@ -226,13 +228,15 @@ function MessagerieWhatsappChat() {
     const uploadVideoToSupabase = async (blob) => {
         const fileName = `chat_video_${new Date().toISOString()}.webm`;
         try {
-            const { data, error } = await supabase
+            console.log("Attempting to upload video blob...");
+            const { data: uploadData, error: uploadError } = await supabase
                 .storage
                 .from('chat-audio')
                 .upload(fileName, blob);
-
-            if (error) {
-                console.error('Error uploading video:', error);
+    
+            if (uploadError || !uploadData) {
+                console.error('Error uploading video:', uploadError);
+                console.log('Upload Data:', uploadData);
                 toast({
                     title: "Erreur",
                     description: "Nous n'avons pas pu téléverser la vidéo.",
@@ -240,44 +244,54 @@ function MessagerieWhatsappChat() {
                     duration: 5000,
                     isClosable: true,
                 });
-            } else {
-                const videoUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${data.path}`;
-                console.log('Video uploaded:', videoUrl);
-
-                const { data: insertedData, error: insertError } = await supabase
-                    .from('vianney_chat_messages')
-                    .insert([
-                        {
-                            alert_text: 'Video Message',
-                            user_id: uuidv4(),
-                            solved_or_not: 'info',
-                            details: details,
-                            event_id: selectedEventId,
-                            audio_url: videoUrl, // Storing the video URL in the audio_url field
-                            team_name: selectedTeam,
-                        },
-                    ]);
-
-                if (insertError) {
-                    console.error('Error saving video message:', insertError);
-                    toast({
-                        title: "Erreur",
-                        description: "Nous n'avons pas pu enregistrer la vidéo.",
-                        status: "error",
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                } else {
-                    setAlerts([...alerts, { ...insertedData[0], timestamp: new Date().toISOString() }]);
-                    toast({
-                        title: "Vidéo ajoutée",
-                        description: "Votre vidéo a été ajoutée avec succès.",
-                        status: "success",
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                }
+                throw new Error('Failed to upload video');
             }
+    
+            const videoUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${uploadData.path}`;
+            console.log('Video uploaded successfully:', videoUrl);
+    
+            console.log("Attempting to insert video message into database...");
+            const messagePayload = {
+                alert_text: 'Video Message',
+                user_id: uuidv4(),
+                solved_or_not: 'info',
+                details: details,
+                event_id: selectedEventId,
+                audio_url: videoUrl,
+                team_name: selectedTeam,
+            };
+            console.log("Message Payload:", messagePayload);
+    
+            const { data: insertedData, error: insertError } = await supabase
+                .from('vianney_chat_messages')
+                .insert([messagePayload]);
+    
+            if (insertError) {
+                console.error('Error saving video message:', insertError);
+                console.log('Insert Data:', insertedData);
+                toast({
+                    title: "Erreur",
+                    description: "Nous n'avons pas pu enregistrer la vidéo.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+                throw new Error('Failed to save video message');
+            }
+    
+            console.log("Video message inserted successfully:", insertedData);
+            if (!insertedData || insertedData.length === 0) {
+                throw new Error('No data returned from insert operation');
+            }
+    
+            setAlerts(prevAlerts => [...prevAlerts, { ...insertedData[0], timestamp: new Date().toISOString() }]);
+            toast({
+                title: "Vidéo ajoutée",
+                description: "Votre vidéo a été ajoutée avec succès.",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
         } catch (error) {
             console.error('Unexpected error uploading video:', error);
             toast({
@@ -287,9 +301,10 @@ function MessagerieWhatsappChat() {
                 duration: 5000,
                 isClosable: true,
             });
+            throw error;
         }
-    };
-
+    };       
+    
     const handleSubmit = async () => {
         if (!selectedTeam) {
             toast({
@@ -304,10 +319,10 @@ function MessagerieWhatsappChat() {
         }
 
         if (newAlertText.trim() !== '' || selectedFile) {
-            const fakeUUID = uuidv4(); // Use UUID v4 to generate a unique user_id for the demo
+            const fakeUUID = uuidv4(); 
 
             try {
-                let imageUrl = ''; // Initialize imageUrl variable
+                let imageUrl = ''; 
 
                 if (selectedFile) {
                     const fileExtension = selectedFile.name.split('.').pop();
@@ -512,7 +527,7 @@ function MessagerieWhatsappChat() {
                         mb={4}
                     >
                         {teamData.map((team) => (
-                            <option key={team.id} value={team.id}> {/* Using team.id (UUID) as the value */}
+                            <option key={team.id} value={team.id}>
                                 {team.name_of_the_team}
                             </option>
                         ))}
@@ -532,11 +547,6 @@ function MessagerieWhatsappChat() {
                                 colorScheme="red"
                                 onClick={handleDeleteFile}
                             />
-                        </Box>
-                    )}
-                    {videoURL && (
-                        <Box mb={4} position="relative">
-                            <video src={videoURL} controls style={{ width: '100%' }}></video>
                         </Box>
                     )}
                     <Flex width='100%' alignItems='center'>
