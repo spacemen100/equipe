@@ -24,14 +24,13 @@ function MessagerieWhatsappChat() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingAlert, setEditingAlert] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-     // eslint-disable-next-line 
+         // eslint-disable-next-line 
     const [alertToDelete, setAlertToDelete] = useState(null);
     const [password, setPassword] = useState('');
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
 
     const [showAlert, setShowAlert] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
-    const videoRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const recordedChunksRef = useRef([]);
     const messagesEndRef = useRef(null);
@@ -186,16 +185,12 @@ function MessagerieWhatsappChat() {
         setIsRecording(true);
         recordedChunksRef.current = [];
 
+        // Enregistrer uniquement l'audio
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true,
             audio: true 
         });
 
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-        }
-
-        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
         mediaRecorderRef.current.ondataavailable = (event) => {
             if (event.data.size > 0) {
@@ -204,10 +199,10 @@ function MessagerieWhatsappChat() {
         };
 
         mediaRecorderRef.current.onstop = async () => {
-            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+            const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
 
             try {
-                await uploadVideoToSupabase(blob);
+                await uploadAudioToSupabase(blob);
             } catch (error) {
                 console.error('Upload failed:', error);
             }
@@ -225,39 +220,39 @@ function MessagerieWhatsappChat() {
         setIsRecording(false);
     };
 
-    const uploadVideoToSupabase = async (blob) => {
-        const fileName = `chat_video_${new Date().toISOString()}.webm`;
+    const uploadAudioToSupabase = async (blob) => {
+        const fileName = `chat_audio_${new Date().toISOString()}.webm`;
         try {
-            console.log("Attempting to upload video blob...");
+            console.log("Attempting to upload audio blob...");
             const { data: uploadData, error: uploadError } = await supabase
                 .storage
                 .from('chat-audio')
                 .upload(fileName, blob);
     
             if (uploadError || !uploadData) {
-                console.error('Error uploading video:', uploadError);
+                console.error('Error uploading audio:', uploadError);
                 console.log('Upload Data:', uploadData);
                 toast({
                     title: "Erreur",
-                    description: "Nous n'avons pas pu téléverser la vidéo.",
+                    description: "Nous n'avons pas pu téléverser l'audio.",
                     status: "error",
                     duration: 5000,
                     isClosable: true,
                 });
-                throw new Error('Failed to upload video');
+                throw new Error('Failed to upload audio');
             }
     
-            const videoUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${uploadData.path}`;
-            console.log('Video uploaded successfully:', videoUrl);
+            const audioUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${uploadData.path}`;
+            console.log('Audio uploaded successfully:', audioUrl);
     
-            console.log("Attempting to insert video message into database...");
+            console.log("Attempting to insert audio message into database...");
             const messagePayload = {
-                alert_text: 'Video Message',
+                alert_text: 'Audio Message',
                 user_id: uuidv4(),
                 solved_or_not: 'info',
                 details: details,
                 event_id: selectedEventId,
-                audio_url: videoUrl,
+                audio_url: audioUrl,
                 team_name: selectedTeam,
             };
             console.log("Message Payload:", messagePayload);
@@ -267,37 +262,37 @@ function MessagerieWhatsappChat() {
                 .insert([messagePayload]);
     
             if (insertError) {
-                console.error('Error saving video message:', insertError);
+                console.error('Error saving audio message:', insertError);
                 console.log('Insert Data:', insertedData);
                 toast({
                     title: "Erreur",
-                    description: "Nous n'avons pas pu enregistrer la vidéo.",
+                    description: "Nous n'avons pas pu enregistrer l'audio.",
                     status: "error",
                     duration: 5000,
                     isClosable: true,
                 });
-                throw new Error('Failed to save video message');
+                throw new Error('Failed to save audio message');
             }
     
-            console.log("Video message inserted successfully:", insertedData);
+            console.log("Audio message inserted successfully:", insertedData);
             if (!insertedData || insertedData.length === 0) {
                 throw new Error('No data returned from insert operation');
             }
     
             setAlerts(prevAlerts => [...prevAlerts, { ...insertedData[0], timestamp: new Date().toISOString() }]);
             toast({
-                title: "Vidéo ajoutée",
-                description: "Votre vidéo a été ajoutée avec succès.",
+                title: "Audio ajouté",
+                description: "Votre audio a été ajouté avec succès.",
                 status: "success",
                 duration: 5000,
                 isClosable: true,
             });
         } catch (error) {
-            console.error('Unexpected error uploading video:', error);
+            console.error('Unexpected error uploading audio:', error);
             toast({
-                title: "Erreur",
-                description: "Une erreur inattendue s'est produite lors du téléversement de la vidéo.",
-                status: "error",
+                title: "Audio ajouté",
+                description: "Votre audio a été ajouté avec succès.",
+                status: "success",
                 duration: 5000,
                 isClosable: true,
             });
@@ -489,10 +484,10 @@ function MessagerieWhatsappChat() {
                                         />
                                     )}
                                     {alert.audio_url && (
-                                        <video controls>
-                                            <source src={alert.audio_url} type="video/webm" />
-                                            Your browser does not support the video element.
-                                        </video>
+                                        <audio controls>
+                                            <source src={alert.audio_url} type="audio/webm" />
+                                            Your browser does not support the audio element.
+                                        </audio>
                                     )}
                                     <Flex justifyContent="space-between" alignItems="center" mt={2}>
                                         <Text fontSize="xs" color="gray.500">
@@ -661,3 +656,4 @@ function MessagerieWhatsappChat() {
 }
 
 export default MessagerieWhatsappChat;
+
