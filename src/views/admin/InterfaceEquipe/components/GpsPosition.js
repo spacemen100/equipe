@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Alert, AlertIcon, Button, Text, Heading } from '@chakra-ui/react';
+import { Box, Alert, AlertIcon, Button, Heading } from '@chakra-ui/react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MdPlace } from 'react-icons/md';
