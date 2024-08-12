@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Alert, AlertIcon, Button } from '@chakra-ui/react';
+import { Box, Alert, AlertIcon, Button, Text, Heading } from '@chakra-ui/react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MdPlace } from 'react-icons/md';
@@ -15,7 +15,7 @@ const GpsPosition = () => {
   const { selectedTeam } = useTeam(); // Access the selected team using the hook
   const gpsPosition = useGPSPosition(); // Access the GPS position using the hook
   const [lastUpdateTime, setLastUpdateTime] = useState(null); // Store the last update time
-    // eslint-disable-next-line
+  // eslint-disable-next-line
   const [mapHeight, setMapHeight] = useState('250px'); // State to control the height of the map container
 
   // Function to update latitude and longitude coordinates in the database
@@ -100,21 +100,33 @@ const GpsPosition = () => {
     : '#';
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
+      <Heading as="h1" mb={6}>
+        La position de votre équipe
+      </Heading>
+
       {!gpsPosition ? (
-        <Alert status="info" mt={4}>
+        <Alert status="info" mt={4} width="300px" textAlign="center">
           <AlertIcon />
           Merci d'autoriser la géolocalisation
         </Alert>
       ) : (
-        <Box mt={4}>
+        <Box mt={4} display="flex" flexDirection="column" alignItems="center">
           <Button as="a" href={wazeUrl} target="_blank" colorScheme="blue" leftIcon={<FcCollect />}>
             Aller vers Waze
           </Button>
         </Box>
       )}
 
-      <div id="map" style={{ height: mapHeight, width: '100%', zIndex: '0' }}></div>
+      <Box
+        id="map"
+        style={{
+          height: mapHeight,
+          width: '300px',
+          zIndex: '0',
+          marginTop: '20px',
+        }}
+      ></Box>
     </Box>
   );
 };

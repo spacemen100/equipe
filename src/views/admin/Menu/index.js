@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, SimpleGrid, Text, VStack, IconButton } from "@chakra-ui/react";
 import { FcSelfie, FcCalendar, FcDocument, FcSupport, FcSettings, FcComments, FcEditImage, FcHighPriority } from "react-icons/fc";
+import { FaMapMarked } from "react-icons/fa"; // Import the map icon
 import { useHistory } from "react-router-dom";
 
 const Menu = () => {
@@ -17,7 +18,8 @@ const Menu = () => {
     { icon: FcDocument, label: "Rapport incident", path: "/admin/rapport-incident" },
     { icon: FcDocument, label: "Fiche Bilan SUAP", path: "/admin/fiche-bilan-suap" },
     { icon: FcEditImage, label: "Note de frais", path: "/admin/note-de-frais" },
-    { icon: FcHighPriority, label: "SOS Alerte Danger", path: "/admin/sos-alerte-danger" }, // Added link to SOS Alerte Danger
+    { icon: FcHighPriority, label: "SOS Alerte Danger", path: "/admin/sos-alerte-danger" },
+    { icon: FaMapMarked, label: "Carte", path: "/admin/carte" }, // Added link to Carte
   ];
 
   return (
