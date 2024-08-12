@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Alert, AlertIcon, Button, Badge } from '@chakra-ui/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Alert, AlertIcon, Button } from '@chakra-ui/react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MdPlace } from 'react-icons/md';
@@ -15,6 +15,7 @@ const GpsPosition = () => {
   const { selectedTeam } = useTeam(); // Access the selected team using the hook
   const gpsPosition = useGPSPosition(); // Access the GPS position using the hook
   const [lastUpdateTime, setLastUpdateTime] = useState(null); // Store the last update time
+    // eslint-disable-next-line
   const [mapHeight, setMapHeight] = useState('250px'); // State to control the height of the map container
 
   // Function to update latitude and longitude coordinates in the database
