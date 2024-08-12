@@ -151,7 +151,7 @@ const DropdownMenu = () => {
           console.error('Error fetching event for team:', error.message);
         }
       }
-    }, 5000); // 10 seconds in milliseconds
+    }, 3000); // 10 seconds in milliseconds
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);

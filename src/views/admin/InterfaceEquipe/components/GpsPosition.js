@@ -16,8 +16,6 @@ const GpsPosition = () => {
   const gpsPosition = useGPSPosition(); // Access the GPS position using the hook
   const [lastUpdateTime, setLastUpdateTime] = useState(null); // Store the last update time
   const [mapHeight, setMapHeight] = useState('250px'); // State to control the height of the map container
-  const timeoutRef = useRef(null); // Ref for timeout
-  const heightTimeoutRef = useRef(null); // Ref for heightTimeout
 
   // Function to update latitude and longitude coordinates in the database
   const updateCoordinates = async (teamName, latitude, longitude) => {
@@ -49,21 +47,6 @@ const GpsPosition = () => {
     });
   };
 
-  // Function to reset the timeout and show the team alert
-  const restartTimeout = () => {
-    clearTimeout(timeoutRef.current);
-    setMapHeight('250px');
-    clearTimeout(heightTimeoutRef.current);
-    startTimeout();
-  };
-
-  const startTimeout = useCallback(() => {
-  
-    heightTimeoutRef.current = setTimeout(() => {
-      setMapHeight('0px');
-    }, 50000);
-  }, [setMapHeight]); 
-
   useEffect(() => {
     if (!gpsPosition) {
       // GPS position is not available, show an info message
@@ -78,73 +61,59 @@ const GpsPosition = () => {
       setLastUpdateTime(Date.now());
     }
 
-    // Check if mapRef.current exists and is not destroyed
-    if (mapRef.current && !mapRef.current._leaflet_id) {
-      // Re-create the map if it's destroyed
+    // Initialize the map
+    if (!mapInitialized) {
       mapRef.current = L.map('map', {
         zoomControl: false, // Disable the default zoom control
       });
-      setMapInitialized(false);
-    } else if (!mapRef.current) {
-      // Create the map if it hasn't been initialized yet
-      mapRef.current = L.map('map', {
-        zoomControl: false, // Disable the default zoom control
-      });
-      setMapInitialized(false);
-    }
-
-    // Set the view if the map exists
-    if (mapRef.current) {
-      if (!mapInitialized) {
-        // Initialize the map if it hasn't been initialized yet
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '',
-        }).addTo(mapRef.current);
-
-        // Add a custom zoom control
-        L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
-        setMapInitialized(true);
-      }
-
-      // Create a custom icon using the MdPlace icon
-      const customIcon = createCustomIcon();
-
-      // Update the marker position with the custom icon
-      L.marker([latitude, longitude], {
-        icon: customIcon,
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '',
       }).addTo(mapRef.current);
 
-      mapRef.current.setView([latitude, longitude], 16);
+      // Add a custom zoom control
+      L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+      setMapInitialized(true);
     }
 
-    startTimeout();
+    // Create a custom icon using the MdPlace icon
+    const customIcon = createCustomIcon();
 
-    // Cleanup timeouts
+    // Update the marker position with the custom icon
+    const marker = L.marker([latitude, longitude], {
+      icon: customIcon,
+    }).addTo(mapRef.current);
+
+    mapRef.current.setView([latitude, longitude], 16);
+
     return () => {
-      clearTimeout(heightTimeoutRef.current);
+      if (mapRef.current) {
+        mapRef.current.removeLayer(marker);
+      }
     };
-  }, [gpsPosition, mapInitialized, selectedTeam, lastUpdateTime, startTimeout, timeoutRef, heightTimeoutRef]);
+  }, [gpsPosition, mapInitialized, selectedTeam, lastUpdateTime]);
+
+  // Generate Waze link based on the current GPS position
+  const wazeUrl = gpsPosition
+    ? `https://www.waze.com/ul?ll=${gpsPosition.latitude},${gpsPosition.longitude}&navigate=yes`
+    : '#';
 
   return (
-    <Box >
-      {gpsPosition ? null : (
+    <Box>
+      {!gpsPosition ? (
         <Alert status="info" mt={4}>
           <AlertIcon />
           Merci d'autoriser la géolocalisation
         </Alert>
+      ) : (
+        <Box mt={4}>
+          <Button as="a" href={wazeUrl} target="_blank" colorScheme="blue" leftIcon={<FcCollect />}>
+            Aller vers Waze
+          </Button>
+        </Box>
       )}
 
-<Button onClick={restartTimeout} colorScheme="gray.100" ml={2}>
-  <Badge colorScheme="orange">Montrer ma position</Badge> <FcCollect /> {/* Use the FcCollect icon */}
-</Button>
-
-
-
-      <div
-        id="map"
-        style={{ height: mapHeight, width: '100%', zIndex: '0' }}
-      ></div>
+      <div id="map" style={{ height: mapHeight, width: '100%', zIndex: '0' }}></div>
     </Box>
   );
 };
