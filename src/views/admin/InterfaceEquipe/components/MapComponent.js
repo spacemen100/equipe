@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MdDeleteForever, MdOutlineZoomInMap, MdOutlineZoomOutMap } from "react-icons/md"; 
 import { renderToString } from "react-dom/server";
-import { Box, Button, useToast } from '@chakra-ui/react';
+import { Box, Button } from '@chakra-ui/react';
 import { MdPlace } from "react-icons/md";
 import { supabase } from './../../../../supabaseClient';
 import { useHistory, useLocation } from "react-router-dom";
@@ -22,11 +22,11 @@ const createCustomIcon = () => {
 const MapComponent = () => {
   const mapRef = useRef(null);
   const [itineraries, setItineraries] = useState([]);
+    // eslint-disable-next-line
   const [areas, setAreas] = useState([]);
   const [mapHeight, setMapHeight] = useState('800px');
   const history = useHistory();
   const location = useLocation();
-  const toast = useToast();
 
   const buttonText = location.pathname === "/admin/zoomed-map" ? 
     <MdOutlineZoomInMap /> : 
@@ -54,8 +54,7 @@ const MapComponent = () => {
   useEffect(() => {
     const initializeMap = () => {
       if (mapRef.current && mapRef.current._leaflet_id) {
-        // If map is already initialized, return
-        return;
+        return; // If map is already initialized, return
       }
 
       // Create a new map instance
@@ -141,6 +140,11 @@ const MapComponent = () => {
 
     if (mapInstance) {
       itineraries.forEach(itinerary => {
+        if (!itinerary.points || !Array.isArray(itinerary.points)) {
+          console.warn(`Itinerary with ID ${itinerary.id} has invalid points data.`);
+          return;
+        }
+
         const points = itinerary.points.map(point => [point.latitude, point.longitude]);
         const polyline = L.polyline(points, { color: 'blue' }).addTo(mapInstance);
 
@@ -161,6 +165,73 @@ const MapComponent = () => {
     }
 
   }, [itineraries]);
+
+  useEffect(() => {
+    const fetchAndDisplayTeams = async () => {
+      const { data: teams, error } = await supabase
+        .from('vianney_teams')
+        .select('*');
+
+      if (error) {
+        console.error('Erreur lors de la récupération des équipes:', error);
+        return;
+      }
+
+      let mapInstance = mapRef.current;
+      if (!mapInstance) return;
+
+      // Cleanup existing team markers
+      mapInstance.eachLayer(layer => {
+        if (layer instanceof L.Marker || (layer.options && layer.options.team)) {
+          mapInstance.removeLayer(layer);
+        }
+      });
+
+      teams.forEach(team => {
+        if (!team.latitude || !team.longitude) {
+          console.warn(`Team with ID ${team.id} has invalid latitude or longitude.`);
+          return;
+        }
+
+        const teamIcon = createCustomIcon();
+        const deleteIconHtml = renderToString(<MdDeleteForever style={{ cursor: 'pointer', fontSize: '24px', color: 'red' }} />);
+
+        // Generate Waze link with GPS coordinates
+        const wazeUrl = `https://www.waze.com/ul?ll=${team.latitude},${team.longitude}&navigate=yes`;
+        const wazeButtonHtml = `<a href="${wazeUrl}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #007aff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Aller vers Waze</a>`;
+
+        const popupContent = `
+          <div>
+            <strong>${team.name_of_the_team}</strong>
+            ${team.photo_profile_url ? `<br/><img src="${team.photo_profile_url}" alt="${team.name_of_the_team}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; margin-top: 5px;"/>` : ''}
+            <div onclick="window.deleteTeam(${team.id})" style="margin-top: 10px;">${deleteIconHtml}</div>
+            ${wazeButtonHtml}
+          </div>
+        `;
+
+        const tooltipContent = `
+          <div>
+            <strong>${team.name_of_the_team}</strong>
+          </div>
+        `;
+
+        L.marker([team.latitude, team.longitude], { icon: teamIcon, team: true })
+          .addTo(mapInstance)
+          .bindPopup(popupContent, {
+            permanent: false,
+            direction: 'top',
+            offset: L.point(0, 40)
+          })
+          .bindTooltip(tooltipContent, {
+            permanent: false,
+            direction: 'top',
+            offset: L.point(0, -10)
+          });
+      });
+    };
+
+    fetchAndDisplayTeams();
+  }, []);
 
   return (
     <Box pt="10px">
