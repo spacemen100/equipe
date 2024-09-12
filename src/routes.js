@@ -1,7 +1,6 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
 import {
-  FcSelfie,
   FcCalendar,
   FcDocument,
   FcPackage,
@@ -23,7 +22,8 @@ import IncidentReportForm from "views/admin/IncidentReportForm";
 import FicheBilanSUAP from "views/admin/FicheBilanSUAP";
 import NoteDeFrais from "views/admin/NoteDeFrais";
 import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
-import MapComponent from "views/admin/MapComponent"; // Import the map component
+import MapComponent from "views/admin/MapComponent"; 
+import { BsGeoAltFill } from "react-icons/bs";
 
 const routes = [
   {
@@ -34,10 +34,10 @@ const routes = [
     component: Menu,
   },
   {
-    name: "Gestion opérationnelle",
+    name: "Géolocalisation",
     layout: "/admin",
     path: "/gestion-operationnelle",
-    icon: <Icon as={FcSelfie} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
     component: GestionOperationnelle,
   },
   {
