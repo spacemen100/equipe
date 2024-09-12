@@ -1,15 +1,15 @@
 import React from "react";
 import { Icon } from "@chakra-ui/react";
-import { 
-  FcSelfie, 
-  FcCalendar, 
-  FcDocument, 
-  FcPackage, 
-  FcSettings, 
-  FcMenu, 
-  FcComments, 
-  FcEditImage, 
-  FcHighPriority 
+import {
+  FcSelfie,
+  FcCalendar,
+  FcDocument,
+  FcPackage,
+  FcSettings,
+  FcMenu,
+  FcComments,
+  FcEditImage,
+  FcHighPriority
 } from "react-icons/fc";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
 import GestionOperationnelle from "views/admin/GestionOperationnelle";
@@ -17,12 +17,12 @@ import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
 import Materiels from "views/admin/Materiel";
 import Parametres from "views/admin/Parametres";
-import Menu from "views/admin/Menu"; 
+import Menu from "views/admin/Menu";
 import ChatComponent from "views/admin/ChatComponent";
-import IncidentReportForm from "views/admin/IncidentReportForm"; 
-import FicheBilanSUAP from "views/admin/FicheBilanSUAP"; 
+import IncidentReportForm from "views/admin/IncidentReportForm";
+import FicheBilanSUAP from "views/admin/FicheBilanSUAP";
 import NoteDeFrais from "views/admin/NoteDeFrais";
-import SOSAlerteDanger from "views/admin/SOSAlerteDanger"; 
+import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
 import MapComponent from "views/admin/MapComponent"; // Import the map component
 
 const routes = [
@@ -54,20 +54,20 @@ const routes = [
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
     component: Documents,
   },
-//  {
+  //  {
   //  name: "Communication",
   //  layout: "/admin",
   //  path: "/communication",
   //  icon: <Icon as={FcConferenceCall} width='20px' height='20px' color='inherit' />,
   //  component: Communication,
   //  hide: true, // Add the hide property
-//  },
+  //  },
   {
-    name: "Matériels",
+    name: "Chat",
     layout: "/admin",
-    path: "/materiels",
-    icon: <Icon as={FcPackage} width='20px' height='20px' color='inherit' />,
-    component: Materiels,
+    path: "/chat",
+    icon: <Icon as={FcComments} width='20px' height='20px' color='inherit' />,
+    component: ChatComponent,
   },
   {
     name: "Paramètres",
@@ -77,11 +77,11 @@ const routes = [
     component: Parametres,
   },
   {
-    name: "Chat",
+    name: "Matériels",
     layout: "/admin",
-    path: "/chat",
-    icon: <Icon as={FcComments} width='20px' height='20px' color='inherit' />, 
-    component: ChatComponent,
+    path: "/materiels",
+    icon: <Icon as={FcPackage} width='20px' height='20px' color='inherit' />,
+    component: Materiels,
   },
   {
     name: "Rapport d'incident",
@@ -105,7 +105,7 @@ const routes = [
     component: NoteDeFrais,
   },
   {
-    name: "SOS Alerte Danger", 
+    name: "SOS Alerte Danger",
     layout: "/admin",
     path: "/sos-alerte-danger",
     icon: <Icon as={FcHighPriority} width='20px' height='20px' color='inherit' />,
