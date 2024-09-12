@@ -23,6 +23,7 @@ import FicheBilanSUAP from "views/admin/FicheBilanSUAP";
 import NoteDeFrais from "views/admin/NoteDeFrais";
 import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
 import MapComponent from "views/admin/MapComponent"; 
+import DocumentTabs from "views/admin/DocumentTabs"; 
 import { BsGeoAltFill } from "react-icons/bs";
 
 const routes = [
@@ -53,6 +54,13 @@ const routes = [
     path: "/documents",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
     component: Documents,
+  },
+  {
+    name: "Documents Tabs", // New DocumentTabs route
+    layout: "/admin",
+    path: "/documents-tabs",
+    icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
+    component: DocumentTabs, // Refer to the new DocumentTabs component
   },
   //  {
   //  name: "Communication",
