@@ -13,9 +13,16 @@ function Sidebar(props) {
   let shadow = useColorModeValue("14px 17px 40px 4px rgba(112, 144, 176, 0.08)", "unset");
   let sidebarBg = useColorModeValue("white", "navy.800");
   let sidebarMargins = "0px";
-
-// Filter out the hidden routes
-const filteredRoutes = routes.filter(route => route.name !== "Carte zoomée" && route.name !== "Matériel");
+// filtrer les routes
+  const filteredRoutes = routes.filter(
+    route =>
+      route.name !== "Carte zoomée" &&
+      route.name !== "Matériel" &&
+      route.name !== "Documentss" &&
+      route.name !== "Rapport d'incident" &&
+      route.name !== "Fiche Bilan SUAP" &&
+      route.name !== "Note de frais"
+  );
 
   return (
     <Box display={{ sm: "none", xl: "block" }} w="100%" position="fixed" minH="100%">

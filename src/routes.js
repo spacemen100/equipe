@@ -49,14 +49,14 @@ const routes = [
     component: EmploiDuTemps,
   },
   {
-    name: "Documents",
+    name: "Documentss",
     layout: "/admin",
     path: "/documents",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
     component: Documents,
   },
   {
-    name: "Documents Tabs", // New DocumentTabs route
+    name: "Documents", // New DocumentTabs route
     layout: "/admin",
     path: "/documents-tabs",
     icon: <Icon as={FcDocument} width='20px' height='20px' color='inherit' />,
