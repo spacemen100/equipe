@@ -37,7 +37,7 @@ const Menu = () => {
           >
             <VStack spacing={4}>
               <IconButton
-                icon={<item.icon size="60px" />}
+                icon={React.createElement(item.icon, { size: "60px" })}
                 size="lg"
                 isRound
                 aria-label={item.label}
