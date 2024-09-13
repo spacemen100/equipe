@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, SimpleGrid, Text, VStack, IconButton } from "@chakra-ui/react";
-import { FcMenu, FcCalendar, FcDocument, FcSettings, FcComments, FcHighPriority } from "react-icons/fc";
+import { FcMenu, FcCalendar, FcDocument, FcSettings, FcComments, FcHighPriority, FcPackage } from "react-icons/fc"; // Import FcPackage for Matériels
 import { BsGeoAltFill } from "react-icons/bs";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
 import { useHistory } from "react-router-dom";
@@ -15,9 +15,10 @@ const Menu = () => {
     { icon: FcDocument, label: "Documents", path: "/admin/documents-tabs" },
     { icon: FcComments, label: "Chat", path: "/admin/chat" },
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
+    { icon: FcPackage, label: "Matériels", path: "/admin/materiels" }, // Added Matériels
     { icon: FcHighPriority, label: "SOS Alerte Danger", path: "/admin/sos-alerte-danger" },
     { icon: FaMapMarked, label: "Carte", path: "/admin/carte" }, // Only "Carte" remains, not "Carte zoomée"
-  ];  
+  ];
 
   return (
     <Box pt={{ base: '180px', md: '80px', xl: '80px' }} textAlign="center">
