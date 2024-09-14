@@ -12,6 +12,7 @@ import {
   useDisclosure,
   Flex,
   Box,
+  Image,
   useToast,
   Spinner,
 } from '@chakra-ui/react';
@@ -99,8 +100,20 @@ const TeamSelectionModal = () => {
     <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
       <ModalOverlay />
       <ModalContent width="100vw" height="100vh" maxWidth="100vw" maxHeight="100vh">
-        {/* Centering the header text */}
-        <ModalHeader display="flex" justifyContent="center" textAlign="center">
+        {/* Centering the header text and adding the logo */}
+        <ModalHeader display="flex" alignItems="center" justifyContent="center" textAlign="center">
+          <Box
+            borderRadius="full"
+            overflow="hidden"
+            width="50px"
+            height="50px"
+            marginRight="10px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Image src="/logo512.png" alt="Logo" width="100%" height="100%" />
+          </Box>
           Connexion
         </ModalHeader>
         <ModalBody>
