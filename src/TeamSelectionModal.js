@@ -99,7 +99,13 @@ const TeamSelectionModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
       <ModalOverlay />
-      <ModalContent width="100vw" height="100vh" maxWidth="100vw" maxHeight="100vh">
+      <ModalContent
+        width="100vw"
+        height="100vh"
+        maxWidth="100vw"
+        maxHeight="100vh"
+        bgGradient="linear(to-r, #3b4a6b, #d77b43)" // Applying gradient background
+      >
         {/* Centering the header text and adding the logo */}
         <ModalHeader display="flex" alignItems="center" justifyContent="center" textAlign="center">
           <Box
