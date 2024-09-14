@@ -99,7 +99,10 @@ const TeamSelectionModal = () => {
     <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
       <ModalOverlay />
       <ModalContent width="100vw" height="100vh" maxWidth="100vw" maxHeight="100vh">
-        <ModalHeader>Selectionnez un événement et une équipe</ModalHeader>
+        {/* Centering the header text */}
+        <ModalHeader display="flex" justifyContent="center" textAlign="center">
+          Connexion
+        </ModalHeader>
         <ModalBody>
           <Flex direction="column" align="center" justify="center" height="100%" position="relative" zIndex={10}>
             <Box width="100%" maxWidth="400px" position="relative">
