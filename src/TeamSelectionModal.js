@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -9,7 +9,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
   useDisclosure,
   Flex,
   Box,
@@ -24,113 +23,75 @@ const TeamSelectionModal = () => {
   const { setSelectedTeam, setTeamUUID, setTeamMembers } = useTeam();
   const { setEventId } = useEvent();
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
-  const [events, setEvents] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(''); // Holds the event_id (UUID)
-  const [teamName, setTeamName] = useState('');
+  const [eventName, setEventName] = useState(''); // Manually input event name
+  const [teamName, setTeamName] = useState(''); // Manually input team name
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
-  // Fetch available events when the modal is opened
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('vianney_event') // Correct table name
-          .select('event_id, event_name'); // Select event_id (UUID) and event_name
-
-        if (error) throw error;
-        if (data) setEvents(data); // Set events to the response data
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Erreur lors de la récupération des événements',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchEvents();
-  }, [toast]);
-
-  // Fetch teams based on selected event (using event_id)
-  useEffect(() => {
-    if (selectedEvent) {
-      const fetchTeams = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('vianney_teams')
-            .select('name_of_the_team')
-            .eq('event_id', selectedEvent); // Use event_id (UUID) instead of event name
-
-          if (error) throw error;
-          if (data) setTeams(data); // Set teams based on selected event
-        } catch (error) {
-          console.error('Error fetching teams:', error);
-          toast({
-            title: 'Erreur',
-            description: 'Erreur lors de la récupération des équipes',
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-          });
-        }
-      };
-
-      fetchTeams();
-    }
-  }, [selectedEvent, toast]);
-
   const handleTeamSelected = async () => {
     try {
-      const { data, error } = await supabase
-        .from('vianney_teams')
-        .select('id, event_id, team_members, password')
-        .eq('name_of_the_team', teamName)
-        .eq('event_id', selectedEvent) // Use event_id (UUID)
-        .single();
+      setLoading(true);
 
-      if (error) throw error;
+      // Fetch event by the entered event name
+      const { data: eventData, error: eventError } = await supabase
+        .from('vianney_event')
+        .select('event_id')
+        .eq('event_name', eventName)
+        .single(); // Ensuring there is only one event with the name
 
-      if (data && data.password === password) {
-        setEventId(data.event_id); // Set event context with event_id
-        setSelectedTeam(teamName); // Set team context with team name
-        setTeamUUID(data.id); // Set team UUID
-        setTeamMembers(data.team_members); // Set team members
-        setLoading(true); // Show spinner
-        toast({
-          title: 'Succès',
-          description: 'Équipe sélectionnée avec succès',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-        setTimeout(() => {
-          setLoading(false);
-          onClose();
-        }, 1000);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: 'Mot de passe incorrect',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
+      if (eventError || !eventData) {
+        throw new Error('Événement introuvable');
       }
+
+      const eventId = eventData.event_id; // Extract event_id from the query
+
+      // Fetch team by the entered team name and event ID
+      const { data: teamData, error: teamError } = await supabase
+        .from('vianney_teams')
+        .select('id, team_members, password')
+        .eq('name_of_the_team', teamName)
+        .eq('event_id', eventId)
+        .single(); // Ensuring the team belongs to the selected event
+
+      if (teamError || !teamData) {
+        throw new Error('Équipe introuvable');
+      }
+
+      // Check if the password matches
+      if (teamData.password !== password) {
+        throw new Error('Mot de passe incorrect');
+      }
+
+      // If all validations pass, update contexts and proceed
+      setEventId(eventId); // Set event context with event_id
+      setSelectedTeam(teamName); // Set team context with team name
+      setTeamUUID(teamData.id); // Set team UUID
+      setTeamMembers(teamData.team_members); // Set team members
+
+      toast({
+        title: 'Succès',
+        description: 'Équipe sélectionnée avec succès',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Close modal after success
+      setTimeout(() => {
+        setLoading(false);
+        onClose();
+      }, 1000);
     } catch (error) {
-      console.error('Error fetching team data:', error);
+      console.error('Error:', error.message);
       toast({
         title: 'Erreur',
-        description: 'Erreur lors de la récupération des données de l\'équipe',
+        description: error.message || 'Erreur lors de la sélection de l\'équipe',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
+      setLoading(false);
     }
   };
 
@@ -142,37 +103,27 @@ const TeamSelectionModal = () => {
         <ModalBody>
           <Flex direction="column" align="center" justify="center" height="100%" position="relative" zIndex={10}>
             <Box width="100%" maxWidth="400px" position="relative">
-              {/* Event Selection */}
+              {/* Event Input */}
               <FormControl>
-                <FormLabel>Événement</FormLabel>
-                <Select
-                  placeholder="Selectionnez un événement"
-                  value={selectedEvent}
-                  onChange={(e) => setSelectedEvent(e.target.value)} // This sets event_id (UUID)
-                >
-                  {events.map((event) => (
-                    <option key={event.event_id} value={event.event_id}>
-                      {event.event_name}
-                    </option>
-                  ))}
-                </Select>
+                <FormLabel>Nom de l'événement</FormLabel>
+                <Input
+                  type="text"
+                  placeholder="Saisissez le nom de l'événement"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                />
               </FormControl>
 
-              {/* Team Selection */}
+              {/* Team Input */}
               <FormControl mt={4}>
                 <FormLabel>Nom de l'équipe</FormLabel>
-                <Select
-                  placeholder="Selectionnez une équipe"
+                <Input
+                  type="text"
+                  placeholder="Saisissez le nom de l'équipe"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  isDisabled={!selectedEvent} // Disable until event is selected
-                >
-                  {teams.map((team) => (
-                    <option key={team.name_of_the_team} value={team.name_of_the_team}>
-                      {team.name_of_the_team}
-                    </option>
-                  ))}
-                </Select>
+                  isDisabled={!eventName} // Disable if no event name entered
+                />
               </FormControl>
 
               {/* Password Input */}
@@ -180,6 +131,7 @@ const TeamSelectionModal = () => {
                 <FormLabel>Mot de passe</FormLabel>
                 <Input
                   type="password"
+                  placeholder="Mot de passe"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   isDisabled={!teamName} // Disable until team is selected
@@ -187,7 +139,12 @@ const TeamSelectionModal = () => {
               </FormControl>
 
               {/* Submit Button */}
-              <Button mt={4} width="100%" onClick={handleTeamSelected} disabled={loading || !password}>
+              <Button
+                mt={4}
+                width="100%"
+                onClick={handleTeamSelected}
+                disabled={loading || !eventName || !teamName || !password} // Disable if any input is missing
+              >
                 {loading ? <Spinner size="sm" mr={2} /> : null}
                 Se Connecter
               </Button>
