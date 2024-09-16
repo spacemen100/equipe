@@ -185,6 +185,7 @@ const DropdownMenu = () => {
           as={Button}
           rightIcon={isOpen ? <FcCollapse /> : <FcExpand />}
           onClick={toggleMenu}
+          isDisabled={isEventSelected} // Add this line
         >
           {selectedItem || 'Choisissez l\'événement'}
           {selectedEventId && <Text ml={2}> </Text>}
@@ -206,7 +207,6 @@ const DropdownMenu = () => {
           Merci de sélectionner un évênement.
         </Alert>
       )}
-
 
       {alertData && (
         <Modal isOpen={true} onClose={() => setAlertData(null)} size="xl">
