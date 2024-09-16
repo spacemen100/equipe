@@ -140,6 +140,9 @@ const TeamSelectionModal = () => {
                   placeholder="Saisissez le nom de l'événement"
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
+                  bg="gray.800" // Darker background for the input field
+                  color="whiteAlpha.900" // Very light text color
+                  _placeholder={{ color: 'whiteAlpha.700' }} // Lighter placeholder text color
                 />
               </FormControl>
 
@@ -151,6 +154,9 @@ const TeamSelectionModal = () => {
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   isDisabled={!eventName}
+                  bg="gray.800" // Darker background for the input field
+                  color="whiteAlpha.900" // Very light text color
+                  _placeholder={{ color: 'whiteAlpha.700' }} // Lighter placeholder text color
                 />
               </FormControl>
 
@@ -162,6 +168,9 @@ const TeamSelectionModal = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   isDisabled={!teamName}
+                  bg="gray.800" // Darker background for the input field
+                  color="whiteAlpha.900" // Very light text color
+                  _placeholder={{ color: 'whiteAlpha.700' }} // Lighter placeholder text color
                 />
               </FormControl>
 
