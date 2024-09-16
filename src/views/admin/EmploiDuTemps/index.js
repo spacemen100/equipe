@@ -63,6 +63,7 @@ const EmploiDuTemps = () => {
 
   return (
     <Box pt={{ base: '180px', md: '80px', xl: '80px' }}>
+      <Box display="none">
       <UrgentAlerts />
       {showAlert && (
         <Alert status="error" mb="4" minHeight="100px">
@@ -104,6 +105,7 @@ const EmploiDuTemps = () => {
         </Badge>
       )}
       <TeamMembersDisplay />
+      </Box>
       <TeamScheduleByMySelfEquipe />
     </Box>
   );

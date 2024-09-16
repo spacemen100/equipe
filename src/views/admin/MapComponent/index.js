@@ -46,6 +46,7 @@ const MapComponentBis = () => {
   return (
     <Box pt={{ base: '180px', md: '80px', xl: '80px' }}>
       <UrgentAlerts />
+      <Box display="none">
       {showAlert && (
         <Alert status="error" mb="4" minHeight="100px">
           <AlertIcon />
@@ -78,6 +79,7 @@ const MapComponentBis = () => {
         </Badge>
       )}
       <TeamMembersDisplay />
+      </Box>
       <MapComponent/>
     </Box>
   );

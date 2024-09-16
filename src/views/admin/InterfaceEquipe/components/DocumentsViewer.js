@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Box, VStack, Text, Image, Link, Badge, Stack, Alert, AlertIcon, Button } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Box, VStack, Text, Image, Link, Badge, Stack, Alert, AlertIcon } from '@chakra-ui/react';
 import { useTeam } from '../TeamContext';
 import { supabase } from '../../../../supabaseClient';
 
@@ -8,8 +8,6 @@ const DocumentsViewer = () => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showViewer, setShowViewer] = useState(true); // State to control whether to show the viewer
-    const timeoutRef = useRef(null); // Ref for timeout
 
     useEffect(() => {
         async function fetchDocuments() {
@@ -42,30 +40,6 @@ const DocumentsViewer = () => {
 
         fetchDocuments();
     }, [teamUUID]);
-
-    useEffect(() => {
-        // Start the timeout to hide the viewer after 30 seconds
-        const timer = setTimeout(() => {
-            setShowViewer(false); // Hide the viewer after the timeout
-        }, 30000); // 30 seconds
-
-        // Clear the timeout when the component unmounts or when teamUUID changes
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [teamUUID]);
-
-    const restartTimeout = () => {
-        clearTimeout(timeoutRef.current);
-        setShowViewer(true); // Show the viewer again
-        startTimeout();
-    };
-
-    const startTimeout = () => {
-        timeoutRef.current = setTimeout(() => {
-            setShowViewer(false); // Hide the viewer after the timeout
-        }, 50000); // 50 seconds
-    };
 
     if (loading) {
         return <Text>Chargement des documents...</Text>;
@@ -100,40 +74,33 @@ const DocumentsViewer = () => {
 
     return (
         <VStack spacing={2}>
-            <Box alignSelf="flex-start"> {/* Container to position the button to the left */}
-                <Button onClick={restartTimeout} colorScheme="gray.100">
-                    <Badge colorScheme="orange">Mes documents</Badge>
-                </Button>
-            </Box>
-            {showViewer && ( // Render the viewer only if showViewer is true
-                documents.map((doc) => (
-                    <Box
-                        key={doc.id}
-                        p={1}
-                        borderRadius="md"
-                        width="full"
-                        _hover={{ bg: "gray.100" }}
-                    >
-                        <Stack direction={["column", "row"]} spacing={4} align="center">
-                            <Image
-                                borderRadius="md"
-                                boxSize="100px"
-                                objectFit="cover"
-                                src={doc.file_url}
-                                alt={`Image for ${doc.title}`}
-                                fallbackSrc="https://via.placeholder.com/100"
-                            />
-                            <Box flex="1">
-                                <Badge colorScheme="orange" fontWeight="bold" mt={2}>{doc.title}</Badge>
-                                <Badge colorScheme="gray" mt={2}>{doc.description}</Badge>
-                            </Box>
-                            <Link href={doc.file_url} isExternal>
-                                <Badge colorScheme="teal">Ouvrir le document</Badge>
-                            </Link>
-                        </Stack>
-                    </Box>
-                ))
-            )}
+            {documents.map((doc) => (
+                <Box
+                    key={doc.id}
+                    p={1}
+                    borderRadius="md"
+                    width="full"
+                    _hover={{ bg: "gray.100" }}
+                >
+                    <Stack direction={["column", "row"]} spacing={4} align="center">
+                        <Image
+                            borderRadius="md"
+                            boxSize="100px"
+                            objectFit="cover"
+                            src={doc.file_url}
+                            alt={`Image for ${doc.title}`}
+                            fallbackSrc="https://via.placeholder.com/100"
+                        />
+                        <Box flex="1">
+                            <Badge colorScheme="orange" fontWeight="bold" mt={2}>{doc.title}</Badge>
+                            <Badge colorScheme="gray" mt={2}>{doc.description}</Badge>
+                        </Box>
+                        <Link href={doc.file_url} isExternal>
+                            <Badge colorScheme="teal">Ouvrir le document</Badge>
+                        </Link>
+                    </Stack>
+                </Box>
+            ))}
         </VStack>
     );
 };
