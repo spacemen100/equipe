@@ -104,7 +104,8 @@ const TeamSelectionModal = () => {
         height="100vh"
         maxWidth="100vw"
         maxHeight="100vh"
-        bgGradient="linear(to-r, #3b4a6b, #d77b43)" // Applying gradient background
+        bgGradient="linear(to-r, #1A202C, #2D3748)" // Dark gradient background
+        color="white" // White text
       >
         {/* Centering the header text and adding the logo */}
         <ModalHeader display="flex" alignItems="center" justifyContent="center" textAlign="center">
@@ -133,6 +134,9 @@ const TeamSelectionModal = () => {
                   placeholder="Saisissez le nom de l'événement"
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
+                  bg="gray.700" // Dark input background
+                  color="white" // White input text
+                  _placeholder={{ color: 'gray.300' }} // Lighter placeholder text
                 />
               </FormControl>
 
@@ -145,6 +149,9 @@ const TeamSelectionModal = () => {
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   isDisabled={!eventName} // Disable if no event name entered
+                  bg="gray.700" // Dark input background
+                  color="white" // White input text
+                  _placeholder={{ color: 'gray.300' }} // Lighter placeholder text
                 />
               </FormControl>
 
@@ -157,6 +164,9 @@ const TeamSelectionModal = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   isDisabled={!teamName} // Disable until team is selected
+                  bg="gray.700" // Dark input background
+                  color="white" // White input text
+                  _placeholder={{ color: 'gray.300' }} // Lighter placeholder text
                 />
               </FormControl>
 
@@ -166,6 +176,9 @@ const TeamSelectionModal = () => {
                 width="100%"
                 onClick={handleTeamSelected}
                 disabled={loading || !eventName || !teamName || !password} // Disable if any input is missing
+                bg="orange.400"
+                color="white"
+                _hover={{ bg: 'orange.500' }}
               >
                 {loading ? <Spinner size="sm" mr={2} /> : null}
                 Se Connecter
