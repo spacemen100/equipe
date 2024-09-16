@@ -70,24 +70,24 @@ const DropdownMenu = () => {
   useEffect(() => {
     const fetchAlerts = async () => {
       if (!teamUUID) return; // Ne pas récupérer si aucune équipe n'est sélectionnée
-  
+
       try {
         const { data, error } = await supabase
           .from('vianney_sos_alerts')
           .select('*')
           .or('resolved.is.false,resolved.is.null')
           .eq('team_id', teamUUID); // Récupérer les alertes pour l'équipe sélectionnée
-  
+
         if (error) {
           throw error;
         }
-  
+
         // Filtrer les alertes pour exclure celles créées par l'équipe elle-même
         const relevantAlerts = data.filter(alert => {
           const teamsToNotify = alert.teams_to_which_send_a_notification || [];
           return teamsToNotify.includes(teamUUID) && alert.team_id !== teamUUID;
         });
-  
+
         if (relevantAlerts.length > 0) {
           setAlertData(relevantAlerts[0]); // Afficher la première alerte non résolue pour l'équipe
           toast({
@@ -102,15 +102,15 @@ const DropdownMenu = () => {
         console.error('Error fetching alerts:', error.message);
       }
     };
-  
+
     fetchAlerts(); // Récupération initiale
-  
+
     // Vérifier les alertes non résolues toutes les 60 secondes
     const intervalId = setInterval(fetchAlerts, 60000); // 60 secondes en millisecondes
-  
+
     // Nettoyer l'intervalle lorsque le composant est démonté
     return () => clearInterval(intervalId);
-  }, [teamUUID, toast]);  
+  }, [teamUUID, toast]);
 
   const handleSelect = (event) => {
     setSelectedItem(event.event_name);
@@ -124,9 +124,8 @@ const DropdownMenu = () => {
   };
 
   useEffect(() => {
-    // Check if a team is selected every 10 seconds
-    const intervalId = setInterval(async () => {
-      if (teamUUID && !isEventSelected) {
+    if (teamUUID) {
+      const fetchEvent = async () => {
         try {
           const { data, error } = await supabase
             .from('vianney_teams')
@@ -150,12 +149,11 @@ const DropdownMenu = () => {
         } catch (error) {
           console.error('Error fetching event for team:', error.message);
         }
-      }
-    }, 3000); // 10 seconds in milliseconds
+      };
 
-    // Clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, [teamUUID, isEventSelected, eventList, setEventId]);
+      fetchEvent();
+    }
+  }, [teamUUID, eventList, setEventId]);
 
   const createCustomIcon = () => {
     return L.divIcon({
