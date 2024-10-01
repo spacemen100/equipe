@@ -6,7 +6,8 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import { renderToString } from "react-dom/server";
 import {
   Box, Button, useToast, CloseButton, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogContent, AlertDialogOverlay, Input, VStack, HStack, FormControl, FormLabel, Text, Tooltip
+  AlertDialogContent, AlertDialogOverlay, Input, VStack, HStack, FormControl, FormLabel, Text, Tooltip, Table,
+  Thead, Tbody, Tr, Th, Td, TableContainer
 } from '@chakra-ui/react';
 import { MdPlace, MdOutlineZoomInMap, MdOutlineZoomOutMap, MdDeleteForever } from "react-icons/md";
 import { useEvent } from './../../../../EventContext';
@@ -15,7 +16,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import 'leaflet-draw';
 import 'leaflet-routing-machine';
 import { useGPSPosition } from './../../../../GPSPositionContext';
-import ToggleComponentGpsPointForm from './ToggleComponentGpsPointForm';
+import ToggleComponentGpsPointForm from '../ToggleComponentGpsPointForm';
 
 const createTeamIcon = () => {
   const placeIconHtml = renderToString(<MdPlace style={{ fontSize: '24px', color: 'red' }} />);
@@ -64,6 +65,8 @@ const MapComponent = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [elementToDelete, setElementToDelete] = useState(null);
   const cancelRef = useRef();
+  // eslint-disable-next-line
+  const [teamsList, setTeamsList] = useState([]); 
 
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [newElementName, setNewElementName] = useState('');
@@ -606,75 +609,103 @@ const MapComponent = () => {
 
   }, [selectedEventId, toast, loadAndDisplaySavedRoutes]);
 
-  useEffect(() => {
-    if (!selectedEventId) {
-      console.error('selectedEventId is not defined.');
+  const teamLayersRef = useRef([]); // Référence pour les couches des équipes
+const itemLayersRef = useRef([]); // Référence pour les couches des items
+
+useEffect(() => {
+  if (!selectedEventId) {
+    console.error('selectedEventId is not defined.');
+    return;
+  }
+
+  const fetchAndDisplayTeams = async () => {
+    if (!mapRef.current) {
+      console.warn("Map is not initialized yet.");
       return;
     }
 
-    const fetchAndDisplayTeams = async () => {
-      if (!mapRef.current) {
-        // Wait for the map to be initialized
-        console.warn("Map is not initialized yet.");
+    try {
+      const { data: teams, error } = await supabase
+        .from('vianney_teams')
+        .select('*')
+        .eq('event_id', selectedEventId);
+
+      if (error) {
+        console.error('Erreur lors de la récupération des équipes:', error);
         return;
       }
 
-      try {
-        if (!selectedEventId) return;
+      // Mettre à jour l'état de la liste des équipes
+      setTeamsList(teams);
 
-        const { data: teams, error } = await supabase
-          .from('vianney_teams')
-          .select('*')
-          .eq('event_id', selectedEventId);
+      // Supprimez uniquement les couches des équipes existantes
+      teamLayersRef.current.forEach(layer => {
+        mapRef.current.removeLayer(layer);
+      });
+      teamLayersRef.current = [];
 
-        if (error) {
-          console.error('Erreur lors de la récupération des équipes:', error);
-          return;
-        }
+      teams.forEach(team => {
+        const teamIcon = createTeamIcon();
+        const deleteIconHtml = renderToString(<MdDeleteForever style={{ cursor: 'pointer', fontSize: '24px', color: 'red' }} />);
 
-        mapRef.current.eachLayer(layer => {
-          if (layer instanceof L.Marker || (layer.options && layer.options.team)) {
-            mapRef.current.removeLayer(layer);
-          }
-        });
+        const wazeUrl = `https://www.waze.com/ul?ll=${team.latitude},${team.longitude}&navigate=yes`;
+        const wazeButtonHtml = `<a href="${wazeUrl}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #007aff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Aller vers Waze</a>`;
 
-        teams.forEach(team => {
-          const teamIcon = createTeamIcon();
-          const deleteIconHtml = renderToString(<MdDeleteForever style={{ cursor: 'pointer', fontSize: '24px', color: 'red' }} />);
+        const popupContent = `
+          <div>
+            <strong>${team.name_of_the_team}</strong>
+            ${team.photo_profile_url ? `<br/><img src="${team.photo_profile_url}" alt="${team.name_of_the_team}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; margin-top: 5px;"/>` : ''}
+            <div onclick="window.deleteTeam(${team.id})" style="margin-top: 10px;">${deleteIconHtml}</div>
+            ${wazeButtonHtml}
+          </div>
+        `;
 
-          const wazeUrl = `https://www.waze.com/ul?ll=${team.latitude},${team.longitude}&navigate=yes`;
-          const wazeButtonHtml = `<a href="${wazeUrl}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #007aff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Aller vers Waze</a>`;
+        const tooltipContent = team.name_of_the_team;
 
-          const popupContent = `
-            <div>
-              <strong>${team.name_of_the_team}</strong>
-              ${team.photo_profile_url ? `<br/><img src="${team.photo_profile_url}" alt="${team.name_of_the_team}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; margin-top: 5px;"/>` : ''}
-              <div onclick="window.deleteTeam(${team.id})" style="margin-top: 10px;">${deleteIconHtml}</div>
-              ${wazeButtonHtml}
-            </div>
-          `;
+        const marker = L.marker([team.latitude, team.longitude], { icon: teamIcon, team: true });
 
-          const tooltipContent = team.name_of_the_team;
+        marker.addTo(mapRef.current)
+          .bindPopup(popupContent, {
+            offset: L.point(0, -30),
+            direction: 'top'
+          })
+          .bindTooltip(tooltipContent, {
+            permanent: false,
+            direction: 'top',
+            offset: L.point(0, -30)
+          });
 
-          const marker = L.marker([team.latitude, team.longitude], { icon: teamIcon, team: true });
+        // Ajouter le marqueur à la référence
+        teamLayersRef.current.push(marker);
+      });
+    } catch (error) {
+      console.error('Erreur lors de la récupération des équipes:', error.message);
+    }
+  };
 
-          marker.addTo(mapRef.current)
-            .bindPopup(popupContent, {
-              offset: L.point(0, -30),
-              direction: 'top'
-            })
-            .bindTooltip(tooltipContent, {
-              permanent: false,
-              direction: 'top',
-              offset: L.point(0, -30)
-            });
-        });
-      } catch (error) {
-        console.error('Erreur lors de la récupération des équipes:', error.message);
-      }
-    };
+  // Appeler la fonction une première fois immédiatement
+  fetchAndDisplayTeams();
 
-    const fetchAndDisplayDrawnItems = async () => {
+  // Mettre à jour les équipes toutes les 5 secondes
+  const intervalId = setInterval(fetchAndDisplayTeams, 2000);
+
+  // Nettoyer l'intervalle à la fin du cycle de vie du composant
+  return () => clearInterval(intervalId);
+}, [selectedEventId]);
+
+useEffect(() => {
+  if (!selectedEventId) {
+    console.error('selectedEventId is not defined.');
+    return;
+  }
+
+  const fetchAndDisplayDrawnItems = async () => {
+    if (!mapRef.current) {
+      console.warn("Map is not initialized yet.");
+      return;
+    }
+
+    try {
       const { data: markers, error: markerError } = await supabase
         .from('vianney_drawn_markers')
         .select('*')
@@ -715,6 +746,13 @@ const MapComponent = () => {
         return;
       }
 
+      // Supprimez uniquement les couches des items existants
+      itemLayersRef.current.forEach(layer => {
+        mapRef.current.removeLayer(layer);
+      });
+      itemLayersRef.current = [];
+
+      // Ajouter les marqueurs
       markers.forEach(marker => {
         const layer = L.marker([marker.latitude, marker.longitude], { icon: createCustomIcon(marker.couleur) });
         const wazeUrl = `https://www.waze.com/ul?ll=${marker.latitude},${marker.longitude}&navigate=yes`;
@@ -733,16 +771,20 @@ const MapComponent = () => {
         window.deleteItem = (type, id) => openDeleteDialog(layer, type, id);
 
         layer.addTo(mapRef.current);
+        itemLayersRef.current.push(layer);
       });
 
+      // Ajouter les polylignes
       polylines.forEach(polyline => {
         const points = polyline.points.map(point => [point.latitude, point.longitude]);
         const layer = L.polyline(points, { color: polyline.couleur });
         const nameElement = polyline.name_element || 'Polyline';
         layer.bindTooltip(nameElement).on('click', () => openDeleteDialog(layer, 'polyline', polyline.id));
         layer.addTo(mapRef.current);
+        itemLayersRef.current.push(layer);
       });
 
+      // Ajouter les polygones
       polygons.forEach(polygon => {
         const points = polygon.points.map(point => [point.latitude, point.longitude]);
         const layer = L.polygon(points, { color: polygon.couleur });
@@ -763,8 +805,10 @@ const MapComponent = () => {
 
         layer.bindPopup(popupContent).bindTooltip(nameElement).on('click', () => openDeleteDialog(layer, 'polygon', polygon.id));
         layer.addTo(mapRef.current);
+        itemLayersRef.current.push(layer);
       });
 
+      // Ajouter les cercles
       circleMarkers.forEach(circleMarker => {
         const layer = L.circleMarker([circleMarker.latitude, circleMarker.longitude], {
           radius: circleMarker.radius,
@@ -786,12 +830,22 @@ const MapComponent = () => {
         window.deleteItem = (type, id) => openDeleteDialog(layer, type, id);
 
         layer.addTo(mapRef.current);
+        itemLayersRef.current.push(layer);
       });
-    };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des items:', error.message);
+    }
+  };
 
-    fetchAndDisplayTeams();
-    fetchAndDisplayDrawnItems();
-  }, [selectedEventId, toast]);
+  // Exécuter une première fois
+  fetchAndDisplayDrawnItems();
+
+  // Mettre à jour les items toutes les 10 secondes
+  const intervalId = setInterval(fetchAndDisplayDrawnItems, 5000);
+
+  // Nettoyer l'intervalle lors du démontage du composant
+  return () => clearInterval(intervalId);
+}, [selectedEventId]);  
   const createCustomIcon = (color) => {
     const placeIconHtml = renderToString(<MdPlace style={{ fontSize: '24px', color: color }} />);
     return L.divIcon({
@@ -805,6 +859,12 @@ const MapComponent = () => {
 
   const [startMarker, setStartMarker] = useState(null);
   const [endMarker, setEndMarker] = useState(null);
+  // Centrer la carte sur la position de l'équipe
+  const centerMapOnPosition = (latitude, longitude) => {
+    if (mapRef.current) {
+      mapRef.current.setView([latitude, longitude], 13); // Ajuster le zoom si nécessaire
+    }
+  };
 
   useEffect(() => {
     if (mapRef.current) {
@@ -902,6 +962,53 @@ const MapComponent = () => {
       )}
 
       <div id="map" style={{ height: mapHeight, width: '100%', zIndex: '0' }}></div>
+
+      <Box mt={8} p={4} bg="gray.100" borderRadius="md" boxShadow="md" border="1px solid black">
+        <Text fontSize="xl" mb={4} fontWeight="bold" color="black" textAlign="center">
+          Liste des équipes
+        </Text>
+        <TableContainer>
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Nom de l'équipe</Th>
+                <Th>Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {teamsList.map((team, index) => (
+                <Tr key={index}>
+                  <Td>{team.name_of_the_team}</Td>
+                  <Td>
+                    <HStack spacing={2}>
+                      {/* Bouton pour centrer la carte */}
+                      <Button
+                        size="sm"
+                        colorScheme="blue"
+                        onClick={() => centerMapOnPosition(team.latitude, team.longitude)}
+                      >
+                        Sur la carte
+                      </Button>
+
+                      {/* Bouton pour ouvrir Waze */}
+                      <Button
+                        size="sm"
+                        colorScheme="teal"
+                        onClick={() => {
+                          const wazeUrl = `https://www.waze.com/ul?ll=${team.latitude},${team.longitude}&navigate=yes`;
+                          window.open(wazeUrl, '_blank');
+                        }}
+                      >
+                        Avec Waze
+                      </Button>
+                    </HStack>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </Box>
 
       <Box
         mt={4}
