@@ -11,7 +11,7 @@ import {
   FcHighPriority
 } from "react-icons/fc";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
-import GestionOperationnelle from "views/admin/GestionOperationnelle";
+//import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
 import Materiels from "views/admin/Materiel";
@@ -24,7 +24,7 @@ import NoteDeFrais from "views/admin/NoteDeFrais";
 import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
 import MapComponent from "views/admin/MapComponent"; 
 import DocumentTabs from "views/admin/DocumentTabs"; 
-import { BsGeoAltFill } from "react-icons/bs";
+//import { BsGeoAltFill } from "react-icons/bs";
 
 const routes = [
   {
@@ -34,13 +34,13 @@ const routes = [
     icon: <Icon as={FcMenu} width='20px' height='20px' color='inherit' />,
     component: Menu,
   },
-  {
-    name: "Géolocalisation",
-    layout: "/admin",
-    path: "/gestion-operationnelle",
-    icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
-    component: GestionOperationnelle,
-  },
+ // {
+ //   name: "Géolocalisation",
+ //   layout: "/admin",
+ //   path: "/gestion-operationnelle",
+ //   icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
+ //   component: GestionOperationnelle,
+ // },
   {
     name: "Emploi du temps",
     layout: "/admin",
