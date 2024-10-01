@@ -33,6 +33,7 @@ const Materiel = () => {
             _hover={{ boxShadow: 'md' }}
             _active={{ boxShadow: 'lg' }}
             mr={2} // Ajoutez une marge à droite pour espacer les boutons
+            display="none"
           >
             Créer un matériel
           </Button>
@@ -58,6 +59,7 @@ const Materiel = () => {
             boxShadow='sm'
             _hover={{ boxShadow: 'md' }}
             _active={{ boxShadow: 'lg' }}
+            display="none"
           >
             Feuille d'impression des étiquettes
           </Button>
