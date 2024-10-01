@@ -106,6 +106,23 @@ const AccidentDetected = () => {
     }
   }, []);
 
+  const confirmSOS = useCallback(async () => {
+    setStep(3);
+    try {
+      const location = await getCurrentLocation();
+      const currentTime = new Date().toISOString();
+      await saveAlertData(location.latitude, location.longitude, currentTime);
+    } catch (error) {
+      console.error('Error in location or recording:', error);
+    }
+  }, [getCurrentLocation, saveAlertData]);
+
+  // Define triggerSOS before using it in useEffect
+  const triggerSOS = useCallback(() => {
+    setStep(2);
+    setCounter(30); // Reset the counter to 30 seconds when SOS is triggered
+  }, []);
+
   useEffect(() => {
     let timer;
     if (step === 2 && counter > 0) {
@@ -116,8 +133,7 @@ const AccidentDetected = () => {
       confirmSOS();
     }
     return () => clearInterval(timer);
-    // eslint-disable-next-line
-  }, [counter, step]);
+  }, [counter, step, confirmSOS]);
 
   useEffect(() => {
     // Update the alert data with the Supabase URL once it's available
@@ -126,27 +142,21 @@ const AccidentDetected = () => {
     }
   }, [supabaseURL, alertId, updateAlertData]);
 
-  const triggerSOS = () => {
-    setStep(2);
-    setCounter(30); // Reset the counter to 30 seconds when SOS is triggered
-  };
-
-  const confirmSOS = async () => {
-    setStep(3);
-    try {
-      const location = await getCurrentLocation();
-      const currentTime = new Date().toISOString();
-      await saveAlertData(location.latitude, location.longitude, currentTime);
-    } catch (error) {
-      console.error('Error in location or recording:', error);
+  // Automatically click the "Déclencher un SOS" button after 3 seconds
+  useEffect(() => {
+    if (step === 1) {
+      const sosTimer = setTimeout(() => {
+        triggerSOS();
+      }, 3000);
+      return () => clearTimeout(sosTimer);
     }
-  };
+  }, [step, triggerSOS]); // Added triggerSOS to the dependency array
 
-  const cancelAlert = () => {
+  const cancelAlert = useCallback(() => {
     setCounter(30);
     setStep(1);
     onClose();
-  };
+  }, [onClose]);
 
   return (
     <Center height="100vh" bg="gray.50" p={4}>
@@ -222,12 +232,12 @@ const AccidentDetected = () => {
           </Alert>
           {supabaseURL && (
             <Box display="none">
-            <VStack spacing={4}>
-              <Text fontSize="md" fontWeight="bold">
-                Supabase URL :
-              </Text>
-              <Input value={supabaseURL} isReadOnly />
-            </VStack>
+              <VStack spacing={4}>
+                <Text fontSize="md" fontWeight="bold">
+                  Supabase URL :
+                </Text>
+                <Input value={supabaseURL} isReadOnly />
+              </VStack>
             </Box>
           )}
           {/* Hidden VideoRecorder component */}
