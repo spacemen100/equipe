@@ -16,7 +16,7 @@ const Menu = () => {
     { icon: FcComments, label: "Chat", path: "/admin/chat" },
     { icon: FcSettings, label: "Paramètres", path: "/admin/parametres" },
     { icon: FcPackage, label: "Matériels", path: "/admin/materiels" }, // Added Matériels
-    { icon: FcHighPriority, label: "SOS Alerte Danger", path: "/admin/sos-alerte-danger" },
+    { icon: FcHighPriority, label: "SOS Alerte Silencieuse", path: "/admin/sos-alerte-danger" },
     { icon: FaMapMarked, label: "Carte", path: "/admin/carte" }, // Only "Carte" remains, not "Carte zoomée"
   ];
 

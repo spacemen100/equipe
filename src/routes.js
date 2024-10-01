@@ -113,7 +113,7 @@ const routes = [
     component: NoteDeFrais,
   },
   {
-    name: "SOS Alerte Danger",
+    name: "SOS Alerte Silencieuse",
     layout: "/admin",
     path: "/sos-alerte-danger",
     icon: <Icon as={FcHighPriority} width='20px' height='20px' color='inherit' />,
