@@ -13,7 +13,8 @@ function Sidebar(props) {
   let shadow = useColorModeValue("14px 17px 40px 4px rgba(112, 144, 176, 0.08)", "unset");
   let sidebarBg = useColorModeValue("white", "navy.800");
   let sidebarMargins = "0px";
-// filtrer les routes
+
+  // Filtrer les routes pour masquer les éléments spécifiques
   const filteredRoutes = routes.filter(
     route =>
       route.name !== "Carte zoomée" &&
@@ -42,6 +43,17 @@ export function SidebarResponsive(props) {
 
   const { routes } = props;
 
+  // Filtrer les routes pour masquer les éléments spécifiques (même logique que Sidebar)
+  const filteredRoutes = routes.filter(
+    route =>
+      route.name !== "Carte zoomée" &&
+      route.name !== "Matériel" &&
+      route.name !== "Documentss" &&
+      route.name !== "Rapport d'incident" &&
+      route.name !== "Fiche Bilan SUAP" &&
+      route.name !== "Note de frais"
+  );
+
   return (
     <Flex display={{ sm: "flex", xl: "none" }} alignItems="center">
       <Flex ref={btnRef} w="max-content" h="max-content" onClick={onOpen}>
@@ -53,7 +65,7 @@ export function SidebarResponsive(props) {
           <DrawerCloseButton zIndex="3" onClose={onClose} _focus={{ boxShadow: "none" }} _hover={{ boxShadow: "none" }} />
           <DrawerBody maxW="285px" px="0rem" pb="0">
             <Scrollbars autoHide renderTrackVertical={renderTrack} renderThumbVertical={renderThumb} renderView={renderView}>
-              <Content routes={routes} />
+              <Content routes={filteredRoutes} />
             </Scrollbars>
           </DrawerBody>
         </DrawerContent>
