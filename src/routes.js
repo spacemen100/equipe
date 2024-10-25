@@ -24,7 +24,7 @@ import NoteDeFrais from "views/admin/NoteDeFrais";
 import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
 import MapComponent from "views/admin/MapComponent"; 
 import DocumentTabs from "views/admin/DocumentTabs"; 
-//import { BsGeoAltFill } from "react-icons/bs";
+import ZoomedMapComponent from "views/admin/ZoomedMapComponent";
 
 const routes = [
   {
@@ -41,6 +41,12 @@ const routes = [
  //   icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
  //   component: GestionOperationnelle,
  // },
+ {
+  name: "Carte zoomée",
+  layout: "/admin",
+  path: "/zoomed-map",
+  component: ZoomedMapComponent,
+},
   {
     name: "Emploi du temps",
     layout: "/admin",
