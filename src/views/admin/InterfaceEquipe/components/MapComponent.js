@@ -774,36 +774,35 @@ useEffect(() => {
         itemLayersRef.current.push(layer);
       });
 
-      // Ajouter les polylignes
       polylines.forEach(polyline => {
         const points = polyline.points.map(point => [point.latitude, point.longitude]);
         const layer = L.polyline(points, { color: polyline.couleur });
         const nameElement = polyline.name_element || 'Polyline';
-        layer.bindTooltip(nameElement).on('click', () => openDeleteDialog(layer, 'polyline', polyline.id));
+        layer.bindTooltip(nameElement);
         layer.addTo(mapRef.current);
         itemLayersRef.current.push(layer);
       });
-
+      
       // Ajouter les polygones
       polygons.forEach(polygon => {
         const points = polygon.points.map(point => [point.latitude, point.longitude]);
         const layer = L.polygon(points, { color: polygon.couleur });
         const nameElement = polygon.name_element || 'Polygon';
-
+      
         const firstPoint = points[0];
         const wazeUrl = `https://www.waze.com/ul?ll=${firstPoint[0]},${firstPoint[1]}&navigate=yes`;
         const wazeButtonHtml = `<a href="${wazeUrl}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #007aff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Se rendre sur place</a>`;
         const deleteButtonHtml = renderToString(<MdDeleteForever style={{ cursor: 'pointer', fontSize: '24px', color: 'red' }} />);
-
+      
         const popupContent = `
-        <div>
-          <strong>${nameElement}</strong>
-          <div onclick="window.deleteItem('polygon', '${polygon.id}')">${deleteButtonHtml}</div>
-          ${wazeButtonHtml}
-        </div>
-      `;
-
-        layer.bindPopup(popupContent).bindTooltip(nameElement).on('click', () => openDeleteDialog(layer, 'polygon', polygon.id));
+          <div>
+            <strong>${nameElement}</strong>
+            <div onclick="window.deleteItem('polygon', '${polygon.id}')">${deleteButtonHtml}</div>
+            ${wazeButtonHtml}
+          </div>
+        `;
+      
+        layer.bindPopup(popupContent).bindTooltip(nameElement);
         layer.addTo(mapRef.current);
         itemLayersRef.current.push(layer);
       });
