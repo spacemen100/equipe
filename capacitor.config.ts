@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'protecto.fr',
+  appId: 'protectosystem.fr',
   appName: 'protecto',
   webDir: 'build'
 };

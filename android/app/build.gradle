@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "protecto.fr"
+    namespace "protectosystem.fr"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "protecto.fr"
+        applicationId "protectosystem.fr"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

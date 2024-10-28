@@ -1,4 +1,4 @@
-package protecto.fr;
+package protectosystem.fr;
 
 import com.getcapacitor.BridgeActivity;
 
