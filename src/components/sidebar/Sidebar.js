@@ -17,7 +17,7 @@ function Sidebar(props) {
   // Filtrer les routes pour masquer les éléments spécifiques
   const filteredRoutes = routes.filter(
     route =>
-      route.name !== "Carte zoomée" &&
+      route.name !== "Carte zoomé" &&
       route.name !== "Matériel" &&
       route.name !== "Documentss" &&
       route.name !== "Rapport d'incident" &&
