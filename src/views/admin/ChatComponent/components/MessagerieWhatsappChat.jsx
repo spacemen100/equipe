@@ -392,12 +392,31 @@ function MessagerieWhatsappChat() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-            setSelectedFile(file);
+            const MAX_FILE_SIZE = 10 * 1024 * 1024; // Limite de 10MB
+            if (file.size > MAX_FILE_SIZE) {
+                toast({
+                    title: "Erreur",
+                    description: "Le fichier est trop volumineux.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+                return;
+            }
+    
+            // Vérification du type de fichier pour accepter uniquement les images
+            if (file.type.startsWith("image/")) {
+                setPreviewImage(URL.createObjectURL(file));
+                setSelectedFile(file);
+            } else {
+                toast({
+                    title: "Erreur",
+                    description: "Seules les images sont acceptées.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
         }
     };
 
@@ -406,6 +425,9 @@ function MessagerieWhatsappChat() {
     };
 
     const handleDeleteFile = () => {
+        if (previewImage) {
+            URL.revokeObjectURL(previewImage); // Libère la mémoire
+        }
         setSelectedFile(null);
         setPreviewImage(null);
     };
