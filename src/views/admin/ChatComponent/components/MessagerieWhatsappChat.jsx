@@ -24,7 +24,7 @@ function MessagerieWhatsappChat() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingAlert, setEditingAlert] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-         // eslint-disable-next-line 
+    // eslint-disable-next-line 
     const [alertToDelete, setAlertToDelete] = useState(null);
     const [password, setPassword] = useState('');
     const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
@@ -138,23 +138,23 @@ function MessagerieWhatsappChat() {
                 .select('*')
                 .eq('event_id', selectedEventId)
                 .order('timestamp', { ascending: true });
-    
+
             if (error) {
                 console.error('Error fetching alerts:', error);
                 return;
             }
-    
+
             const unreadMessages = data.filter(alert => !alert.read_by_teams.includes(selectedTeam));
-    
+
             for (const alert of unreadMessages) {
                 const updatedReadByTeams = [...alert.read_by_teams, selectedTeam];
-    
+
                 await supabase
                     .from('vianney_chat_messages')
                     .update({ read_by_teams: updatedReadByTeams })
                     .eq('id', alert.id);
             }
-    
+
             setAlerts(data);
         } catch (error) {
             console.error('Error fetching alerts:', error);
@@ -163,8 +163,8 @@ function MessagerieWhatsappChat() {
 
     useEffect(() => {
         fetchAlerts();
-        const intervalId = setInterval(fetchAlerts, 6000); 
-        return () => clearInterval(intervalId); 
+        const intervalId = setInterval(fetchAlerts, 6000);
+        return () => clearInterval(intervalId);
     }, [fetchAlerts]);
 
     useEffect(() => {
@@ -186,8 +186,8 @@ function MessagerieWhatsappChat() {
         recordedChunksRef.current = [];
 
         // Enregistrer uniquement l'audio
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            audio: true 
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
         });
 
         mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
@@ -206,7 +206,7 @@ function MessagerieWhatsappChat() {
             } catch (error) {
                 console.error('Upload failed:', error);
             }
-            
+
             stream.getTracks().forEach(track => track.stop());
         };
 
@@ -228,7 +228,7 @@ function MessagerieWhatsappChat() {
                 .storage
                 .from('chat-audio')
                 .upload(fileName, blob);
-    
+
             if (uploadError || !uploadData) {
                 console.error('Error uploading audio:', uploadError);
                 console.log('Upload Data:', uploadData);
@@ -241,10 +241,10 @@ function MessagerieWhatsappChat() {
                 });
                 throw new Error('Failed to upload audio');
             }
-    
+
             const audioUrl = `${supabaseUrl.replace('.co', '.in')}/storage/v1/object/public/chat-audio/${uploadData.path}`;
             console.log('Audio uploaded successfully:', audioUrl);
-    
+
             console.log("Attempting to insert audio message into database...");
             const messagePayload = {
                 alert_text: 'Audio Message',
@@ -256,11 +256,11 @@ function MessagerieWhatsappChat() {
                 team_name: selectedTeam,
             };
             console.log("Message Payload:", messagePayload);
-    
+
             const { data: insertedData, error: insertError } = await supabase
                 .from('vianney_chat_messages')
                 .insert([messagePayload]);
-    
+
             if (insertError) {
                 console.error('Error saving audio message:', insertError);
                 console.log('Insert Data:', insertedData);
@@ -273,12 +273,12 @@ function MessagerieWhatsappChat() {
                 });
                 throw new Error('Failed to save audio message');
             }
-    
+
             console.log("Audio message inserted successfully:", insertedData);
             if (!insertedData || insertedData.length === 0) {
                 throw new Error('No data returned from insert operation');
             }
-    
+
             setAlerts(prevAlerts => [...prevAlerts, { ...insertedData[0], timestamp: new Date().toISOString() }]);
             toast({
                 title: "Audio ajouté",
@@ -298,8 +298,8 @@ function MessagerieWhatsappChat() {
             });
             throw error;
         }
-    };       
-    
+    };
+
     const handleSubmit = async () => {
         if (!selectedTeam) {
             toast({
@@ -314,10 +314,10 @@ function MessagerieWhatsappChat() {
         }
 
         if (newAlertText.trim() !== '' || selectedFile) {
-            const fakeUUID = uuidv4(); 
+            const fakeUUID = uuidv4();
 
             try {
-                let imageUrl = ''; 
+                let imageUrl = '';
 
                 if (selectedFile) {
                     const fileExtension = selectedFile.name.split('.').pop();
@@ -403,7 +403,7 @@ function MessagerieWhatsappChat() {
                 });
                 return;
             }
-    
+
             // Vérification du type de fichier pour accepter uniquement les images
             if (file.type.startsWith("image/")) {
                 setPreviewImage(URL.createObjectURL(file));
@@ -438,91 +438,91 @@ function MessagerieWhatsappChat() {
 
                 <Box flex='1' overflowY='auto' p={4} bg='#f5f5f5'>
                     <VStack spacing={4} align='stretch'>
-                    {alerts.map((alert, index) => {
-                        const isOwnMessage = alert.team_name === selectedTeam;
-                        const hasBeenRead = alert.read_by_teams.includes(selectedTeam);
+                        {alerts.map((alert, index) => {
+                            const isOwnMessage = alert.team_name === selectedTeam;
+                            const hasBeenRead = alert.read_by_teams.includes(selectedTeam);
 
-                        return (
-                            <Flex
-                                key={index}
-                                justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
-                                mb={2}
-                                alignItems="flex-start"
-                            >
-                                {!isOwnMessage && (
-                                    <Avatar
-                                        name={alert.team_name}
-                                        bg="blue.500"
-                                        color="white"
-                                        size="sm"
-                                        mr={4}
-                                    />
-                                )}
-                                <Box
-                                    maxWidth="70%"
-                                    bg={isOwnMessage ? 'green.100' : 'white'}
-                                    color={isOwnMessage ? 'black' : 'black'}
-                                    p={3}
-                                    borderRadius="lg"
-                                    boxShadow="md"
-                                    position="relative"
-                                    _before={!isOwnMessage ? {
-                                        content: '""',
-                                        position: 'absolute',
-                                        top: '0',
-                                        left: '-12px',
-                                        width: '0',
-                                        height: '0',
-                                        borderStyle: 'solid',
-                                        borderWidth: '0 12px 12px 0',
-                                        borderColor: 'transparent white transparent transparent',
-                                    } : {
-                                        content: '""',
-                                        position: 'absolute',
-                                        top: '0',
-                                        right: '-12px',
-                                        width: '0',
-                                        height: '0',
-                                        borderStyle: 'solid',
-                                        borderWidth: '12px 12px 0 0',
-                                        borderColor: 'green.100 ',
-                                    }}
-                                    borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
-                                    borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
+                            return (
+                                <Flex
+                                    key={index}
+                                    justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
+                                    mb={2}
+                                    alignItems="flex-start"
                                 >
                                     {!isOwnMessage && (
-                                        <Text fontWeight="bold" fontSize="sm" mb={1}>
-                                            {alert.team_name}
-                                        </Text>
-                                    )}
-                                    <Text>{alert.alert_text}</Text>
-                                    {alert.image_url && (
-                                        <Image
-                                            src={alert.image_url}
-                                            alt="Message image"
-                                            maxHeight="200px"
-                                            borderRadius="md"
-                                            mt={2}
+                                        <Avatar
+                                            name={alert.team_name}
+                                            bg="blue.500"
+                                            color="white"
+                                            size="sm"
+                                            mr={4}
                                         />
                                     )}
-                                    {alert.audio_url && (
-                                        <audio controls>
-                                            <source src={alert.audio_url} type="audio/webm" />
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                    )}
-                                    <Flex justifyContent="space-between" alignItems="center" mt={2}>
-                                        <Text fontSize="xs" color="gray.500">
-                                            {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </Text>
-                                        {hasBeenRead && (
-                                            <BsCheck2All color="blue" />
+                                    <Box
+                                        maxWidth="70%"
+                                        bg={isOwnMessage ? 'green.100' : 'white'}
+                                        color={isOwnMessage ? 'black' : 'black'}
+                                        p={3}
+                                        borderRadius="lg"
+                                        boxShadow="md"
+                                        position="relative"
+                                        _before={!isOwnMessage ? {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: '0',
+                                            left: '-12px',
+                                            width: '0',
+                                            height: '0',
+                                            borderStyle: 'solid',
+                                            borderWidth: '0 12px 12px 0',
+                                            borderColor: 'transparent white transparent transparent',
+                                        } : {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: '0',
+                                            right: '-12px',
+                                            width: '0',
+                                            height: '0',
+                                            borderStyle: 'solid',
+                                            borderWidth: '12px 12px 0 0',
+                                            borderColor: 'green.100 ',
+                                        }}
+                                        borderTopLeftRadius={!isOwnMessage ? '0' : 'lg'}
+                                        borderTopRightRadius={isOwnMessage ? '0' : 'lg'}
+                                    >
+                                        {!isOwnMessage && (
+                                            <Text fontWeight="bold" fontSize="sm" mb={1}>
+                                                {alert.team_name}
+                                            </Text>
                                         )}
-                                    </Flex>
-                                </Box>
-                            </Flex>
-                        );
-                    })}
+                                        <Text>{alert.alert_text}</Text>
+                                        {alert.image_url && (
+                                            <Image
+                                                src={alert.image_url}
+                                                alt="Message image"
+                                                maxHeight="200px"
+                                                borderRadius="md"
+                                                mt={2}
+                                            />
+                                        )}
+                                        {alert.audio_url && (
+                                            <audio controls>
+                                                <source src={alert.audio_url} type="audio/webm" />
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        )}
+                                        <Flex justifyContent="space-between" alignItems="center" mt={2}>
+                                            <Text fontSize="xs" color="gray.500">
+                                                {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </Text>
+                                            {hasBeenRead && (
+                                                <BsCheck2All color="blue" />
+                                            )}
+                                        </Flex>
+                                    </Box>
+                                </Flex>
+                            );
+                        })}
                         <div ref={messagesEndRef} />
                     </VStack>
                 </Box>
@@ -548,7 +548,7 @@ function MessagerieWhatsappChat() {
                                 {team.name_of_the_team}
                             </option>
                         ))}
-                    </Select>                
+                    </Select>
                 )}
 
                 <Box p={4} borderTop='1px solid #e0e0e0' bg='white' width='100%' position="sticky" bottom="0">
@@ -577,7 +577,8 @@ function MessagerieWhatsappChat() {
                         />
                         <Input
                             type="file"
-                            accept="image/*"
+                            accept="image/*;capture=camera"
+                            capture="environment" // Utilisez "user" pour la caméra frontale, "environment" pour la caméra arrière
                             ref={fileInputRef}
                             style={{ display: 'none' }}
                             onChange={(e) => {
