@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { supabase } from './../../../../supabaseClient'; // Adjust the import according to your project structure
+import { supabase } from './../../../../supabaseClient';
 
 const VideoRecorder = ({ uuid, setSupabaseURL }) => {
   const [recording, setRecording] = useState(false);
@@ -15,13 +15,6 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     }
   }, [uuid]);
 
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-    }
-    setRecording(false);
-  }, []);
-
   const uploadVideoToSupabase = useCallback(async (blob) => {
     const fileName = `sos_recording_${new Date().toISOString()}.webm`;
     try {
@@ -35,9 +28,8 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
         alert('Error uploading video');
       } else {
         const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
-        console.log('Video uploaded:', videoUrl);
-        setSupabaseURL(videoUrl); // Set the Supabase URL state in parent component
-        alert('Video uploaded successfully');
+        setSupabaseURL(videoUrl); // Pass the URL to the parent component
+        console.log('Video uploaded successfully:', videoUrl);
       }
     } catch (error) {
       console.error('Unexpected error uploading video:', error);
@@ -45,22 +37,28 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     }
   }, [setSupabaseURL]);
 
-  const startRecording = useCallback(async () => {
-    if (!localUUID) {
-      alert('Please enter a UUID before starting the recording.');
-      return;
+  // Function to stop recording
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
     }
+  }, []);
+
+  // Function to start recording video and audio
+  const startRecording = useCallback(async () => {
     setRecording(true);
     recordedChunksRef.current = [];
 
-    const stream = await navigator.mediaDevices.getUserMedia({ 
+    // Request access to video and audio
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: true // Requesting audio along with video
+      audio: true,
     });
     videoRef.current.srcObject = stream;
 
+    // Initialize MediaRecorder to capture video and audio
     mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
     mediaRecorderRef.current.ondataavailable = (event) => {
       if (event.data.size > 0) {
         recordedChunksRef.current.push(event.data);
@@ -70,17 +68,20 @@ const VideoRecorder = ({ uuid, setSupabaseURL }) => {
     mediaRecorderRef.current.onstop = () => {
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
       const url = URL.createObjectURL(blob);
-      setVideoURL(url);
+      setVideoURL(url); // Save the video URL for local playback
       uploadVideoToSupabase(blob); // Upload the video to Supabase after recording stops
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => track.stop()); // Stop video and audio stream
     };
 
     mediaRecorderRef.current.start();
+
+    // Automatically stop recording after 10 seconds (adjustable)
     setTimeout(() => {
       stopRecording();
-    }, 20000); // Stop recording after 10 seconds
-  }, [localUUID, stopRecording, uploadVideoToSupabase]);
+    }, 5000);
+  }, [stopRecording, uploadVideoToSupabase]);
 
+  // Automatically start recording when UUID is set
   useEffect(() => {
     if (localUUID) {
       startRecording();

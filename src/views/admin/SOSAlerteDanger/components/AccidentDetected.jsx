@@ -117,12 +117,6 @@ const AccidentDetected = () => {
     }
   }, [getCurrentLocation, saveAlertData]);
 
-  // Define triggerSOS before using it in useEffect
-  const triggerSOS = useCallback(() => {
-    setStep(2);
-    setCounter(30); // Reset the counter to 30 seconds when SOS is triggered
-  }, []);
-
   useEffect(() => {
     let timer;
     if (step === 2 && counter > 0) {
@@ -136,11 +130,26 @@ const AccidentDetected = () => {
   }, [counter, step, confirmSOS]);
 
   useEffect(() => {
-    // Update the alert data with the Supabase URL once it's available
     if (supabaseURL && alertId) {
       updateAlertData(alertId, supabaseURL);
     }
   }, [supabaseURL, alertId, updateAlertData]);
+
+  useEffect(() => {
+    if (step === 3) {
+      document.querySelector('#startRecordingButton')?.click();
+      setTimeout(() => {
+        document.querySelector('#stopRecordingButton')?.click();
+      }, 5000); // Arrête l'enregistrement après 5 secondes
+    }
+  }, [step]);
+
+  // Define triggerSOS before using it in useEffect
+  const triggerSOS = useCallback(() => {
+    setStep(2);
+    setCounter(30); // Reset the counter to 30 seconds when SOS is triggered
+  }, []);
+
 
   // Automatically click the "Déclencher un SOS" button after 3 seconds
   useEffect(() => {
