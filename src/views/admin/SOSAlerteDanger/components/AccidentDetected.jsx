@@ -250,7 +250,7 @@ const AccidentDetected = () => {
             </Box>
           )}
           {/* Hidden VideoRecorder component */}
-          <Box display="none">
+          <Box>
             <VideoRecorder uuid={alertId} setSupabaseURL={setSupabaseURL} />
           </Box>
         </VStack>
