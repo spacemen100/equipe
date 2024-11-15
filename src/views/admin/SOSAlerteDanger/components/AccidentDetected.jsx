@@ -11,7 +11,7 @@ import {
   AlertTitle,
   AlertDescription,
 } from '@chakra-ui/react';
-import { PhoneIcon } from '@chakra-ui/icons';
+import { PhoneIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { supabase } from './../../../../supabaseClient'; // Adjust according to your project structure
 import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Import the useTeam hook
 import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
@@ -85,7 +85,7 @@ const AccidentDetected = () => {
     try {
       const { data, error } = await supabase
         .storage
-        .from('sos-alerts-video') // Assurez-vous que ce bucket existe dans Supabase
+        .from('sos-alerts-video')
         .upload(fileName, blob);
   
       if (error) {
@@ -148,6 +148,15 @@ const AccidentDetected = () => {
     startRecording();
   }, [getCurrentLocation, saveAlertData, startRecording]);
 
+  const cancelSOS = useCallback(() => {
+    setStep(1);
+    setCounter(30);
+    setLatitude(null);
+    setLongitude(null);
+    setAlertId(null);
+    setSupabaseURL('');
+  }, []);
+
   useEffect(() => {
     if (supabaseURL && alertId) {
       const updateAlert = async () => {
@@ -198,6 +207,12 @@ const AccidentDetected = () => {
           <CircularProgress value={(counter / 30) * 100} size="120px" color="green.400">
             <CircularProgressLabel>{counter}s</CircularProgressLabel>
           </CircularProgress>
+          <Button leftIcon={<CheckIcon />} colorScheme="green" onClick={confirmSOS}>
+            Confirmer l'alerte
+          </Button>
+          <Button leftIcon={<CloseIcon />} colorScheme="red" onClick={cancelSOS}>
+            Annuler l'alerte
+          </Button>
         </VStack>
       )}
       {step === 3 && (
