@@ -189,6 +189,14 @@ const AccidentDetected = () => {
     return () => clearInterval(timer);
   }, [step, counter, confirmSOS]);
 
+  // Automatically click "Déclencher un SOS" after 3 seconds
+  useEffect(() => {
+    if (step === 1) {
+      const timer = setTimeout(() => setStep(2), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   return (
     <Center height="100vh" bg="gray.50" p={4}>
       {step === 1 && (
