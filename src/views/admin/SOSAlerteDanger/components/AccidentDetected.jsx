@@ -24,8 +24,6 @@ const AccidentDetected = () => {
   const [step, setStep] = useState(1); // Step tracker
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
-  const [recording, setRecording] = useState(false);
-  const [videoURL, setVideoURL] = useState(null);
   const [alertId, setAlertId] = useState(null);
   const [supabaseURL, setSupabaseURL] = useState('');
   const { teamUUID, selectedTeam } = useTeam();
@@ -35,7 +33,7 @@ const AccidentDetected = () => {
   const recordedChunksRef = useRef([]);
 
   const getCurrentLocation = useCallback(() => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -57,7 +55,6 @@ const AccidentDetected = () => {
   }, []);
 
   const saveAlertData = useCallback(async (lat, long, timeForUser) => {
-    console.log('Saving alert data:', { lat, long, timeForUser });
     const { data, error } = await supabase
       .from('vianney_sos_alerts')
       .insert([{
@@ -75,7 +72,6 @@ const AccidentDetected = () => {
     if (error) {
       console.error('Error inserting data into alerts table:', error);
     } else if (data?.length) {
-      console.log('Alert saved successfully:', data[0]);
       setAlertId(data[0].id);
     }
   }, [teamUUID, selectedTeam, selectedEventId]);  
@@ -95,49 +91,40 @@ const AccidentDetected = () => {
       }
   
       const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
-      setSupabaseURL(videoUrl); // Sauvegarde l'URL dans l'état
-      console.log('Video uploaded successfully:', videoUrl);
+      setSupabaseURL(videoUrl);
     } catch (err) {
       console.error('Unexpected error uploading video:', err);
       alert('Erreur inattendue lors du téléchargement de la vidéo.');
     }
-  }, []);  
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+  }, []);
 
   const startRecording = useCallback(async () => {
-    setRecording(true);
     recordedChunksRef.current = [];
-    console.log('Starting recording...');
-    
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     videoRef.current.srcObject = stream;
   
     mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
     mediaRecorderRef.current.ondataavailable = (event) => {
       if (event.data.size > 0) {
-        console.log('Recording chunk received:', event.data.size);
         recordedChunksRef.current.push(event.data);
       }
     };
   
     mediaRecorderRef.current.onstop = () => {
-      console.log('Recording stopped.');
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-      console.log('Blob created:', blob);
       uploadVideoToSupabase(blob);
       stream.getTracks().forEach(track => track.stop());
     };
   
     mediaRecorderRef.current.start();
     setTimeout(() => stopRecording(), 5000);
-  }, [uploadVideoToSupabase]);
-  
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    }
-  }, []);
+  }, [uploadVideoToSupabase, stopRecording]);
 
   const confirmSOS = useCallback(async () => {
     setStep(3);
@@ -160,24 +147,18 @@ const AccidentDetected = () => {
   useEffect(() => {
     if (supabaseURL && alertId) {
       const updateAlert = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('vianney_sos_alerts')
-            .update({ url: supabaseURL })
-            .eq('id', alertId);
+        const { error } = await supabase
+          .from('vianney_sos_alerts')
+          .update({ url: supabaseURL })
+          .eq('id', alertId);
   
-          if (error) {
-            console.error('Error updating alert data with video URL:', error);
-          } else {
-            console.log('Alert updated successfully with video URL:', data);
-          }
-        } catch (err) {
-          console.error('Unexpected error updating alert with video URL:', err);
+        if (error) {
+          console.error('Error updating alert data with video URL:', error);
         }
       };
       updateAlert();
     }
-  }, [supabaseURL, alertId]);  
+  }, [supabaseURL, alertId]);
 
   useEffect(() => {
     let timer;
@@ -189,7 +170,6 @@ const AccidentDetected = () => {
     return () => clearInterval(timer);
   }, [step, counter, confirmSOS]);
 
-  // Automatically click "Déclencher un SOS" after 3 seconds
   useEffect(() => {
     if (step === 1) {
       const timer = setTimeout(() => setStep(2), 3000);
