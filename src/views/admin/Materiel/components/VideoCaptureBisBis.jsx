@@ -35,18 +35,19 @@ const VideoCaptureBisBis = () => {
       });
       return;
     }
-
+  
     try {
       const { data, error } = await supabase
         .from('vianney_inventaire_materiel')
         .update({ associated_team_id: teamUUID })
         .eq('id', materialId)
+        .select('*') // Ajoutez cette ligne pour récupérer toutes les colonnes
         .single();
-
+  
       if (error) {
         throw error;
       }
-
+  
       console.log('Matériel associé à l\'équipe avec succès', data);
       toast({
         title: "Succès",
@@ -55,8 +56,8 @@ const VideoCaptureBisBis = () => {
         duration: 5000,
         isClosable: true,
       });
-
-      // Update the local state to reflect the new association
+  
+      // Mettez à jour l'état local avec les données complètes du matériel
       setMateriel(data);
       setNoMatchingMaterial(false);
     } catch (error) {
@@ -69,7 +70,7 @@ const VideoCaptureBisBis = () => {
         isClosable: true,
       });
     }
-  }, [teamUUID, selectedTeam, toast]);
+  }, [teamUUID, selectedTeam, toast]);  
 
   const fetchMateriel = useCallback(async (id) => {
     try {
@@ -423,7 +424,6 @@ const VideoCaptureBisBis = () => {
                   </HStack>
                 </VStack>
               </Box>
-              ))}
               {/* Modal de confirmation de la suppression */}
               <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
