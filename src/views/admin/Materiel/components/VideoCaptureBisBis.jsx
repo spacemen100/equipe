@@ -14,7 +14,7 @@ import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
-  const [ setQrCodeText] = useState('');
+  // Removed qrCodeText and setQrCodeText
   const [materiel, setMateriel] = useState(null);
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
@@ -127,7 +127,7 @@ const VideoCaptureBisBis = () => {
 
         if (code) {
           console.log('Données extraites du QR code :', code.data);
-          setQrCodeText(code.data);
+          // Removed setQrCodeText(code.data);
           fetchMateriel(code.data);
           associateMaterialToTeam(code.data);
           stream.getTracks().forEach(track => track.stop());
@@ -139,7 +139,7 @@ const VideoCaptureBisBis = () => {
     };
 
     checkQRCode();
-  }, [fetchMateriel, associateMaterialToTeam, setQrCodeText]);
+  }, [fetchMateriel, associateMaterialToTeam]);
 
   useEffect(() => {
     const enableStream = async () => {
@@ -403,24 +403,24 @@ const VideoCaptureBisBis = () => {
                       {materiel.description}
                     </Alert>
                   )}
-                    <HStack spacing="4">
-                      <Tooltip label="Associer à une autre équipe" hasArrow>
-                        <IconButton
-                          aria-label="Associer à une autre équipe"
-                          icon={<FcOk />}
-                          colorScheme="gray"
-                          onClick={() => handleOpenAssociationModal(materiel)} // Ouverture du modal avec le matériel sélectionné
-                        />
-                      </Tooltip>
-                      <Tooltip label="Rendre le matériel" hasArrow>
-                        <IconButton
-                          aria-label="Rendre le matériel"
-                          icon={<FcDisclaimer />}
-                          colorScheme="gray"
-                          onClick={() => handleReturnMaterial(materiel.id)} // Rendre le matériel
-                        />
-                      </Tooltip>
-                    </HStack>
+                  <HStack spacing="4">
+                    <Tooltip label="Associer à une autre équipe" hasArrow>
+                      <IconButton
+                        aria-label="Associer à une autre équipe"
+                        icon={<FcOk />}
+                        colorScheme="gray"
+                        onClick={() => handleOpenAssociationModal(materiel)} // Ouverture du modal avec le matériel sélectionné
+                      />
+                    </Tooltip>
+                    <Tooltip label="Rendre le matériel" hasArrow>
+                      <IconButton
+                        aria-label="Rendre le matériel"
+                        icon={<FcDisclaimer />}
+                        colorScheme="gray"
+                        onClick={() => handleReturnMaterial(materiel.id)} // Rendre le matériel
+                      />
+                    </Tooltip>
+                  </HStack>
                 </VStack>
               </Box>
               ))}
