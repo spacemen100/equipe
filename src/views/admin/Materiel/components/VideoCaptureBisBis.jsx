@@ -14,14 +14,13 @@ import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
-  // Removed qrCodeText and setQrCodeText
   const [materiel, setMateriel] = useState(null);
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
   const history = useHistory();
   const toast = useToast();
 
-  const { selectedTeam, teamUUID, setSelectedTeam } = useTeam(); // Access selectedTeam and teamUUID
+  const { selectedTeam, teamUUID, setSelectedTeam } = useTeam();
 
   const associateMaterialToTeam = useCallback(async (materialId) => {
     if (!teamUUID) {
@@ -35,19 +34,19 @@ const VideoCaptureBisBis = () => {
       });
       return;
     }
-  
+
     try {
       const { data, error } = await supabase
         .from('vianney_inventaire_materiel')
         .update({ associated_team_id: teamUUID })
         .eq('id', materialId)
-        .select('*') // Ajoutez cette ligne pour récupérer toutes les colonnes
+        .select('*') // Récupérer toutes les colonnes
         .single();
-  
+
       if (error) {
         throw error;
       }
-  
+
       console.log('Matériel associé à l\'équipe avec succès', data);
       toast({
         title: "Succès",
@@ -56,8 +55,8 @@ const VideoCaptureBisBis = () => {
         duration: 5000,
         isClosable: true,
       });
-  
-      // Mettez à jour l'état local avec les données complètes du matériel
+
+      // Mettre à jour l'état local avec les données complètes du matériel
       setMateriel(data);
       setNoMatchingMaterial(false);
     } catch (error) {
@@ -70,7 +69,7 @@ const VideoCaptureBisBis = () => {
         isClosable: true,
       });
     }
-  }, [teamUUID, selectedTeam, toast]);  
+  }, [teamUUID, selectedTeam, toast]);
 
   const fetchMateriel = useCallback(async (id) => {
     try {
@@ -94,7 +93,6 @@ const VideoCaptureBisBis = () => {
       } else {
         setMateriel(data);
         setNoMatchingMaterial(false);
-        // No need to associate here
       }
     } catch (error) {
       console.error('Error fetching item details:', error);
@@ -128,7 +126,6 @@ const VideoCaptureBisBis = () => {
 
         if (code) {
           console.log('Données extraites du QR code :', code.data);
-          // Removed setQrCodeText(code.data);
           fetchMateriel(code.data);
           associateMaterialToTeam(code.data);
           stream.getTracks().forEach(track => track.stop());
@@ -142,21 +139,27 @@ const VideoCaptureBisBis = () => {
     checkQRCode();
   }, [fetchMateriel, associateMaterialToTeam]);
 
-  useEffect(() => {
-    const enableStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        scanQRCode(stream);
-      } catch (err) {
-        console.error("Error accessing camera: ", err);
+  const enableStream = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
-    };
-
-    enableStream();
+      scanQRCode(stream);
+    } catch (err) {
+      console.error("Error accessing camera: ", err);
+    }
   }, [scanQRCode]);
+
+  useEffect(() => {
+    enableStream();
+  }, [enableStream]);
+
+  const handleScanNewQRCode = () => {
+    setIsQRCodeDetected(false);
+    setMateriel(null);
+    enableStream();
+  };
 
   // Optional: Redirect if no team is selected
   useEffect(() => {
@@ -410,7 +413,7 @@ const VideoCaptureBisBis = () => {
                         aria-label="Associer à une autre équipe"
                         icon={<FcOk />}
                         colorScheme="gray"
-                        onClick={() => handleOpenAssociationModal(materiel)} // Ouverture du modal avec le matériel sélectionné
+                        onClick={() => handleOpenAssociationModal(materiel)}
                       />
                     </Tooltip>
                     <Tooltip label="Rendre le matériel" hasArrow>
@@ -418,12 +421,18 @@ const VideoCaptureBisBis = () => {
                         aria-label="Rendre le matériel"
                         icon={<FcDisclaimer />}
                         colorScheme="gray"
-                        onClick={() => handleReturnMaterial(materiel.id)} // Rendre le matériel
+                        onClick={() => handleReturnMaterial(materiel.id)}
                       />
                     </Tooltip>
                   </HStack>
                 </VStack>
               </Box>
+              {/* Ajouter le bouton pour scanner un nouveau QR code */}
+              {isQRCodeDetected && (
+                <Button onClick={handleScanNewQRCode} colorScheme="green" mt={4}>
+                  Scanner un nouveau QRCode de matériel
+                </Button>
+              )}
               {/* Modal de confirmation de la suppression */}
               <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
