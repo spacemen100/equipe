@@ -22,7 +22,7 @@ const Materiel = () => {
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
       <Flex justifyContent="flex-start" alignItems="center" mb="4">
-        <Heading color={textColor} fontSize='2xl' fontWeight='700' lineHeight='100%' mr={4}>Liste des Matériels</Heading>
+        <Heading color={textColor} fontSize='2xl' fontWeight='700' lineHeight='100%' mr={4}></Heading>
         {/* Wrapper Flex pour les boutons */}
         <Flex>
           <Button
@@ -50,7 +50,7 @@ const Materiel = () => {
               _active={{ boxShadow: 'lg' }}
               mr={2}
             >
-              Scanner un QR Code
+              Scann QRCode pour ajout d'un matériel
             </Button>
           </Link>
           <Button
