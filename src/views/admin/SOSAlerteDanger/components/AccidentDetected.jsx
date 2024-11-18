@@ -12,16 +12,16 @@ import {
   AlertDescription,
 } from '@chakra-ui/react';
 import { PhoneIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { supabase } from './../../../../supabaseClient'; // Adjust according to your project structure
-import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Import the useTeam hook
-import { useEvent } from './../../../../EventContext'; // Import the useEvent hook
+import { supabase } from './../../../../supabaseClient'; // Ajustez selon votre structure de projet
+import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Importez le hook useTeam
+import { useEvent } from './../../../../EventContext'; // Importez le hook useEvent
 
-const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000'; // Default team_id for "Aucune équipe"
-const DEFAULT_TEAM_NAME = 'Aucune équipe'; // Default team_name
+const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000';
+const DEFAULT_TEAM_NAME = 'Aucune équipe';
 
 const AccidentDetected = () => {
-  const [counter, setCounter] = useState(30); // 30 seconds countdown
-  const [step, setStep] = useState(1); // Step tracker
+  const [counter, setCounter] = useState(30);
+  const [step, setStep] = useState(1);
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [alertId, setAlertId] = useState(null);
@@ -43,8 +43,8 @@ const AccidentDetected = () => {
             });
           },
           (error) => {
-            console.error('Error getting GPS position:', error);
-            resolve({ latitude: null, longitude: null }); // Continue with null values
+            console.error('Erreur lors de la récupération de la position GPS :', error);
+            resolve({ latitude: null, longitude: null });
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
@@ -57,43 +57,42 @@ const AccidentDetected = () => {
   const saveAlertData = useCallback(async (lat, long, timeForUser) => {
     const { data, error } = await supabase
       .from('vianney_sos_alerts')
-      .insert([{
-        team_id: teamUUID || DEFAULT_TEAM_ID,
-        latitude: lat || null,
-        longitude: long || null,
-        created_at: new Date().toISOString(),
-        time_for_user: timeForUser,
-        url: '',
-        team_name: selectedTeam || DEFAULT_TEAM_NAME,
-        event_id: selectedEventId,
-      }])
+      .insert([
+        {
+          team_id: teamUUID || DEFAULT_TEAM_ID,
+          latitude: lat || null,
+          longitude: long || null,
+          created_at: new Date().toISOString(),
+          time_for_user: timeForUser,
+          url: '',
+          team_name: selectedTeam || DEFAULT_TEAM_NAME,
+          event_id: selectedEventId,
+        },
+      ])
       .select();
-  
+
     if (error) {
-      console.error('Error inserting data into alerts table:', error);
+      console.error('Erreur lors de l’insertion des données d’alerte :', error);
     } else if (data?.length) {
       setAlertId(data[0].id);
     }
-  }, [teamUUID, selectedTeam, selectedEventId]);  
+  }, [teamUUID, selectedTeam, selectedEventId]);
 
   const uploadVideoToSupabase = useCallback(async (blob) => {
-    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
+    const fileName = `sos_recording_${new Date().toISOString()}.mp4`; // Utilisation de .mp4 pour la compatibilité iOS
     try {
-      const { data, error } = await supabase
-        .storage
-        .from('sos-alerts-video')
-        .upload(fileName, blob);
-  
+      const { data, error } = await supabase.storage.from('sos-alerts-video').upload(fileName, blob);
+
       if (error) {
-        console.error('Error uploading video:', error);
+        console.error('Erreur lors du téléchargement de la vidéo :', error);
         alert('Erreur lors du téléchargement de la vidéo. Veuillez vérifier le bucket.');
         return;
       }
-  
+
       const videoUrl = `https://hvjzemvfstwwhhahecwu.supabase.co/storage/v1/object/public/sos-alerts-video/${data.path}`;
       setSupabaseURL(videoUrl);
     } catch (err) {
-      console.error('Unexpected error uploading video:', err);
+      console.error('Erreur inattendue lors du téléchargement de la vidéo :', err);
       alert('Erreur inattendue lors du téléchargement de la vidéo.');
     }
   }, []);
@@ -105,25 +104,34 @@ const AccidentDetected = () => {
   }, []);
 
   const startRecording = useCallback(async () => {
-    recordedChunksRef.current = [];
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    videoRef.current.srcObject = stream;
-  
-    mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
-    mediaRecorderRef.current.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
-  
-    mediaRecorderRef.current.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-      uploadVideoToSupabase(blob);
-      stream.getTracks().forEach(track => track.stop());
-    };
-  
-    mediaRecorderRef.current.start();
-    setTimeout(() => stopRecording(), 5000);
+    try {
+      recordedChunksRef.current = [];
+      const constraints = {
+        video: { facingMode: 'user' },
+        audio: { echoCancellation: true, noiseSuppression: true },
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoRef.current.srcObject = stream;
+
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
+        uploadVideoToSupabase(blob);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setTimeout(() => stopRecording(), 5000);
+    } catch (error) {
+      console.error('Erreur lors de l’accès aux périphériques média :', error);
+      alert('Impossible d’accéder à la caméra ou au microphone. Veuillez vérifier les permissions.');
+    }
   }, [uploadVideoToSupabase, stopRecording]);
 
   const confirmSOS = useCallback(async () => {
@@ -151,9 +159,9 @@ const AccidentDetected = () => {
           .from('vianney_sos_alerts')
           .update({ url: supabaseURL })
           .eq('id', alertId);
-  
+
         if (error) {
-          console.error('Error updating alert data with video URL:', error);
+          console.error('Erreur lors de la mise à jour de l’alerte avec l’URL de la vidéo :', error);
         }
       };
       updateAlert();
@@ -181,7 +189,9 @@ const AccidentDetected = () => {
     <Center height="100vh" bg="gray.50" p={4}>
       {step === 1 && (
         <VStack spacing={8} bg="white" p={6} rounded="md" shadow="md">
-          <Text fontSize="2xl" fontWeight="bold">Déclencher un SOS</Text>
+          <Text fontSize="2xl" fontWeight="bold">
+            Déclencher un SOS
+          </Text>
           <Button leftIcon={<PhoneIcon />} colorScheme="red" size="lg" onClick={() => setStep(2)}>
             Déclencher un SOS
           </Button>
@@ -189,9 +199,15 @@ const AccidentDetected = () => {
       )}
       {step === 2 && (
         <VStack spacing={8} bg="white" p={6} rounded="md" shadow="md">
-          <Text fontSize="lg" color="red.500" fontWeight="bold">SOS-sans contact</Text>
-          <Text fontSize="2xl" fontWeight="bold">Demande d'aide</Text>
-          <Text fontSize="md" color="gray.500">Envoi de l'alerte dans</Text>
+          <Text fontSize="lg" color="red.500" fontWeight="bold">
+            SOS-sans contact
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold">
+            Demande d'aide
+          </Text>
+          <Text fontSize="md" color="gray.500">
+            Envoi de l'alerte dans
+          </Text>
           <CircularProgress value={(counter / 30) * 100} size="120px" color="green.400">
             <CircularProgressLabel>{counter}s</CircularProgressLabel>
           </CircularProgress>
@@ -210,10 +226,14 @@ const AccidentDetected = () => {
             <AlertTitle>Alerte déclenchée!</AlertTitle>
             <AlertDescription>
               Une alerte a été envoyée.
-              {latitude && longitude && <Text>GPS: {latitude}, {longitude}</Text>}
+              {latitude && longitude && (
+                <Text>
+                  GPS: {latitude}, {longitude}
+                </Text>
+              )}
             </AlertDescription>
           </Alert>
-          <video ref={videoRef} autoPlay muted style={{ width: '400px' }} />
+          <video ref={videoRef} autoPlay playsInline muted style={{ width: '400px' }} />
         </VStack>
       )}
     </Center>

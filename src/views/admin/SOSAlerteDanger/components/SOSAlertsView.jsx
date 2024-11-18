@@ -57,8 +57,12 @@ const SOSAlertsView = () => {
   };
 
   const openMap = (latitude, longitude) => {
-    setSelectedLocation({ latitude, longitude });
-    onMapOpen();
+    if (latitude && longitude) {
+      setSelectedLocation({ latitude, longitude });
+      onMapOpen();
+    } else {
+      console.error("Coordonnées non valides : latitude ou longitude manquante");
+    }
   };
 
   const openVideo = (url) => {
@@ -128,7 +132,7 @@ const SOSAlertsView = () => {
       ) : (
         <Text>Sélectionnez un événement pour voir les alertes SOS associées</Text>
       )}
-      
+
       <Modal isOpen={isVideoOpen} onClose={onVideoClose} size="xl">
         <ModalOverlay />
         <ModalContent>
@@ -151,14 +155,14 @@ const SOSAlertsView = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      
+
       <Modal isOpen={isMapOpen} onClose={onMapClose} size="xl">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Carte</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {selectedLocation && (
+            {selectedLocation ? (
               <MapContainer
                 center={[selectedLocation.latitude, selectedLocation.longitude]}
                 zoom={13}
@@ -168,7 +172,7 @@ const SOSAlertsView = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
                 />
-                <Marker 
+                <Marker
                   position={[selectedLocation.latitude, selectedLocation.longitude]}
                   icon={createCustomIcon()}
                 >
@@ -177,6 +181,8 @@ const SOSAlertsView = () => {
                   </Popup>
                 </Marker>
               </MapContainer>
+            ) : (
+              <Text color="red.500">Coordonnées non valides. Impossible d’afficher la carte.</Text>
             )}
           </ModalBody>
           <ModalFooter>
