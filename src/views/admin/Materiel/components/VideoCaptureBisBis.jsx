@@ -1,23 +1,78 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import jsQR from 'jsqr';
 import { supabase } from './../../../../supabaseClient';
-import { ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton, Tooltip, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select } from '@chakra-ui/react';
+import {
+  ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton,
+  Tooltip, Button, Modal, ModalOverlay, ModalContent, ModalHeader,
+  ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select
+} from '@chakra-ui/react';
 import QRCode from 'qrcode.react';
 import { FcDisclaimer, FcOk } from "react-icons/fc";
 import { useEvent } from './../../../../EventContext';
 import { useHistory } from 'react-router-dom';
+import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
-  const [qrCodeText, setQrCodeText] = useState('');
+  const [ setQrCodeText] = useState('');
   const [materiel, setMateriel] = useState(null);
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
   const history = useHistory();
+  const toast = useToast();
+
+  const { selectedTeam, teamUUID, setSelectedTeam } = useTeam(); // Access selectedTeam and teamUUID
+
+  const associateMaterialToTeam = useCallback(async (materialId) => {
+    if (!teamUUID) {
+      console.error("No team selected.");
+      toast({
+        title: "Erreur",
+        description: "Aucune équipe sélectionnée pour associer le matériel.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('vianney_inventaire_materiel')
+        .update({ associated_team_id: teamUUID })
+        .eq('id', materialId)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Matériel associé à l\'équipe avec succès', data);
+      toast({
+        title: "Succès",
+        description: `Le matériel a été associé à l'équipe "${selectedTeam}" avec succès.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // Update the local state to reflect the new association
+      setMateriel(data);
+      setNoMatchingMaterial(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'association du matériel à l\'équipe', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'association du matériel à l'équipe.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [teamUUID, selectedTeam, toast]);
 
   const fetchMateriel = useCallback(async (id) => {
     try {
-      // Vérifier si l'ID est un UUID valide
       if (!isValidUUID(id)) {
         setNoMatchingMaterial(true);
         return;
@@ -38,13 +93,13 @@ const VideoCaptureBisBis = () => {
       } else {
         setMateriel(data);
         setNoMatchingMaterial(false);
+        // No need to associate here
       }
     } catch (error) {
       console.error('Error fetching item details:', error);
     }
   }, []);
 
-  // Fonction utilitaire pour vérifier si une chaîne est un UUID valide
   const isValidUUID = (id) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
@@ -71,19 +126,20 @@ const VideoCaptureBisBis = () => {
         });
 
         if (code) {
+          console.log('Données extraites du QR code :', code.data);
           setQrCodeText(code.data);
           fetchMateriel(code.data);
+          associateMaterialToTeam(code.data);
           stream.getTracks().forEach(track => track.stop());
-          setIsQRCodeDetected(true); // Mettre à jour l'état pour cacher la vidéo et le carré
+          setIsQRCodeDetected(true);
           return;
         }
-
       }
       requestAnimationFrame(checkQRCode);
     };
 
     checkQRCode();
-  }, [fetchMateriel]);
+  }, [fetchMateriel, associateMaterialToTeam, setQrCodeText]);
 
   useEffect(() => {
     const enableStream = async () => {
@@ -101,6 +157,19 @@ const VideoCaptureBisBis = () => {
     enableStream();
   }, [scanQRCode]);
 
+  // Optional: Redirect if no team is selected
+  useEffect(() => {
+    if (!teamUUID) {
+      toast({
+        title: "Attention",
+        description: "Veuillez sélectionner une équipe avant de scanner un matériel.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      history.goBack(); // Redirect back if no team is selected
+    }
+  }, [teamUUID, toast, history]);
   const [materiels, setMateriels] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [events, setEvents] = useState([]);
@@ -114,11 +183,9 @@ const VideoCaptureBisBis = () => {
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { isOpen, onClose } = useDisclosure();
-  const toast = useToast();
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const { isOpen: isAssociationModalOpen, onOpen: onAssociationModalOpen, onClose: onAssociationModalClose } = useDisclosure();
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState(null);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const { selectedEventId } = useEvent();
   const [selectedEventName, setSelectedEventName] = useState('');
@@ -311,7 +378,7 @@ const VideoCaptureBisBis = () => {
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }} alignItems="center" justifyContent="center">
       <div>
         <Button onClick={() => history.goBack()} colorScheme="blue" mb={4}>
-          Retour
+          Retour à mon matériel
         </Button>
         {!isQRCodeDetected && (
           <div style={{ position: 'relative', minWidth: '100%', borderRadius: '10px' }}>
@@ -322,21 +389,20 @@ const VideoCaptureBisBis = () => {
         {materiel && (
           <Box alignItems="center" display="flex" flexDirection="column" justifyContent="center">
             <Box padding="4" maxW="500px" >
-              {materiels.filter(materiel => materiel.id === qrCodeText).map((materiel) => (
-                <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
-                  <VStack spacing="4">
-                    <Badge colorScheme="orange">{materiel.nom}</Badge>
-                    <Alert status={materiel.associated_team_id ? "success" : "warning"} variant="left-accent">
+              <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
+                <VStack spacing="4">
+                  <Badge colorScheme="orange">{materiel.nom}</Badge>
+                  <Alert status={materiel.associated_team_id ? "success" : "warning"} variant="left-accent">
+                    <AlertIcon />
+                    {materiel.associated_team_id ? `Le matériel "${materiel.nom}" est associé à l'équipe "${selectedTeam}"` : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
+                  </Alert>
+                  <QRCode value={materiel.id} size={128} level="L" includeMargin={true} />
+                  {materiel.description && (
+                    <Alert status="info" variant="left-accent">
                       <AlertIcon />
-                      {materiel.associated_team_name ? `Le matériel "${materiel.nom}" est associé à l'équipe "${materiel.associated_team_name}"` : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
+                      {materiel.description}
                     </Alert>
-                    <QRCode value={materiel.id} size={128} level="L" includeMargin={true} />
-                    {materiel.description && (
-                      <Alert status="info" variant="left-accent">
-                        <AlertIcon />
-                        {materiel.description}
-                      </Alert>
-                    )}
+                  )}
                     <HStack spacing="4">
                       <Tooltip label="Associer à une autre équipe" hasArrow>
                         <IconButton
@@ -355,8 +421,8 @@ const VideoCaptureBisBis = () => {
                         />
                       </Tooltip>
                     </HStack>
-                  </VStack>
-                </Box>
+                </VStack>
+              </Box>
               ))}
               {/* Modal de confirmation de la suppression */}
               <Modal isOpen={isOpen} onClose={onClose}>
@@ -426,7 +492,7 @@ const VideoCaptureBisBis = () => {
           <Box>
             <Alert status="error">
               <AlertIcon />
-              Aucun matériel correspondant trouvé. Ce QR code ne correspond pas à un matériel de la base de donnée ou de l'évênement en cours.
+              Aucun matériel correspondant trouvé. Ce QR code ne correspond pas à un matériel de la base de donnée ou de l'événement en cours.
             </Alert>
           </Box>
         )}
