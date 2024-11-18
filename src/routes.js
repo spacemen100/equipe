@@ -8,7 +8,8 @@ import {
   FcMenu,
   FcComments,
   FcEditImage,
-  FcHighPriority
+  FcHighPriority,
+  FcCameraIdentification
 } from "react-icons/fc";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
 //import GestionOperationnelle from "views/admin/GestionOperationnelle";
@@ -25,6 +26,7 @@ import SOSAlerteDanger from "views/admin/SOSAlerteDanger";
 import MapComponent from "views/admin/MapComponent"; 
 import DocumentTabs from "views/admin/DocumentTabs"; 
 import ZoomedMapComponent from "views/admin/ZoomedMapComponent";
+import VideoCaptureBisBis from 'views/admin/Materiel/components/VideoCaptureBisBis';
 
 const routes = [
   {
@@ -41,6 +43,15 @@ const routes = [
  //   icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
  //   component: GestionOperationnelle,
  // },
+ {
+  name: "Scanner QR Code",
+  layout: "/admin",
+  path: "/qr-scanner",
+  icon: <Icon as={FcCameraIdentification} width='20px' height='20px' color='inherit' />,
+  component: VideoCaptureBisBis,
+  hide: true, // Optional: hide from the navigation menu if you don't want it displayed
+},
+
  {
   name: "Carte zoomée",
   layout: "/admin",

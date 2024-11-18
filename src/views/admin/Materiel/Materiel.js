@@ -5,6 +5,8 @@ import InventaireForm from './components/InventaireForm';
 import AfficherMateriels from './components/AfficherMateriels';
 import QrCodeImageExport from './components/QrCodeImageExport';
 import VideoCaptureBisBis from './components/VideoCaptureBisBis';
+import { Link } from 'react-router-dom'; 
+import {FcCameraIdentification} from "react-icons/fc";
 
 const Materiel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,19 +39,20 @@ const Materiel = () => {
           >
             Créer un matériel
           </Button>
-          <Button
-            onClick={toggleQRScannerModal} // Ajout de l'événement onClick
-            leftIcon={<Icon as={FcPlus} />} // Changez cette icône selon vos besoins
-            colorScheme='blue'
-            variant='solid'
-            size='md'
-            boxShadow='sm'
-            _hover={{ boxShadow: 'md' }}
-            _active={{ boxShadow: 'lg' }}
-            mr={2} // Ajoutez une marge à droite pour espacer les boutons
-          >
-            Scanner un QR Code
-          </Button>
+          <Link to="/admin/qr-scanner">
+            <Button
+              leftIcon={<Icon as={FcCameraIdentification} />}
+              colorScheme='blue'
+              variant='solid'
+              size='md'
+              boxShadow='sm'
+              _hover={{ boxShadow: 'md' }}
+              _active={{ boxShadow: 'lg' }}
+              mr={2}
+            >
+              Scanner un QR Code
+            </Button>
+          </Link>
           <Button
             onClick={openModal}
             leftIcon={<Icon as={FcPlus} />} // Changez cette icône selon vos besoins

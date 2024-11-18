@@ -6,6 +6,7 @@ import QRCode from 'qrcode.react';
 import { MdDeleteForever } from "react-icons/md";
 import { FcDisclaimer, FcOk } from "react-icons/fc";
 import { useEvent } from './../../../../EventContext';
+import { useHistory } from 'react-router-dom';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
@@ -13,7 +14,7 @@ const VideoCaptureBisBis = () => {
   const [materiel, setMateriel] = useState(null);
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
-
+  const history = useHistory();
 
   const fetchMateriel = useCallback(async (id) => {
     try {
@@ -22,17 +23,17 @@ const VideoCaptureBisBis = () => {
         setNoMatchingMaterial(true);
         return;
       }
-  
+
       const { data, error } = await supabase
         .from('vianney_inventaire_materiel')
         .select('*')
         .eq('id', id)
         .single();
-  
+
       if (error) {
         throw error;
       }
-  
+
       if (!data) {
         setNoMatchingMaterial(true);
       } else {
@@ -43,12 +44,12 @@ const VideoCaptureBisBis = () => {
       console.error('Error fetching item details:', error);
     }
   }, []);
-  
+
   // Fonction utilitaire pour vérifier si une chaîne est un UUID valide
   const isValidUUID = (id) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
-  }; 
+  };
 
   const scanQRCode = useCallback((stream) => {
     const canvas = document.createElement('canvas');
@@ -313,6 +314,9 @@ const VideoCaptureBisBis = () => {
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }} alignItems="center" justifyContent="center">
       <div>
+        <Button onClick={() => history.goBack()} colorScheme="blue" mb={4}>
+          Retour
+        </Button>
         {!isQRCodeDetected && (
           <div style={{ position: 'relative', minWidth: '100%', borderRadius: '10px' }}>
             <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%' }} />
@@ -362,7 +366,7 @@ const VideoCaptureBisBis = () => {
                           onClick={() => handleReturnMaterial(materiel.id)} // Rendre le matériel
                         />
                       </Tooltip>
-                                          </HStack>
+                    </HStack>
                   </VStack>
                 </Box>
               ))}
@@ -431,13 +435,13 @@ const VideoCaptureBisBis = () => {
           </Box>
         )}
         {noMatchingMaterial && (
-              <Box>
-                <Alert status="error">
-                  <AlertIcon />
-                  Aucun matériel correspondant trouvé. Ce QR code ne correspond pas à un matériel de la base de donnée ou de l'évênement en cours.
-                </Alert>
-              </Box>
-            )}
+          <Box>
+            <Alert status="error">
+              <AlertIcon />
+              Aucun matériel correspondant trouvé. Ce QR code ne correspond pas à un matériel de la base de donnée ou de l'évênement en cours.
+            </Alert>
+          </Box>
+        )}
       </div>
     </Box>
   );

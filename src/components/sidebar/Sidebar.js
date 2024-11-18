@@ -22,7 +22,8 @@ function Sidebar(props) {
       route.name !== "Documentss" &&
       route.name !== "Rapport d'incident" &&
       route.name !== "Fiche Bilan SUAP" &&
-      route.name !== "Note de frais"
+      route.name !== "Note de frais" &&
+      route.name !== "Scanner QR Code"
   );
 
   return (
@@ -51,7 +52,8 @@ export function SidebarResponsive(props) {
       route.name !== "Documentss" &&
       route.name !== "Rapport d'incident" &&
       route.name !== "Fiche Bilan SUAP" &&
-      route.name !== "Note de frais"
+      route.name !== "Note de frais" &&
+      route.name !== "Scanner QR Code"
   );
 
   return (
