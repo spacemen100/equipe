@@ -26,6 +26,7 @@ const AccidentDetected = () => {
   const [longitude, setLongitude] = useState(null);
   const [alertId, setAlertId] = useState(null);
   const [supabaseURL, setSupabaseURL] = useState('');
+  const [isCancelled, setIsCancelled] = useState(false); // Ajout de cet état
   const { teamUUID, selectedTeam } = useTeam();
   const { selectedEventId } = useEvent();
   const videoRef = useRef();
@@ -79,7 +80,7 @@ const AccidentDetected = () => {
   }, [teamUUID, selectedTeam, selectedEventId]);
 
   const uploadVideoToSupabase = useCallback(async (blob) => {
-    const fileName = `sos_recording_${new Date().toISOString()}.mp4`; // Utilisation de .mp4 pour la compatibilité iOS
+    const fileName = `sos_recording_${new Date().toISOString()}.mp4`;
     try {
       const { data, error } = await supabase.storage.from('sos-alerts-video').upload(fileName, blob);
 
@@ -104,34 +105,29 @@ const AccidentDetected = () => {
   }, []);
 
   const startRecording = useCallback(async () => {
-    try {
-      recordedChunksRef.current = [];
-      const constraints = {
-        video: { facingMode: 'user' },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      videoRef.current.srcObject = stream;
+    recordedChunksRef.current = [];
+    const constraints = {
+      video: { facingMode: 'user' },
+      audio: { echoCancellation: true, noiseSuppression: true },
+    };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    videoRef.current.srcObject = stream;
 
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/mp4' });
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
+    mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+    mediaRecorderRef.current.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
 
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
-        uploadVideoToSupabase(blob);
-        stream.getTracks().forEach((track) => track.stop());
-      };
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
+      uploadVideoToSupabase(blob);
+      stream.getTracks().forEach((track) => track.stop());
+    };
 
-      mediaRecorderRef.current.start();
-      setTimeout(() => stopRecording(), 5000);
-    } catch (error) {
-      console.error('Erreur lors de l’accès aux périphériques média :', error);
-      alert('Impossible d’accéder à la caméra ou au microphone. Veuillez vérifier les permissions.');
-    }
+    mediaRecorderRef.current.start();
+    setTimeout(() => stopRecording(), 5000);
   }, [uploadVideoToSupabase, stopRecording]);
 
   const confirmSOS = useCallback(async () => {
@@ -150,6 +146,7 @@ const AccidentDetected = () => {
     setLongitude(null);
     setAlertId(null);
     setSupabaseURL('');
+    setIsCancelled(true); // Marque le SOS comme annulé
   }, []);
 
   useEffect(() => {
@@ -170,20 +167,20 @@ const AccidentDetected = () => {
 
   useEffect(() => {
     let timer;
-    if (step === 2 && counter > 0) {
+    if (step === 2 && counter > 0 && !isCancelled) {
       timer = setInterval(() => setCounter((prev) => prev - 1), 1000);
-    } else if (counter === 0 && step === 2) {
+    } else if (counter === 0 && step === 2 && !isCancelled) {
       confirmSOS();
     }
     return () => clearInterval(timer);
-  }, [step, counter, confirmSOS]);
+  }, [step, counter, confirmSOS, isCancelled]);
 
   useEffect(() => {
-    if (step === 1) {
+    if (step === 1 && !isCancelled) {
       const timer = setTimeout(() => setStep(2), 3000);
       return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [step, isCancelled]);
 
   return (
     <Center height="100vh" bg="gray.50" p={4}>

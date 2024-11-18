@@ -5,7 +5,6 @@ import {
   Table,
   Thead,
   Tbody,
-  Tooltip,
   Tr,
   Th,
   Td,
