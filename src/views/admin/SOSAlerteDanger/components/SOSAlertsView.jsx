@@ -5,6 +5,7 @@ import {
   Table,
   Thead,
   Tbody,
+  Tooltip,
   Tr,
   Th,
   Td,
@@ -114,16 +115,24 @@ const SOSAlertsView = () => {
                       Voir l'enregistrement
                     </Button>
                   ) : (
-                    'Pas d\'enregistrement'
+                    <Text color="gray.500" fontSize="sm">
+                      Pas d'enregistrement
+                    </Text>
                   )}
                 </Td>
                 <Td>
-                  <Button
-                    colorScheme="teal"
-                    onClick={() => openMap(alert.latitude, alert.longitude)}
-                  >
-                    Voir la carte
-                  </Button>
+                  {alert.latitude && alert.longitude ? (
+                    <Button
+                      colorScheme="teal"
+                      onClick={() => openMap(alert.latitude, alert.longitude)}
+                    >
+                      Voir la carte
+                    </Button>
+                  ) : (
+                    <Text color="gray.500" fontSize="sm">
+                      Pas de position connue
+                    </Text>
+                  )}
                 </Td>
               </Tr>
             ))}
