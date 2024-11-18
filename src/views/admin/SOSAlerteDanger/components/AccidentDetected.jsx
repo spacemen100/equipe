@@ -12,9 +12,9 @@ import {
   AlertDescription,
 } from '@chakra-ui/react';
 import { PhoneIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { supabase } from './../../../../supabaseClient'; // Ajustez selon votre structure de projet
-import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Importez le hook useTeam
-import { useEvent } from './../../../../EventContext'; // Importez le hook useEvent
+import { supabase } from './../../../../supabaseClient';
+import { useTeam } from './../../InterfaceEquipe/TeamContext';
+import { useEvent } from './../../../../EventContext';
 
 const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000000';
 const DEFAULT_TEAM_NAME = 'Aucune équipe';
@@ -26,7 +26,7 @@ const AccidentDetected = () => {
   const [longitude, setLongitude] = useState(null);
   const [alertId, setAlertId] = useState(null);
   const [supabaseURL, setSupabaseURL] = useState('');
-  const [isCancelled, setIsCancelled] = useState(false); // Ajout de cet état
+  const [isCancelled, setIsCancelled] = useState(false);
   const { teamUUID, selectedTeam } = useTeam();
   const { selectedEventId } = useEvent();
   const videoRef = useRef();
@@ -55,32 +55,35 @@ const AccidentDetected = () => {
     });
   }, []);
 
-  const saveAlertData = useCallback(async (lat, long, timeForUser) => {
-    const { data, error } = await supabase
-      .from('vianney_sos_alerts')
-      .insert([
-        {
-          team_id: teamUUID || DEFAULT_TEAM_ID,
-          latitude: lat || null,
-          longitude: long || null,
-          created_at: new Date().toISOString(),
-          time_for_user: timeForUser,
-          url: '',
-          team_name: selectedTeam || DEFAULT_TEAM_NAME,
-          event_id: selectedEventId,
-        },
-      ])
-      .select();
+  const saveAlertData = useCallback(
+    async (lat, long, timeForUser) => {
+      const { data, error } = await supabase
+        .from('vianney_sos_alerts')
+        .insert([
+          {
+            team_id: teamUUID || DEFAULT_TEAM_ID,
+            latitude: lat || null,
+            longitude: long || null,
+            created_at: new Date().toISOString(),
+            time_for_user: timeForUser,
+            url: '',
+            team_name: selectedTeam || DEFAULT_TEAM_NAME,
+            event_id: selectedEventId,
+          },
+        ])
+        .select();
 
-    if (error) {
-      console.error('Erreur lors de l’insertion des données d’alerte :', error);
-    } else if (data?.length) {
-      setAlertId(data[0].id);
-    }
-  }, [teamUUID, selectedTeam, selectedEventId]);
+      if (error) {
+        console.error('Erreur lors de l’insertion des données d’alerte :', error);
+      } else if (data?.length) {
+        setAlertId(data[0].id);
+      }
+    },
+    [teamUUID, selectedTeam, selectedEventId]
+  );
 
   const uploadVideoToSupabase = useCallback(async (blob) => {
-    const fileName = `sos_recording_${new Date().toISOString()}.mp4`;
+    const fileName = `sos_recording_${new Date().toISOString()}.webm`;
     try {
       const { data, error } = await supabase.storage.from('sos-alerts-video').upload(fileName, blob);
 
@@ -99,44 +102,58 @@ const AccidentDetected = () => {
   }, []);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
   }, []);
 
   const startRecording = useCallback(async () => {
     recordedChunksRef.current = [];
-    const constraints = {
-      video: { facingMode: 'user' },
-      audio: { echoCancellation: true, noiseSuppression: true },
-    };
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    videoRef.current.srcObject = stream;
+    try {
+      const constraints = {
+        video: { facingMode: 'user' },
+        audio: { echoCancellation: true, noiseSuppression: true },
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoRef.current.srcObject = stream;
 
-    mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/mp4' });
-    mediaRecorderRef.current.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
 
-    mediaRecorderRef.current.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
-      uploadVideoToSupabase(blob);
-      stream.getTracks().forEach((track) => track.stop());
-    };
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        uploadVideoToSupabase(blob);
+        stream.getTracks().forEach((track) => track.stop());
+      };
 
-    mediaRecorderRef.current.start();
-    setTimeout(() => stopRecording(), 5000);
+      mediaRecorderRef.current.start();
+      setTimeout(() => stopRecording(), 5000);
+    } catch (error) {
+      console.error('Erreur lors de l’accès aux médias :', error);
+      alert('Erreur lors de l’accès à la caméra ou au microphone.');
+    }
   }, [uploadVideoToSupabase, stopRecording]);
 
-  const confirmSOS = useCallback(async () => {
+  const confirmSOS = useCallback(() => {
     setStep(3);
-    const location = await getCurrentLocation();
-    setLatitude(location.latitude);
-    setLongitude(location.longitude);
-    await saveAlertData(location.latitude, location.longitude, new Date().toISOString());
+    // Start recording and location retrieval simultaneously
     startRecording();
+
+    getCurrentLocation()
+      .then(async (location) => {
+        setLatitude(location.latitude);
+        setLongitude(location.longitude);
+        await saveAlertData(location.latitude, location.longitude, new Date().toISOString());
+      })
+      .catch(async (error) => {
+        console.error('Error getting location:', error);
+        // Even if there's an error, proceed to save alert data with null GPS values
+        await saveAlertData(null, null, new Date().toISOString());
+      });
   }, [getCurrentLocation, saveAlertData, startRecording]);
 
   const cancelSOS = useCallback(() => {
@@ -146,8 +163,10 @@ const AccidentDetected = () => {
     setLongitude(null);
     setAlertId(null);
     setSupabaseURL('');
-    setIsCancelled(true); // Marque le SOS comme annulé
-  }, []);
+    setIsCancelled(true);
+    // Stop recording if it's in progress
+    stopRecording();
+  }, [stopRecording]);
 
   useEffect(() => {
     if (supabaseURL && alertId) {
@@ -223,10 +242,12 @@ const AccidentDetected = () => {
             <AlertTitle>Alerte déclenchée!</AlertTitle>
             <AlertDescription>
               Une alerte a été envoyée.
-              {latitude && longitude && (
+              {latitude !== null && longitude !== null ? (
                 <Text>
                   GPS: {latitude}, {longitude}
                 </Text>
+              ) : (
+                <Text>Position GPS non disponible.</Text>
               )}
             </AlertDescription>
           </Alert>
