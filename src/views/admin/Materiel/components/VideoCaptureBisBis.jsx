@@ -3,7 +3,6 @@ import jsQR from 'jsqr';
 import { supabase } from './../../../../supabaseClient';
 import { ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton, Tooltip, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select } from '@chakra-ui/react';
 import QRCode from 'qrcode.react';
-import { MdDeleteForever } from "react-icons/md";
 import { FcDisclaimer, FcOk } from "react-icons/fc";
 import { useEvent } from './../../../../EventContext';
 import { useHistory } from 'react-router-dom';
@@ -114,7 +113,7 @@ const VideoCaptureBisBis = () => {
   // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const { isOpen: isAssociationModalOpen, onOpen: onAssociationModalOpen, onClose: onAssociationModalClose } = useDisclosure();
@@ -226,10 +225,7 @@ const VideoCaptureBisBis = () => {
     onAssociationModalOpen(); // Opens the modal
   };
 
-  const handleDeleteConfirmation = (id) => {
-    setConfirmDeleteId(id);
-    onOpen();
-  };
+
 
   const handleDelete = async () => {
     if (confirmDeleteId) {
@@ -342,14 +338,6 @@ const VideoCaptureBisBis = () => {
                       </Alert>
                     )}
                     <HStack spacing="4">
-                      <Tooltip label="Supprimer" hasArrow>
-                        <IconButton
-                          aria-label="Supprimer matériel"
-                          icon={<MdDeleteForever />}
-                          colorScheme="red"
-                          onClick={() => handleDeleteConfirmation(materiel.id)} // Confirmation avant suppression
-                        />
-                      </Tooltip>
                       <Tooltip label="Associer à une autre équipe" hasArrow>
                         <IconButton
                           aria-label="Associer à une autre équipe"
