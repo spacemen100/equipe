@@ -18,10 +18,15 @@ const VideoCaptureBisBis = () => {
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
   const history = useHistory();
+  const [streamError, setStreamError] = useState(false);
   const toast = useToast();
-
   const { selectedTeam, teamUUID, setSelectedTeam } = useTeam();
 
+  const isValidUUID = (id) => {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  };
   const associateMaterialToTeam = useCallback(async (materialId) => {
     if (!teamUUID) {
       console.error("No team selected.");
@@ -79,14 +84,12 @@ const VideoCaptureBisBis = () => {
       }
 
       const { data, error } = await supabase
-        .from('vianney_inventaire_materiel')
-        .select('*')
-        .eq('id', id)
+        .from("vianney_inventaire_materiel")
+        .select("*")
+        .eq("id", id)
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (!data) {
         setNoMatchingMaterial(true);
@@ -95,61 +98,75 @@ const VideoCaptureBisBis = () => {
         setNoMatchingMaterial(false);
       }
     } catch (error) {
-      console.error('Error fetching item details:', error);
+      console.error("Error fetching item details:", error);
     }
   }, []);
 
-  const isValidUUID = (id) => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(id);
-  };
+  const scanQRCode = useCallback(
+    (stream) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-  const scanQRCode = useCallback((stream) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+      const checkQRCode = () => {
+        if (
+          videoRef.current &&
+          videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA
+        ) {
+          canvas.width = videoRef.current.videoWidth;
+          canvas.height = videoRef.current.videoHeight;
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    const checkQRCode = () => {
-      if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
 
-        // Add design and target square
-        ctx.strokeStyle = '#00ff00';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });
-
-        if (code) {
-          console.log('Données extraites du QR code :', code.data);
-          fetchMateriel(code.data);
-          associateMaterialToTeam(code.data);
-          stream.getTracks().forEach(track => track.stop());
-          setIsQRCodeDetected(true);
-          return;
+          if (code) {
+            console.log("QR Code data:", code.data);
+            fetchMateriel(code.data);
+            associateMaterialToTeam(code.data);
+            stream.getTracks().forEach((track) => track.stop());
+            setIsQRCodeDetected(true);
+            return;
+          }
         }
-      }
-      requestAnimationFrame(checkQRCode);
-    };
+        requestAnimationFrame(checkQRCode);
+      };
 
-    checkQRCode();
-  }, [fetchMateriel, associateMaterialToTeam]);
+      checkQRCode();
+    },
+    [fetchMateriel, associateMaterialToTeam]
+  );
 
   const enableStream = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: "environment" } },
+      });
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
       scanQRCode(stream);
+      setStreamError(false);
     } catch (err) {
-      console.error("Error accessing camera: ", err);
+      console.error("Erreur lors de l'accès à la caméra :", err);
+      setStreamError(true);
+
+      toast({
+        title: "Erreur d'accès à la caméra",
+        description:
+          "Impossible d'accéder à la caméra. Vérifiez les permissions ou réessayez.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
-  }, [scanQRCode]);
+  }, [scanQRCode, toast]);
+
+  const handleRetryAccess = async () => {
+    await enableStream();
+  };
 
   useEffect(() => {
     enableStream();
@@ -379,18 +396,44 @@ const VideoCaptureBisBis = () => {
   };
 
   return (
-    <Box pt={{ base: "180px", md: "80px", xl: "80px" }} alignItems="center" justifyContent="center">
-      <div>
-        <Button onClick={() => history.goBack()} colorScheme="blue" mb={4}>
-          Retour à mon matériel
-        </Button>
-        {!isQRCodeDetected && (
-          <div style={{ position: 'relative', minWidth: '100%', borderRadius: '10px' }}>
-            <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%' }} />
-            <div style={{ position: 'absolute', top: '25%', left: '25%', width: '50%', height: '50%', border: '2px solid #00ff00', borderRadius: '10px' }}></div>
-          </div>
-        )}
-        {materiel && (
+    <Box
+      pt={{ base: "180px", md: "80px", xl: "80px" }}
+      alignItems="center"
+      justifyContent="center"
+    >
+      {!isQRCodeDetected && !streamError && (
+        <div style={{ position: "relative", minWidth: "100%", borderRadius: "10px" }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: "100%" }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "25%",
+              left: "25%",
+              width: "50%",
+              height: "50%",
+              border: "2px solid #00ff00",
+              borderRadius: "10px",
+            }}
+          ></div>
+        </div>
+      )}
+
+      {materiel && (
+        <VStack spacing={4} mt={4} align="center">
+          <Badge colorScheme="orange">{materiel.nom}</Badge>
+          <Button onClick={handleScanNewQRCode} colorScheme="green">
+            Scanner un nouveau QR Code
+          </Button>
+        </VStack>
+      )}
+
+{materiel && (
           <Box alignItems="center" display="flex" flexDirection="column" justifyContent="center">
             <Box padding="4" maxW="500px" >
               <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
@@ -497,15 +540,25 @@ const VideoCaptureBisBis = () => {
             </Box>
           </Box>
         )}
-        {noMatchingMaterial && (
-          <Box>
-            <Alert status="error">
-              <AlertIcon />
-              Aucun matériel correspondant trouvé. Ce QR code ne correspond pas à un matériel de la base de donnée ou de l'événement en cours.
-            </Alert>
-          </Box>
-        )}
-      </div>
+      {noMatchingMaterial && (
+        <Alert status="error">
+          <AlertIcon />
+          Aucun matériel correspondant trouvé. Ce QR code n'existe pas.
+        </Alert>
+      )}
+
+      {streamError && (
+        <VStack spacing={4} mt={4}>
+          <Alert status="warning">
+            <AlertIcon />
+            Impossible de démarrer la caméra. Vérifiez les permissions ou
+            réessayez.
+          </Alert>
+          <Button onClick={handleRetryAccess} colorScheme="blue">
+            Réessayer d'accéder à la caméra
+          </Button>
+        </VStack>
+      )}
     </Box>
   );
 };
