@@ -4,7 +4,7 @@ import { supabase } from './../../../../supabaseClient';
 import {
   ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton,
   Tooltip, Button, Modal, ModalOverlay, ModalContent, ModalHeader,
-  ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select
+  ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select, Center
 } from '@chakra-ui/react';
 import QRCode from 'qrcode.react';
 import { FcDisclaimer, FcOk } from "react-icons/fc";
@@ -27,6 +27,7 @@ const VideoCaptureBisBis = () => {
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   };
+
   const associateMaterialToTeam = useCallback(async (materialId) => {
     if (!teamUUID) {
       console.error("No team selected.");
@@ -140,9 +141,10 @@ const VideoCaptureBisBis = () => {
 
   const enableStream = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: "environment" } },
-      });
+      const constraints = {
+        video: { facingMode: "environment" }, // Modifié ici
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -153,14 +155,34 @@ const VideoCaptureBisBis = () => {
       console.error("Erreur lors de l'accès à la caméra :", err);
       setStreamError(true);
 
-      toast({
-        title: "Erreur d'accès à la caméra",
-        description:
-          "Impossible d'accéder à la caméra. Vérifiez les permissions ou réessayez.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      if (err.name === "OverconstrainedError") {
+        toast({
+          title: "Erreur d'accès à la caméra",
+          description:
+            "Impossible d'accéder à la caméra avec les contraintes spécifiées. Essayez de changer de caméra.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else if (err.name === "NotAllowedError") {
+        toast({
+          title: "Accès à la caméra refusé",
+          description:
+            "Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Erreur d'accès à la caméra",
+          description:
+            "Impossible d'accéder à la caméra. Vérifiez les permissions ou réessayez.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
   }, [scanQRCode, toast]);
 
