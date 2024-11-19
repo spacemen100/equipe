@@ -4,7 +4,7 @@ import { supabase } from './../../../../supabaseClient';
 import {
   ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton,
   Tooltip, Button, Modal, ModalOverlay, ModalContent, ModalHeader,
-  ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select, Center
+  ModalBody, ModalFooter, useDisclosure, useToast, HStack, Select
 } from '@chakra-ui/react';
 import QRCode from 'qrcode.react';
 import { FcDisclaimer, FcOk } from "react-icons/fc";
@@ -200,7 +200,7 @@ const VideoCaptureBisBis = () => {
     enableStream();
   };
 
-  // Optional: Redirect if no team is selected
+  // Redirection si aucune équipe n'est sélectionnée
   useEffect(() => {
     if (!teamUUID) {
       toast({
@@ -210,9 +210,10 @@ const VideoCaptureBisBis = () => {
         duration: 5000,
         isClosable: true,
       });
-      history.goBack(); // Redirect back if no team is selected
+      history.push("/admin/materiels"); // Rediriger vers la page des matériels
     }
   }, [teamUUID, toast, history]);
+
   const [materiels, setMateriels] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [events, setEvents] = useState([]);
@@ -331,11 +332,9 @@ const VideoCaptureBisBis = () => {
   }, [selectedEvent, setEvents, setLoadingEvents, setLoadingMateriels]);
 
   const handleOpenAssociationModal = (materiel) => {
-    setSelectedMaterial(materiel); // This sets the selected material
-    onAssociationModalOpen(); // Opens the modal
+    setSelectedMaterial(materiel); // Sélectionner le matériel
+    onAssociationModalOpen(); // Ouvrir le modal
   };
-
-
 
   const handleDelete = async () => {
     if (confirmDeleteId) {
@@ -423,6 +422,11 @@ const VideoCaptureBisBis = () => {
       alignItems="center"
       justifyContent="center"
     >
+      {/* Bouton de retour vers les matériels */}
+      <Button onClick={() => history.push('/admin/materiels')} colorScheme="blue" mb={4}>
+        Retour vers matériel
+      </Button>
+
       {!isQRCodeDetected && !streamError && (
         <div style={{ position: "relative", minWidth: "100%", borderRadius: "10px" }}>
           <video
@@ -447,121 +451,112 @@ const VideoCaptureBisBis = () => {
       )}
 
       {materiel && (
-        <VStack spacing={4} mt={4} align="center">
-          <Badge colorScheme="orange">{materiel.nom}</Badge>
-          <Button onClick={handleScanNewQRCode} colorScheme="green">
-            Scanner un nouveau QR Code
-          </Button>
-        </VStack>
+        <Box alignItems="center" display="flex" flexDirection="column" justifyContent="center">
+          <Box padding="4" maxW="500px" >
+            <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
+              <VStack spacing="4">
+                <Badge colorScheme="orange">{materiel.nom}</Badge>
+                <Alert status={materiel.associated_team_id ? "success" : "warning"} variant="left-accent">
+                  <AlertIcon />
+                  {materiel.associated_team_id ? `Le matériel "${materiel.nom}" est associé à l'équipe "${selectedTeam}"` : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
+                </Alert>
+                <QRCode value={materiel.id} size={128} level="L" includeMargin={true} />
+                {materiel.description && (
+                  <Alert status="info" variant="left-accent">
+                    <AlertIcon />
+                    {materiel.description}
+                  </Alert>
+                )}
+                <HStack spacing="4">
+                  <Tooltip label="Associer à une autre équipe" hasArrow>
+                    <IconButton
+                      aria-label="Associer à une autre équipe"
+                      icon={<FcOk />}
+                      colorScheme="gray"
+                      onClick={() => handleOpenAssociationModal(materiel)}
+                    />
+                  </Tooltip>
+                  <Tooltip label="Rendre le matériel" hasArrow>
+                    <IconButton
+                      aria-label="Rendre le matériel"
+                      icon={<FcDisclaimer />}
+                      colorScheme="gray"
+                      onClick={() => handleReturnMaterial(materiel.id)}
+                    />
+                  </Tooltip>
+                </HStack>
+              </VStack>
+            </Box>
+            {/* Ajouter le bouton pour scanner un nouveau QR code */}
+            {isQRCodeDetected && (
+              <Button onClick={handleScanNewQRCode} colorScheme="green" mt={4}>
+                Scanner un nouveau QRCode de matériel
+              </Button>
+            )}
+            {/* Modal de confirmation de la suppression */}
+            <Modal isOpen={isOpen} onClose={onClose}>
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Confirmation</ModalHeader>
+                <ModalBody>
+                  Voulez-vous vraiment supprimer ce matériel ?
+                </ModalBody>
+                <ModalFooter>
+                  <Button colorScheme="red" onClick={handleDelete}>Oui, Supprimer</Button>
+                  <Button ml="4" onClick={onClose}>Annuler</Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
+
+            {/* Modal pour associer le matériel à une équipe */}
+            <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Associer à une équipe</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                  <VStack spacing={4} align="stretch">
+                    {/* Affichage de l'événement sélectionné */}
+                    {eventDisplay}
+                    {loadingTeams ? (
+                      <Text>Chargement des équipes...</Text>
+                    ) : (
+                      <Select placeholder="Sélectionner une équipe" onChange={handleTeamChange}>
+                        {teams.map((team) => (
+                          <option key={team.id} value={team.id}>
+                            {team.name_of_the_team}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    {/* Affichage du matériel sélectionné */}
+                    {selectedMaterial ? (
+                      <Badge colorScheme="green" p="2">
+                        {selectedMaterial.nom} (Sélectionné)
+                      </Badge>
+                    ) : (
+                      <Select placeholder="Sélectionner un matériel" onChange={(e) => {
+                        const selected = materiels.find(materiel => materiel.id.toString() === e.target.value);
+                        setSelectedMaterial(selected);
+                      }}>
+                        {materiels.map((materiel) => (
+                          <option key={materiel.id} value={materiel.id}>
+                            {materiel.nom}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    <Button onClick={handleAssociation}>Associer matériel à l'équipe</Button>
+                  </VStack>
+                </ModalBody>
+              </ModalContent>
+            </Modal>
+          </Box>
+        </Box>
       )}
 
-{materiel && (
-          <Box alignItems="center" display="flex" flexDirection="column" justifyContent="center">
-            <Box padding="4" maxW="500px" >
-              <Box key={materiel.id} p="4" shadow="md" borderWidth="1px" borderRadius="md" bg="white">
-                <VStack spacing="4">
-                  <Badge colorScheme="orange">{materiel.nom}</Badge>
-                  <Alert status={materiel.associated_team_id ? "success" : "warning"} variant="left-accent">
-                    <AlertIcon />
-                    {materiel.associated_team_id ? `Le matériel "${materiel.nom}" est associé à l'équipe "${selectedTeam}"` : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
-                  </Alert>
-                  <QRCode value={materiel.id} size={128} level="L" includeMargin={true} />
-                  {materiel.description && (
-                    <Alert status="info" variant="left-accent">
-                      <AlertIcon />
-                      {materiel.description}
-                    </Alert>
-                  )}
-                  <HStack spacing="4">
-                    <Tooltip label="Associer à une autre équipe" hasArrow>
-                      <IconButton
-                        aria-label="Associer à une autre équipe"
-                        icon={<FcOk />}
-                        colorScheme="gray"
-                        onClick={() => handleOpenAssociationModal(materiel)}
-                      />
-                    </Tooltip>
-                    <Tooltip label="Rendre le matériel" hasArrow>
-                      <IconButton
-                        aria-label="Rendre le matériel"
-                        icon={<FcDisclaimer />}
-                        colorScheme="gray"
-                        onClick={() => handleReturnMaterial(materiel.id)}
-                      />
-                    </Tooltip>
-                  </HStack>
-                </VStack>
-              </Box>
-              {/* Ajouter le bouton pour scanner un nouveau QR code */}
-              {isQRCodeDetected && (
-                <Button onClick={handleScanNewQRCode} colorScheme="green" mt={4}>
-                  Scanner un nouveau QRCode de matériel
-                </Button>
-              )}
-              {/* Modal de confirmation de la suppression */}
-              <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                  <ModalHeader>Confirmation</ModalHeader>
-                  <ModalBody>
-                    Voulez-vous vraiment supprimer ce matériel ?
-                  </ModalBody>
-                  <ModalFooter>
-                    <Button colorScheme="red" onClick={handleDelete}>Oui, Supprimer</Button>
-                    <Button ml="4" onClick={onClose}>Annuler</Button>
-                  </ModalFooter>
-                </ModalContent>
-              </Modal>
-
-              <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
-                <Modal isOpen={isAssociationModalOpen} onClose={onAssociationModalClose} size="xl">
-                  <ModalOverlay />
-                  <ModalContent>
-                    <ModalHeader>Associer à une équipe</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                      <VStack spacing={4} align="stretch">
-                        {/* Remplacement du Select par le Badge pour l'événement */}
-                        {eventDisplay}
-                        {loadingTeams ? (
-                          <Text>Chargement des équipes...</Text>
-                        ) : (
-                          <Select placeholder="Sélectionner une équipe" onChange={handleTeamChange}>
-                            {teams.map((team) => (
-                              <option key={team.id} value={team.id}>
-                                {team.name_of_the_team}
-                              </option>
-                            ))}
-                          </Select>
-                        )}
-
-                        {/* Here we check if a material is already selected. If so, display a Badge instead of the Select component */}
-                        {selectedMaterial ? (
-                          <Badge colorScheme="green" p="2">
-                            {selectedMaterial.nom} (Sélectionné)
-                          </Badge>
-                        ) : (
-                          <Select placeholder="Sélectionner un matériel" onChange={(e) => {
-                            const selected = materiels.find(materiel => materiel.id.toString() === e.target.value);
-                            setSelectedMaterial(selected);
-                          }}>
-                            {materiels.map((materiel) => (
-                              <option key={materiel.id} value={materiel.id}>
-                                {materiel.nom}
-                              </option>
-                            ))}
-                          </Select>
-                        )}
-
-                        <Button onClick={handleAssociation}>Associer matériel à l'équipe</Button>
-                      </VStack>
-                    </ModalBody>
-                  </ModalContent>
-                </Modal>
-              </Modal>
-            </Box>
-          </Box>
-        )}
       {noMatchingMaterial && (
         <Alert status="error">
           <AlertIcon />
