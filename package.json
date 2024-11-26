@@ -5,7 +5,7 @@
     "@capacitor/cli": "5.7.8",
     "@capacitor/core": "5.7.8",
     "@capacitor/ios": "5.7.8",
-    "@capacitor/geolocation": "^6.0.0",
+    "@capacitor/geolocation": "5.7.8",
     "@chakra-ui/icons": "^1.1.5",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/system": "^1.12.1",
