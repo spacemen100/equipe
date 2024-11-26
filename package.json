@@ -1,10 +1,14 @@
 {
+  "name": "ProtectoSystem",
+  "version": "1.0.0",
+  "private": true,
   "dependencies": {
     "@capacitor-community/barcode-scanner": "^4.0.1",
-    "@capacitor/android": "5.7.8",
-    "@capacitor/cli": "5.7.8",
-    "@capacitor/core": "5.7.8",
-    "@capacitor/ios": "5.7.8",
+    "@capacitor/android": "6.2.0",
+    "@capacitor/cli": "6.2.0",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/ios": "6.2.0",
+    "@capacitor/geolocation": "6.0.2",
     "@chakra-ui/icons": "^1.1.5",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/system": "^1.12.1",
@@ -78,6 +82,15 @@
   "resolutions": {
     "react-error-overlay": "6.0.9"
   },
+  "overrides": {
+    "@capacitor/core": "6.2.0",
+    "@capacitor/android": "6.2.0",
+    "@capacitor/cli": "6.2.0",
+    "@capacitor/ios": "6.2.0",
+    "@capacitor-community/barcode-scanner": {
+      "@capacitor/core": "6.2.0"
+    }
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -95,14 +108,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "overrides": {
-    "react-google-font-loader": {
-      "react": "18.2.0",
-      "react-dom": "18.2.0"
-    },
-    "create-react-context": {
-      "react": "18.2.0"
-    }
   }
 }
