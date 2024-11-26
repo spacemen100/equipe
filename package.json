@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@capacitor-community/barcode-scanner": "^4.0.1",
     "@capacitor/android": "^6.1.0",
     "@capacitor/cli": "^6.1.0",
     "@capacitor/core": "^6.1.0",
@@ -32,6 +33,7 @@
     "babel-register": "^6.26.0",
     "date-fns": "^3.6.0",
     "framer-motion": "^10.16.5",
+    "html5-qrcode": "^2.3.8",
     "jspdf": "^2.5.1",
     "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",

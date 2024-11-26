@@ -1,5 +1,10 @@
+// src/views/admin/Materiel/components/VideoCaptureBisBis.jsx
+
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import jsQR from 'jsqr';
+import { Capacitor } from '@capacitor/core';
+// Supprimez l'importation statique
+// import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { supabase } from './../../../../supabaseClient';
 import {
   ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton,
@@ -11,6 +16,8 @@ import { FcDisclaimer, FcOk } from "react-icons/fc";
 import { useEvent } from './../../../../EventContext';
 import { useHistory } from 'react-router-dom';
 import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
+// Optionnel : Importer Html5Qrcode si vous utilisez html5-qrcode pour le web
+// import { Html5Qrcode } from 'html5-qrcode';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
@@ -21,6 +28,9 @@ const VideoCaptureBisBis = () => {
   const [streamError, setStreamError] = useState(false);
   const toast = useToast();
   const { selectedTeam, teamUUID, setSelectedTeam } = useTeam();
+
+  // Déclarez isNativeApp avant toute utilisation
+  const isNativeApp = Capacitor.isNativePlatform();
 
   const isValidUUID = (id) => {
     const uuidRegex =
@@ -103,7 +113,7 @@ const VideoCaptureBisBis = () => {
     }
   }, []);
 
-  const scanQRCode = useCallback(
+  const scanQRCodeWeb = useCallback(
     (stream) => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -139,17 +149,71 @@ const VideoCaptureBisBis = () => {
     [fetchMateriel, associateMaterialToTeam]
   );
 
+  const scanQRCodeNative = useCallback(async () => {
+    try {
+      // Importation dynamique du plugin
+      const { BarcodeScanner } = await import('@capacitor-community/barcode-scanner');
+
+      // Vérifier les permissions
+      const permission = await BarcodeScanner.checkPermission({ force: true });
+
+      if (!permission.granted) {
+        const permissionResult = await BarcodeScanner.requestPermission();
+        if (!permissionResult.granted) {
+          toast({
+            title: "Permission refusée",
+            description: "Veuillez autoriser l'accès à la caméra dans les paramètres.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+      }
+
+      // Masquer l'arrière-plan pour afficher la caméra en plein écran
+      await BarcodeScanner.hideBackground();
+
+      // Optionnel : ajouter du CSS pour personnaliser l'affichage du scanner
+      document.body.style.opacity = '0';
+
+      // Démarrer le scan
+      const result = await BarcodeScanner.startScan();
+      if (result.hasContent) {
+        console.log('QR Code data:', result.content);
+        fetchMateriel(result.content);
+        associateMaterialToTeam(result.content);
+        setIsQRCodeDetected(true);
+      } else {
+        console.log('Aucun contenu détecté');
+      }
+
+      // Réafficher l'arrière-plan après le scan
+      BarcodeScanner.showBackground();
+      document.body.style.opacity = '1';
+    } catch (error) {
+      console.error('Erreur lors du scan natif:', error);
+      toast({
+        title: "Erreur de scan",
+        description: "Une erreur s'est produite lors du scan du QR code.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [fetchMateriel, associateMaterialToTeam, toast]);
+
   const enableStream = useCallback(async () => {
     try {
       const constraints = {
-        video: { facingMode: "environment" }, // Modifié ici
+        video: { facingMode: "environment" }, // Utiliser la caméra arrière
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      scanQRCode(stream);
+      scanQRCodeWeb(stream);
       setStreamError(false);
     } catch (err) {
       console.error("Erreur lors de l'accès à la caméra :", err);
@@ -184,20 +248,51 @@ const VideoCaptureBisBis = () => {
         });
       }
     }
-  }, [scanQRCode, toast]);
+  }, [scanQRCodeWeb, toast]);
 
   const handleRetryAccess = async () => {
-    await enableStream();
+    if (isNativeApp) {
+      await scanQRCodeNative();
+    } else {
+      await enableStream();
+    }
   };
 
   useEffect(() => {
-    enableStream();
-  }, [enableStream]);
+    if (isNativeApp) {
+      // Lancer le scan natif
+      scanQRCodeNative();
+    } else {
+      // Utiliser l'implémentation Web
+      enableStream();
+      // Optionnel : Utiliser Html5Qrcode
+      // scanQRCodeHtml5();
+    }
+    // Nettoyage lors du démontage du composant
+    return () => {
+      if (!isNativeApp && videoRef.current && videoRef.current.srcObject) {
+        // eslint-disable-next-line
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      // Optionnel : Arrêter Html5Qrcode si utilisé
+      /*
+      if (html5QrCode) {
+        html5QrCode.stop().catch(err => console.error('Erreur lors de l\'arrêt de Html5Qrcode:', err));
+      }
+      */
+    };
+    // eslint-disable-next-line
+  }, [isNativeApp, scanQRCodeNative, enableStream]);
 
   const handleScanNewQRCode = () => {
     setIsQRCodeDetected(false);
     setMateriel(null);
-    enableStream();
+    if (isNativeApp) {
+      scanQRCodeNative();
+    } else {
+      enableStream();
+      // Optionnel : scanQRCodeHtml5();
+    }
   };
 
   // Redirection si aucune équipe n'est sélectionnée
@@ -251,7 +346,7 @@ const VideoCaptureBisBis = () => {
     };
 
     fetchEvents();
-  }, [selectedEventId, setLoadingEvents, setEvents]);
+  }, [selectedEventId]);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -272,7 +367,7 @@ const VideoCaptureBisBis = () => {
     };
 
     fetchTeams();
-  }, [selectedEventId]); // Dépendance mise à jour pour réagir aux changements de selectedEventId   
+  }, [selectedEventId]);
 
   const eventDisplay = selectedEventName ? (
     <Badge colorScheme="blue" p="2">
@@ -427,27 +522,46 @@ const VideoCaptureBisBis = () => {
         Retour vers matériel
       </Button>
 
+      {/* Afficher le scanner */}
       {!isQRCodeDetected && !streamError && (
-        <div style={{ position: "relative", minWidth: "100%", borderRadius: "10px" }}>
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            style={{ width: "100%" }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: "25%",
-              left: "25%",
-              width: "50%",
-              height: "50%",
-              border: "2px solid #00ff00",
-              borderRadius: "10px",
-            }}
-          ></div>
-        </div>
+        <Box width="100%" position="relative" borderRadius="10px">
+          {/* Scanner natif */}
+          {isNativeApp ? (
+            // Aucun élément spécifique requis pour le scanner natif, le plugin gère l'interface
+            <Text>Scanner QR Code en cours...</Text>
+          ) : (
+            // Scanner web
+            <div style={{ position: "relative", width: "100%", borderRadius: "10px" }}>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ width: "100%" }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "25%",
+                  left: "25%",
+                  width: "50%",
+                  height: "50%",
+                  border: "2px solid #00ff00",
+                  borderRadius: "10px",
+                }}
+              ></div>
+              {/* Optionnel : Div pour Html5Qrcode */}
+              {/* <div id="reader" style={{ width: '100%' }}></div> */}
+            </div>
+          )}
+        </Box>
+      )}
+
+      {/* Bouton pour lancer le scan natif si nous sommes sur une application mobile */}
+      {!isQRCodeDetected && isNativeApp && (
+        <Button onClick={scanQRCodeNative} colorScheme="green" mt={4}>
+          Lancer le scan QR Code
+        </Button>
       )}
 
       {materiel && (
@@ -458,7 +572,9 @@ const VideoCaptureBisBis = () => {
                 <Badge colorScheme="orange">{materiel.nom}</Badge>
                 <Alert status={materiel.associated_team_id ? "success" : "warning"} variant="left-accent">
                   <AlertIcon />
-                  {materiel.associated_team_id ? `Le matériel "${materiel.nom}" est associé à l'équipe "${selectedTeam}"` : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
+                  {materiel.associated_team_id
+                    ? `Le matériel "${materiel.nom}" est associé à l'équipe "${selectedTeam ? selectedTeam.name_of_the_team : 'Inconnue'}"`
+                    : `Aucune équipe n'est associée au matériel "${materiel.nom}". Matériel libre.`}
                 </Alert>
                 <QRCode value={materiel.id} size={128} level="L" includeMargin={true} />
                 {materiel.description && (
