@@ -46,12 +46,24 @@
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <true/>
 
-    <!-- Permissions for Camera, Location, and Microphone -->
+    <!-- Permissions for Camera, Location, Microphone, and Photo Library -->
     <key>NSCameraUsageDescription</key>
-    <string>Nous avons besoin de la caméra pour prendre des photos.</string>
+    <string>L'application nécessite l'accès à la caméra pour capturer des photos et des vidéos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>L'application nécessite l'accès à la bibliothèque de photos pour importer des médias.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>L'application nécessite l'accès pour enregistrer des photos ou vidéos dans votre bibliothèque.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Nous avons besoin de la localisation pour afficher les services proches.</string>
+    <string>L'application utilise votre localisation pour afficher les services proches de vous.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Nous avons besoin du microphone pour enregistrer de l'audio.</string>
+    <string>L'application nécessite l'accès au microphone pour enregistrer de l'audio.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>L'application nécessite votre localisation même en arrière-plan pour des fonctionnalités avancées.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>L'application utilise les capteurs de mouvement pour améliorer l'expérience utilisateur.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>L'application nécessite l'accès au Bluetooth pour se connecter à des périphériques.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>L'application utilise Face ID pour sécuriser l'accès à votre compte.</string>
 </dict>
 </plist>
