@@ -1,31 +1,21 @@
-// /android/app/build.gradle
-
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 
 android {
-    namespace "protectosystem.fr" // Assurez-vous que ce namespace correspond à votre applicationId
+    namespace "protectosystem.com"
     compileSdkVersion rootProject.ext.compileSdkVersion
-
     defaultConfig {
-        applicationId "protectosystem.fr" // Assurez-vous que ce applicationId est correct
+        applicationId "protectosystem.com"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
         aaptOptions {
-            // Fichiers et dossiers à omettre du répertoire des assets emballés, modifié pour s'adapter aux applications web modernes.
-            // Par défaut : https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
-
-        // Configuration spécifique à Capacitor
-        vectorDrawables.useSupportLibrary = true
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -35,26 +25,21 @@ android {
 }
 
 repositories {
-    flatDir {
+    flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
-    implementation 'com.facebook.react:react-native:+'
-    implementation "com.getcapacitor:capacitor-android:5.0.0"
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
-    implementation "androidx.core:core-splashscreen:1.0.0"
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-
-    // Autres dépendances si nécessaire
-    testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
 }
 
 apply from: 'capacitor.build.gradle'

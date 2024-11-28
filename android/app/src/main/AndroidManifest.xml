@@ -25,7 +25,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Main Activity -->
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
             android:name=".MainActivity"
@@ -38,9 +37,9 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
-        <!-- File Provider for file sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -48,26 +47,11 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/file_paths"></meta-data>
         </provider>
-
-        <!-- Notification Service -->
-        <service
-            android:name=".NotificationService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.yourapp.NOTIFICATION_EVENT" />
-            </intent-filter>
-        </service>
-
-        <!-- Metadata for CameraX (optional) -->
-        <meta-data
-            android:name="androidx.camera.camera2.enabled"
-            android:value="true" />
-
-        <!-- Metadata for Play Services or Google Maps (if required) -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
     </application>
+
+    <!-- Permissions -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

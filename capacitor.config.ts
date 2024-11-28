@@ -1,9 +1,12 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'protectosystem.fr',
-  appName: 'protecto',
-  webDir: 'build'
+  appId: 'protectosystem.com',
+  appName: 'protectosystem.com',
+  webDir: 'build',
+  server: {
+    androidScheme: 'https'
+  }
 };
 
 export default config;

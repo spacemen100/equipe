@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">protecto</string>
-    <string name="title_activity_main">protecto</string>
-    <string name="package_name">protectosystem.fr</string>
-    <string name="custom_url_scheme">protectosystem.fr</string>
+    <string name="app_name">protectosystem.com</string>
+    <string name="title_activity_main">protectosystem.com</string>
+    <string name="package_name">protectosystem.com</string>
+    <string name="custom_url_scheme">protectosystem.com</string>
 </resources>
