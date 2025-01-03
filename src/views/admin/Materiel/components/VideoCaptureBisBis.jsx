@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import jsQR from 'jsqr';
 import { Capacitor } from '@capacitor/core';
+import { CameraPreview } from '@capacitor-community/camera-preview';
 import { supabase } from './../../../../supabaseClient';
 import {
   ModalCloseButton, Box, Text, VStack, Badge, Alert, AlertIcon, IconButton,
@@ -17,6 +18,7 @@ import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const [materiel, setMateriel] = useState(null);
   const [isQRCodeDetected, setIsQRCodeDetected] = useState(false);
   const [noMatchingMaterial, setNoMatchingMaterial] = useState(false);
@@ -24,8 +26,6 @@ const VideoCaptureBisBis = () => {
   const [streamError, setStreamError] = useState(false);
   const toast = useToast();
   const { selectedTeam, teamUUID, setSelectedTeam } = useTeam();
-
-  // Déclarez isNativeApp avant toute utilisation
   const isNativeApp = Capacitor.isNativePlatform();
 
   const isValidUUID = (id) => {
@@ -52,7 +52,7 @@ const VideoCaptureBisBis = () => {
         .from('vianney_inventaire_materiel')
         .update({ associated_team_id: teamUUID })
         .eq('id', materialId)
-        .select('*') // Récupérer toutes les colonnes
+        .select('*')
         .single();
 
       if (error) {
@@ -68,7 +68,6 @@ const VideoCaptureBisBis = () => {
         isClosable: true,
       });
 
-      // Mettre à jour l'état local avec les données complètes du matériel
       setMateriel(data);
       setNoMatchingMaterial(false);
     } catch (error) {
@@ -109,9 +108,9 @@ const VideoCaptureBisBis = () => {
     }
   }, []);
 
-  const scanQRCode = useCallback(
+  const scanQRCodeWeb = useCallback(
     (stream) => {
-      const canvas = document.createElement("canvas");
+      const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
       const checkQRCode = () => {
@@ -145,68 +144,126 @@ const VideoCaptureBisBis = () => {
     [fetchMateriel, associateMaterialToTeam]
   );
 
-  const enableStream = useCallback(async () => {
+  const scanQRCodeNative = useCallback(async () => {
     try {
-      const constraints = {
-        video: { facingMode: "environment" }, // Utiliser la caméra arrière
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const interval = setInterval(async () => {
+        const result = await CameraPreview.capture({
+          quality: 90
+        });
+        const image = new Image();
+        image.src = `data:image/jpeg;base64,${result.value}`;
+        image.onload = () => {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+          if (code) {
+            console.log("QR Code data:", code.data);
+            fetchMateriel(code.data);
+            associateMaterialToTeam(code.data);
+            clearInterval(interval);
+            CameraPreview.stop();
+            setIsQRCodeDetected(true);
+          }
+        };
+      }, 1000);
+    } catch (error) {
+      console.error("Erreur lors du scan QR Code natif:", error);
+    }
+  }, [fetchMateriel, associateMaterialToTeam]);
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+  const enableStream = useCallback(async () => {
+    if (isNativeApp) {
+      try {
+        await CameraPreview.start({
+          position: 'rear',
+          toBack: false,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          parent: 'cameraPreview',
+          disableExifHeaderStripping: true,
+        });
+        scanQRCodeNative();
+        setStreamError(false);
+      } catch (err) {
+        console.error('Erreur lors de l\'accès à la caméra sur la plateforme native', err);
+        setStreamError(true);
+        toast({
+          title: "Erreur d'accès à la caméra",
+          description: "Impossible d'accéder à la caméra sur l'appareil natif.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
-      scanQRCode(stream);
-      setStreamError(false);
-    } catch (err) {
-      console.error("Erreur lors de l'accès à la caméra :", err);
-      setStreamError(true);
+    } else {
+      try {
+        const constraints = {
+          video: { facingMode: "environment" },
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        scanQRCodeWeb(stream);
+        setStreamError(false);
+      } catch (err) {
+        console.error("Erreur lors de l'accès à la caméra :", err);
+        setStreamError(true);
 
-      if (err.name === "OverconstrainedError") {
-        toast({
-          title: "Erreur d'accès à la caméra",
-          description:
-            "Impossible d'accéder à la caméra avec les contraintes spécifiées. Essayez de changer de caméra.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else if (err.name === "NotAllowedError") {
-        toast({
-          title: "Accès à la caméra refusé",
-          description:
-            "Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: "Erreur d'accès à la caméra",
-          description:
-            "Impossible d'accéder à la caméra. Vérifiez les permissions ou réessayez.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        if (err.name === "OverconstrainedError") {
+          toast({
+            title: "Erreur d'accès à la caméra",
+            description:
+              "Impossible d'accéder à la caméra avec les contraintes spécifiées. Essayez de changer de caméra.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        } else if (err.name === "NotAllowedError") {
+          toast({
+            title: "Accès à la caméra refusé",
+            description:
+              "Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        } else {
+          toast({
+            title: "Erreur d'accès à la caméra",
+            description:
+              "Impossible d'accéder à la caméra. Vérifiez les permissions ou réessayez.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
       }
     }
-  }, [scanQRCode, toast]);
+  }, [isNativeApp, scanQRCodeWeb, scanQRCodeNative, toast]);
 
   const handleRetryAccess = async () => {
     await enableStream();
   };
 
   useEffect(() => {
-    // Utiliser l'implémentation Web pour toutes les plateformes
     enableStream();
-    // Nettoyage lors du démontage du composant
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-                // eslint-disable-next-line
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      if (isNativeApp) {
+        CameraPreview.stop();
+      } else {
+        if (videoRef.current && videoRef.current.srcObject) {
+          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        }
       }
     };
-  }, [enableStream]);
+  }, [enableStream, isNativeApp]);
 
   const handleScanNewQRCode = () => {
     setIsQRCodeDetected(false);
@@ -214,7 +271,6 @@ const VideoCaptureBisBis = () => {
     enableStream();
   };
 
-  // Redirection si aucune équipe n'est sélectionnée
   useEffect(() => {
     if (!teamUUID) {
       toast({
@@ -224,20 +280,15 @@ const VideoCaptureBisBis = () => {
         duration: 5000,
         isClosable: true,
       });
-      history.push("/admin/materiels"); // Rediriger vers la page des matériels
+      history.push("/admin/materiels");
     }
   }, [teamUUID, toast, history]);
 
   const [materiels, setMateriels] = useState([]);
-  // eslint-disable-next-line no-unused-vars
   const [events, setEvents] = useState([]);
-  // eslint-disable-next-line no-unused-vars
   const [selectedEvent, setSelectedEvent] = useState('');
-  // eslint-disable-next-line no-unused-vars
   const [loadingEvents, setLoadingEvents] = useState(true);
-  // eslint-disable-next-line no-unused-vars
   const [loadingMateriels, setLoadingMateriels] = useState(false);
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { isOpen, onClose } = useDisclosure();
@@ -257,7 +308,6 @@ const VideoCaptureBisBis = () => {
         console.error('Erreur lors de la récupération des événements', error);
       } else {
         setEvents(data);
-        // Trouver le nom de l'événement actuellement sélectionné
         const currentEvent = data.find(event => event.event_id === selectedEventId);
         if (currentEvent) setSelectedEventName(currentEvent.event_name);
       }
@@ -269,16 +319,16 @@ const VideoCaptureBisBis = () => {
 
   useEffect(() => {
     const fetchTeams = async () => {
-      if (!selectedEventId) return; // Utilisez selectedEventId ici
+      if (!selectedEventId) return;
       setLoadingTeams(true);
       const { data, error } = await supabase
         .from('vianney_teams')
         .select('*')
-        .eq('event_id', selectedEventId); // Correction pour utiliser selectedEventId
+        .eq('event_id', selectedEventId);
 
       if (error) {
         console.error('Erreur lors de la récupération des équipes', error);
-        setTeams([]); // S'assurer que teams est réinitialisé en cas d'erreur
+        setTeams([]);
       } else {
         setTeams(data);
       }
@@ -302,12 +352,10 @@ const VideoCaptureBisBis = () => {
       if (materielsError) {
         console.error('Erreur lors de la récupération des matériels', materielsError);
       } else {
-        // Récupérer également les données des équipes associées
         const { data: teamsData, error: teamsError } = await supabase.from('vianney_teams').select('*');
         if (teamsError) {
           console.error('Erreur lors de la récupération des équipes', teamsError);
         } else {
-          // Mettre à jour les données des matériels avec les noms des équipes associées
           const updatedMateriels = materielsData.map(materiel => {
             const associatedTeam = teamsData.find(team => team.id === materiel.associated_team_id);
             return {
@@ -343,11 +391,11 @@ const VideoCaptureBisBis = () => {
     chargerMateriels();
     fetchEvents();
     fetchMateriels();
-  }, [selectedEvent, setEvents, setLoadingEvents, setLoadingMateriels]);
+  }, []);
 
   const handleOpenAssociationModal = (materiel) => {
-    setSelectedMaterial(materiel); // Sélectionner le matériel
-    onAssociationModalOpen(); // Ouvrir le modal
+    setSelectedMaterial(materiel);
+    onAssociationModalOpen();
   };
 
   const handleDelete = async () => {
@@ -356,11 +404,9 @@ const VideoCaptureBisBis = () => {
       if (error) {
         console.error('Erreur lors de la suppression du matériel', error);
       } else {
-        // Mettre à jour l'état local pour refléter la suppression
         setMateriels(materiels.filter(materiel => materiel.id !== confirmDeleteId));
-        onClose(); // Fermer le modal de confirmation
-        setConfirmDeleteId(null); // Réinitialiser l'id de confirmation
-        // Afficher un toast de succès
+        onClose();
+        setConfirmDeleteId(null);
         toast({
           title: "Matériel supprimé avec succès",
           status: "success",
@@ -380,12 +426,10 @@ const VideoCaptureBisBis = () => {
     });
     setMateriels(updatedMateriels);
 
-    // Mettre à jour la base de données
     const { error } = await supabase.from('vianney_inventaire_materiel').update({ associated_team_id: null }).match({ id });
     if (error) {
       console.error('Erreur lors de la mise à jour du matériel', error);
     } else {
-      // Afficher un toast de succès
       toast({
         title: "Matériel rendu avec succès",
         status: "success",
@@ -444,27 +488,31 @@ const VideoCaptureBisBis = () => {
       {/* Afficher le scanner */}
       {!isQRCodeDetected && !streamError && (
         <Box width="100%" position="relative" borderRadius="10px">
-          {/* Scanner web */}
-          <div style={{ position: "relative", width: "100%", borderRadius: "10px" }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: "100%" }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                top: "25%",
-                left: "25%",
-                width: "50%",
-                height: "50%",
-                border: "2px solid #00ff00",
-                borderRadius: "10px",
-              }}
-            ></div>
-          </div>
+          {isNativeApp ? (
+            <div id="cameraPreview" style={{ width: '100%', height: '300px', borderRadius: '10px' }}></div>
+          ) : (
+            <div style={{ position: "relative", width: "100%", borderRadius: "10px" }}>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ width: "100%", borderRadius: "10px" }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "25%",
+                  left: "25%",
+                  width: "50%",
+                  height: "50%",
+                  border: "2px solid #00ff00",
+                  borderRadius: "10px",
+                }}
+              ></div>
+              <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+            </div>
+          )}
         </Box>
       )}
 
@@ -603,6 +651,9 @@ const VideoCaptureBisBis = () => {
           </Button>
         </VStack>
       )}
+
+      {/* Canvas pour le traitement des images QR Code en natif */}
+      {isNativeApp && <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>}
     </Box>
   );
 };
