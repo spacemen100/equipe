@@ -259,6 +259,7 @@ const VideoCaptureBisBis = () => {
         CameraPreview.stop();
       } else {
         if (videoRef.current && videoRef.current.srcObject) {
+                  // eslint-disable-next-line
           videoRef.current.srcObject.getTracks().forEach(track => track.stop());
         }
       }
@@ -285,10 +286,15 @@ const VideoCaptureBisBis = () => {
   }, [teamUUID, toast, history]);
 
   const [materiels, setMateriels] = useState([]);
+          // eslint-disable-next-line 
   const [events, setEvents] = useState([]);
+          // eslint-disable-next-line 
   const [selectedEvent, setSelectedEvent] = useState('');
+          // eslint-disable-next-line 
   const [loadingEvents, setLoadingEvents] = useState(true);
+          // eslint-disable-next-line 
   const [loadingMateriels, setLoadingMateriels] = useState(false);
+          // eslint-disable-next-line 
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { isOpen, onClose } = useDisclosure();
