@@ -15,7 +15,6 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { FcPlus, FcCameraIdentification } from 'react-icons/fc';
-import { Link } from 'react-router-dom';
 import InventaireForm from './components/InventaireForm';
 import AfficherMateriels from './components/AfficherMateriels';
 import QrCodeImageExport from './components/QrCodeImageExport';
@@ -58,20 +57,20 @@ const Materiel = () => {
           >
             Créer un matériel
           </Button>
-          <Link to="/admin/qr-scanner">
-            <Button
-              leftIcon={<Icon as={FcCameraIdentification} />}
-              colorScheme="blue"
-              variant="solid"
-              size="md"
-              boxShadow="sm"
-              _hover={{ boxShadow: 'md' }}
-              _active={{ boxShadow: 'lg' }}
-              mr={2}
-            >
-              Scanner un QRCode
-            </Button>
-          </Link>
+          {/* Remplacer le Link par un Button qui ouvre le modal QR Scanner */}
+          <Button
+            onClick={toggleQRScannerModal}
+            leftIcon={<Icon as={FcCameraIdentification} />}
+            colorScheme="blue"
+            variant="solid"
+            size="md"
+            boxShadow="sm"
+            _hover={{ boxShadow: 'md' }}
+            _active={{ boxShadow: 'lg' }}
+            mr={2}
+          >
+            Scanner un QRCode
+          </Button>
           <Button
             onClick={openModal}
             leftIcon={<Icon as={FcPlus} />}

@@ -581,11 +581,6 @@ const VideoCaptureBisBis = () => {
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }} alignItems="center" justifyContent="center">
       <Box>
-        {/* Back Button */}
-        <Button onClick={() => history.push('/admin/materiels')} colorScheme="blue" mb={4}>
-          Retour vers matériel
-        </Button>
-
         {/* Scanner */}
         {!isQRCodeDetected && !streamError && (
           <Box width="100%" position="relative" borderRadius="10px">
