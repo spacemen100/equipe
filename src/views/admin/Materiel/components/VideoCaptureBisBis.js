@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import jsQR from 'jsqr';
 import { Capacitor } from '@capacitor/core';
 import { CameraPreview } from '@capacitor-community/camera-preview';
-import { supabase } from './../../../../supabaseClient';
+import { supabase } from '../../../../supabaseClient';
 import {
   ModalCloseButton,
   Box,
@@ -30,9 +30,9 @@ import {
 import QRCode from 'qrcode.react';
 import { MdDeleteForever } from "react-icons/md";
 import { FcDisclaimer, FcOk } from "react-icons/fc";
-import { useEvent } from './../../../../EventContext';
+import { useEvent } from '../../../../EventContext';
 import { useHistory } from 'react-router-dom';
-import { useTeam } from './../../../../views/admin/InterfaceEquipe/TeamContext';
+import { useTeam } from '../../InterfaceEquipe/TeamContext';
 
 const VideoCaptureBisBis = () => {
   const videoRef = useRef(null);
