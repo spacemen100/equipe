@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  useColorModeValue,
+  Box,
+  Flex,
+  Text,
   Avatar,
+  Button,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalCloseButton,
   ModalBody,
-  Flex,
-  Text,
-  Button,
-  Box,
   Tooltip,
+  useBreakpointValue,
+  useColorModeValue, // Add this import
 } from '@chakra-ui/react';
 import { FcPhone } from "react-icons/fc";
-import 'leaflet/dist/leaflet.css';
-
 import { useEvent } from '../../../../EventContext';
 import { useTeam } from './../../InterfaceEquipe/TeamContext';
 import { supabase } from './../../../../supabaseClient';
@@ -36,36 +28,16 @@ const EquipiersTableSimplify = () => {
   const { selectedEventId } = useEvent();
   const { selectedTeam } = useTeam();
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   const onRowClick = (equipier) => {
     setSelectedEquipier(equipier);
     setIsModalOpen(true);
   };
 
-  const headerStyle = {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: useColorModeValue('gray.600', 'gray.200'),
-  };
-
-  const headerGradientStyle = {
-    background: 'linear-gradient(to right, #ff914d, #ff7730)',
-    color: 'white',
-    textTransform: 'none',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1
-  };
-
-  const tableRowStyle = {
-    borderBottom: '1px solid',
-    borderBottomColor: useColorModeValue('gray.200', 'gray.600'),
-  };
-
   const avatarStyle = {
     border: '2px solid',
-    borderColor: useColorModeValue('gray.300', 'gray.500'),
+    borderColor: useColorModeValue('gray.300', 'gray.500'), // Now this will work
   };
 
   useEffect(() => {
@@ -92,7 +64,6 @@ const EquipiersTableSimplify = () => {
           `)
           .order('name_of_the_team', { ascending: true });
 
-        // Filter by event_id if selectedEventId is available
         if (selectedEventId) {
           query = query.eq('event_id', selectedEventId);
         }
@@ -144,31 +115,30 @@ const EquipiersTableSimplify = () => {
 
   return (
     <>
-      
-      <TableContainer style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-        <Table variant='simple'>
-          <Thead style={{ ...headerGradientStyle, position: 'sticky', top: 0, zIndex: 1 }}>
-            <Tr>
-              <Th><Text style={headerStyle}>Photo</Text></Th>
-              <Th><Text style={headerStyle}>Nom de l'équipe</Text></Th>
-              <Th><Text style={headerStyle}>Nom du responsable</Text></Th>
-              <Th><Text style={headerStyle}>Mission</Text></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {filteredEquipiers.map((equipier, index) => (
-              <Tooltip label="Cliquez pour ouvrir l'onglet de modification" key={index}>
-                <Tr onClick={() => onRowClick(equipier)} style={{ ...tableRowStyle, cursor: 'pointer' }} onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                  <Td><Avatar size="md" src={equipier.photo_profile_url} style={avatarStyle} /></Td>
-                  <Td>{equipier.name_of_the_team}</Td>
-                  <Td>{getLeaderNameAndPhone(equipier.team_members)}</Td>
-                  <Td>{equipier.mission}</Td>
-                </Tr>
-              </Tooltip>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+      <Box>
+        {filteredEquipiers.map((equipier, index) => (
+          <Tooltip label="Cliquez pour ouvrir l'onglet de modification" key={index}>
+            <Box
+              onClick={() => onRowClick(equipier)}
+              p={4}
+              mb={4}
+              borderRadius="md"
+              boxShadow="md"
+              cursor="pointer"
+              _hover={{ bg: 'rgba(0, 0, 0, 0.05)' }}
+            >
+              <Flex align="center">
+                <Avatar size="md" src={equipier.photo_profile_url} style={avatarStyle} />
+                <Box ml={4}>
+                  <Text fontWeight="bold">{equipier.name_of_the_team}</Text>
+                  <Text fontSize="sm" color="gray.500">{getLeaderNameAndPhone(equipier.team_members)}</Text>
+                  {!isMobile && <Text fontSize="sm">{equipier.mission}</Text>}
+                </Box>
+              </Flex>
+            </Box>
+          </Tooltip>
+        ))}
+      </Box>
       <Box mt={4}>
         {selectedTeam && (
           <Button onClick={() => setFilterEnabled(!filterEnabled)}>
