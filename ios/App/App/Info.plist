@@ -2,10 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Informations de base sur l'application -->
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>protectosystem.com</string>
+	<string>protectosystem.com</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -46,24 +47,24 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 
-    <!-- Permissions for Camera, Location, Microphone, and Photo Library -->
-    <key>NSCameraUsageDescription</key>
-    <string>L'application Protecto a besoin d’accéder à votre caméra pour capturer et envoyer des photos et vidéo dans le chat et scanner un QR code.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>L'application nécessite l'accès à la bibliothèque de photos pour importer des médias.</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>L'application nécessite l'accès pour enregistrer des photos ou vidéos dans votre bibliothèque.</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>L'application utilise votre localisation pour afficher les services proches de vous.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>L'application Protecto a besoin d’accéder à votre microphone pour enregistrer des messages vocaux dans le chat.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>L'application nécessite votre localisation même en arrière-plan pour des fonctionnalités avancées.</string>
-    <key>NSMotionUsageDescription</key>
-    <string>L'application utilise les capteurs de mouvement pour améliorer l'expérience utilisateur.</string>
-    <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>L'application nécessite l'accès au Bluetooth pour se connecter à des périphériques.</string>
-    <key>NSFaceIDUsageDescription</key>
-    <string>L'application utilise Face ID pour sécuriser l'accès à votre compte.</string>
+	<!-- Permissions et leurs justifications -->
+	<key>NSCameraUsageDescription</key>
+	<string>L'application Protecto a besoin d’accéder à votre caméra pour capturer et envoyer des photos et vidéos dans le chat et scanner un QR code.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>L'application nécessite l'accès à la bibliothèque de photos pour importer des médias dans le chat ou pour d'autres fonctionnalités collaboratives.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>L'application nécessite l'accès pour enregistrer des photos ou vidéos dans votre bibliothèque, par exemple pour sauvegarder des médias partagés dans le chat.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>L'application utilise votre localisation pour afficher les services proches de vous et faciliter la coordination entre les équipes.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>L'application Protecto a besoin d’accéder à votre microphone pour enregistrer des messages vocaux dans le chat, permettant une communication plus efficace.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>L'application nécessite votre localisation même en arrière-plan pour des fonctionnalités avancées, comme le suivi en temps réel des membres de l'équipe.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>L'application utilise les capteurs de mouvement pour améliorer l'expérience utilisateur, par exemple en détectant des gestes spécifiques.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>L'application nécessite l'accès au Bluetooth pour se connecter à des périphériques externes, comme des outils de communication ou des appareils collaboratifs.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>L'application utilise Face ID pour sécuriser l'accès à votre compte, protégeant vos données personnelles et professionnelles.</string>
 </dict>
 </plist>
