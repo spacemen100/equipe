@@ -12,6 +12,7 @@ import {
   FcCameraIdentification
 } from "react-icons/fc";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
+import { GiWalkieTalkie } from "react-icons/gi"; // Import the walkie-talkie icon
 //import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -27,6 +28,7 @@ import MapComponent from "views/admin/MapComponent";
 import DocumentTabs from "views/admin/DocumentTabs"; 
 import ZoomedMapComponent from "views/admin/ZoomedMapComponent";
 import VideoCaptureBisBis from 'views/admin/Materiel/components/VideoCaptureBisBis';
+import TalkieWalkie from "views/admin/TalkieWalkie"; // Import the new component
 
 const routes = [
   {
@@ -43,21 +45,20 @@ const routes = [
  //   icon: <Icon as={BsGeoAltFill} width='20px' height='20px' color='inherit' />,
  //   component: GestionOperationnelle,
  // },
- {
-  name: "Scanner QR Code",
-  layout: "/admin",
-  path: "/qr-scanner",
-  icon: <Icon as={FcCameraIdentification} width='20px' height='20px' color='inherit' />,
-  component: VideoCaptureBisBis,
-  hide: true, // Optional: hide from the navigation menu if you don't want it displayed
-},
-
- {
-  name: "Carte zoomée",
-  layout: "/admin",
-  path: "/zoomed-map",
-  component: ZoomedMapComponent,
-},
+  {
+    name: "Scanner QR Code",
+    layout: "/admin",
+    path: "/qr-scanner",
+    icon: <Icon as={FcCameraIdentification} width='20px' height='20px' color='inherit' />,
+    component: VideoCaptureBisBis,
+    hide: true, // Optional: hide from the navigation menu if you don't want it displayed
+  },
+  {
+    name: "Carte zoomée",
+    layout: "/admin",
+    path: "/zoomed-map",
+    component: ZoomedMapComponent,
+  },
   {
     name: "Emploi du temps",
     layout: "/admin",
@@ -142,6 +143,13 @@ const routes = [
     path: "/carte",
     icon: <Icon as={FaMapMarked} width='20px' height='20px' color='inherit' />,
     component: MapComponent,
+  },
+  {
+    name: "Talkie-Walkie", // New talkie-walkie route
+    layout: "/admin",
+    path: "/talkie-walkie",
+    icon: <Icon as={GiWalkieTalkie} width='20px' height='20px' color='inherit' />,
+    component: TalkieWalkie,
   },
 ];
 
