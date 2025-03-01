@@ -117,7 +117,7 @@ const TalkieWalkie = () => {
   };
 
   return (
-    <Box p={4}>
+    <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
       <Flex align="center" mb={4}>
         <IconButton
           icon={<GiWalkieTalkie size="24px" />}
