@@ -42,29 +42,38 @@ const TalkieWalkie = () => {
   const startCommunication = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("Stream audio local:", stream);
       localStreamRef.current = stream;
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = stream;
       }
-      peerConnectionRef.current = new RTCPeerConnection();
+      peerConnectionRef.current = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+        ],
+      });
       stream.getTracks().forEach((track) => {
+        console.log("Ajout de la piste audio:", track);
         peerConnectionRef.current.addTrack(track, stream);
       });
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log("Candidat ICE local:", event.candidate);
           socketRef.current.emit("candidate", event.candidate);
         }
       };
       peerConnectionRef.current.ontrack = (event) => {
+        console.log("Réception du flux audio distant:", event.streams[0]);
         if (remoteAudioRef.current) {
           remoteAudioRef.current.srcObject = event.streams[0];
         }
       };
       const offer = await peerConnectionRef.current.createOffer();
+      console.log("Offre créée:", offer);
       await peerConnectionRef.current.setLocalDescription(offer);
       socketRef.current.emit("offer", offer);
-
-      setIsCommunicationActive(true); // Activer l'état de communication
+  
+      setIsCommunicationActive(true);
     } catch (error) {
       console.error("Erreur lors de la récupération du flux audio :", error);
     }
