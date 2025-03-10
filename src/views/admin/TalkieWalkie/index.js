@@ -2,16 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
-  Flex,
-  IconButton,
-  Text,
   Card,
-  CardHeader,
   CardBody,
-  CardFooter,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { GiWalkieTalkie } from "react-icons/gi";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import io from "socket.io-client";
 
@@ -117,20 +111,8 @@ const TalkieWalkie = () => {
   const bgColor = useColorModeValue("gray.50", "gray.700");
 
   return (
-    <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
+    <Box>
       <Card bg={bgColor}>
-        <CardHeader>
-          <Flex align="center">
-            <IconButton
-              icon={<GiWalkieTalkie size="24px" />}
-              size="lg"
-              aria-label="Talkie-Walkie"
-              mr={2}
-              colorScheme="teal"
-            />
-            <Text fontSize="xl" fontWeight="bold">Canal de discussion Talkie-Walkie</Text>
-          </Flex>
-        </CardHeader>
         <CardBody>
           {/* Bouton pour démarrer/arrêter la communication */}
           <Button
@@ -154,10 +136,10 @@ const TalkieWalkie = () => {
             {isSpeaking ? "Arrêter de parler" : "Parler"}
           </Button>
         </CardBody>
-        <CardFooter>
+        <div>
           <audio ref={localAudioRef} autoPlay muted />
           <audio ref={remoteAudioRef} autoPlay />
-        </CardFooter>
+        </div>
       </Card>
     </Box>
   );

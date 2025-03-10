@@ -3,7 +3,6 @@ import { Box, SimpleGrid, Text, VStack, IconButton } from "@chakra-ui/react";
 import { FcMenu, FcCalendar, FcDocument, FcSettings, FcComments, FcHighPriority, FcPackage } from "react-icons/fc"; // Import FcPackage for Matériels
 //import { BsGeoAltFill } from "react-icons/bs";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
-import { GiWalkieTalkie } from "react-icons/gi"; // Import the walkie-talkie icon
 import { useHistory } from "react-router-dom";
 
 const Menu = () => {
@@ -19,7 +18,7 @@ const Menu = () => {
     { icon: FcPackage, label: "Matériels", path: "/admin/materiels" }, // Added Matériels
     { icon: FcHighPriority, label: "SOS Alerte Silencieuse", path: "/admin/sos-alerte-danger" },
     { icon: FaMapMarked, label: "Carte", path: "/admin/carte" }, // Only "Carte" remains, not "Carte zoomée"
-    { icon: GiWalkieTalkie, label: "Talkie-Walkie", path: "/admin/talkie-walkie" }, // Added Talkie-Walkie
+    //{ icon: GiWalkieTalkie, label: "Talkie-Walkie", path: "/admin/talkie-walkie" }, // Added Talkie-Walkie
   ];
 
   return (

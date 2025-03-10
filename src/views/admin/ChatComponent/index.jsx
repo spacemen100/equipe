@@ -11,7 +11,7 @@ const Index = () => {
       <MessagerieWhatsappChat />
 
       {/* Composant TalkieWalkie en dessous */}
-      <Box mt={6}> {/* Ajoutez une marge en haut pour espacer les composants */}
+      <Box mt={1}> {/* Ajoutez une marge en haut pour espacer les composants */}
         <TalkieWalkie />
       </Box>
     </Box>

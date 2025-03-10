@@ -12,7 +12,6 @@ import {
   FcCameraIdentification
 } from "react-icons/fc";
 import { FaMapMarked } from "react-icons/fa"; // Import the map icon
-import { GiWalkieTalkie } from "react-icons/gi"; // Import the walkie-talkie icon
 //import GestionOperationnelle from "views/admin/GestionOperationnelle";
 import EmploiDuTemps from "views/admin/EmploiDuTemps";
 import Documents from "views/admin/Documents";
@@ -28,7 +27,6 @@ import MapComponent from "views/admin/MapComponent";
 import DocumentTabs from "views/admin/DocumentTabs"; 
 import ZoomedMapComponent from "views/admin/ZoomedMapComponent";
 import VideoCaptureBisBis from 'views/admin/Materiel/components/VideoCaptureBisBis';
-import TalkieWalkie from "views/admin/TalkieWalkie"; // Import the new component
 
 const routes = [
   {
@@ -143,13 +141,6 @@ const routes = [
     path: "/carte",
     icon: <Icon as={FaMapMarked} width='20px' height='20px' color='inherit' />,
     component: MapComponent,
-  },
-  {
-    name: "Talkie-Walkie", // New talkie-walkie route
-    layout: "/admin",
-    path: "/talkie-walkie",
-    icon: <Icon as={GiWalkieTalkie} width='20px' height='20px' color='inherit' />,
-    component: TalkieWalkie,
   },
 ];
 
