@@ -10,11 +10,6 @@ import {
   CardBody,
   CardFooter,
   useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  CloseButton,
 } from "@chakra-ui/react";
 import { GiWalkieTalkie } from "react-icons/gi";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
@@ -23,7 +18,6 @@ import io from "socket.io-client";
 const TalkieWalkie = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isCommunicationActive, setIsCommunicationActive] = useState(false); // État pour suivre si la communication est active
-  const [showInfo, setShowInfo] = useState(true);
   const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const socketRef = useRef(null);
@@ -138,29 +132,6 @@ const TalkieWalkie = () => {
           </Flex>
         </CardHeader>
         <CardBody>
-          {/* Note d'information */}
-          {showInfo && (
-            <Alert status="info" mb={4} borderRadius="md">
-              <AlertIcon />
-              <Box flex="1">
-                <AlertTitle>Comment utiliser le Talkie-Walkie ?</AlertTitle>
-                <AlertDescription>
-                  1. Cliquez sur "Démarrer la communication" pour activer le microphone.
-                  <br />
-                  2. Appuyez sur "Parler" pour activer votre microphone et communiquer.
-                  <br />
-                  3. Relâchez le bouton "Parler" pour écouter l'autre utilisateur.
-                </AlertDescription>
-              </Box>
-              <CloseButton
-                position="absolute"
-                right="8px"
-                top="8px"
-                onClick={() => setShowInfo(false)}
-              />
-            </Alert>
-          )}
-
           {/* Bouton pour démarrer/arrêter la communication */}
           <Button
             colorScheme={isCommunicationActive ? "green" : "red"}
@@ -168,7 +139,7 @@ const TalkieWalkie = () => {
             mb={4}
             width="full"
           >
-            {isCommunicationActive ? "Arrêter la communication (On)" : "Démarrer la communication (Off)"}
+            {isCommunicationActive ? "Arrêter le Talkie Walkie (On)" : "Démarrer le Talkie Walkie (Off)"}
           </Button>
 
           {/* Bouton pour parler */}
