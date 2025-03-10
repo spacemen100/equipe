@@ -48,6 +48,7 @@ const TalkieWalkie = () => {
     return () => {
       socketRef.current.disconnect();
     };
+    // eslint-disable-next-line
   }, []);
 
   const startCommunication = async () => {
