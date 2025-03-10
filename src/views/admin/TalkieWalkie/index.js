@@ -1,112 +1,115 @@
-// views/admin/TalkieWalkie.js
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  IconButton,
+  Text,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  useColorModeValue,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
+} from "@chakra-ui/react";
 import { GiWalkieTalkie } from "react-icons/gi";
+import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import io from "socket.io-client";
 
 const TalkieWalkie = () => {
-  const [isSpeaking, setIsSpeaking] = useState(false); // État pour savoir si l'utilisateur parle
-  const localAudioRef = useRef(null); // Référence pour l'audio local
-  const remoteAudioRef = useRef(null); // Référence pour l'audio distant
-  const socketRef = useRef(null); // Référence pour le socket
-  const localStreamRef = useRef(null); // Référence pour le flux audio local
-  const peerConnectionRef = useRef(null); // Référence pour la connexion WebRTC
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isCommunicationActive, setIsCommunicationActive] = useState(false); // État pour suivre si la communication est active
+  const [showInfo, setShowInfo] = useState(true);
+  const localAudioRef = useRef(null);
+  const remoteAudioRef = useRef(null);
+  const socketRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const peerConnectionRef = useRef(null);
 
-  // Connexion au serveur WebSocket pour la signalisation
   useEffect(() => {
-    // Remplacez l'URL par celle de votre serveur WebSocket déployé sur Render
     socketRef.current = io("https://renderservertalkiewalkie.onrender.com");
 
-    // Écouter les messages de signalisation
     socketRef.current.on("offer", async (offer) => {
-      console.log("Offer reçu :", offer);
       await handleOffer(offer);
     });
 
     socketRef.current.on("answer", async (answer) => {
-      console.log("Answer reçu :", answer);
       await handleAnswer(answer);
     });
 
     socketRef.current.on("candidate", async (candidate) => {
-      console.log("Candidate reçu :", candidate);
       await handleCandidate(candidate);
     });
 
-    // Nettoyer la connexion lors du démontage du composant
     return () => {
       socketRef.current.disconnect();
     };
-    // eslint-disable-next-line
   }, []);
 
-  // Démarrer la communication audio
   const startCommunication = async () => {
     try {
-      // Obtenir le flux audio de l'utilisateur
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       localStreamRef.current = stream;
-
-      // Afficher l'audio local (optionnel)
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = stream;
       }
-
-      // Créer une connexion WebRTC
       peerConnectionRef.current = new RTCPeerConnection();
-
-      // Ajouter le flux audio à la connexion WebRTC
       stream.getTracks().forEach((track) => {
         peerConnectionRef.current.addTrack(track, stream);
       });
-
-      // Écouter les candidats ICE (pour établir la connexion)
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate) {
           socketRef.current.emit("candidate", event.candidate);
         }
       };
-
-      // Écouter le flux audio distant
       peerConnectionRef.current.ontrack = (event) => {
         if (remoteAudioRef.current) {
           remoteAudioRef.current.srcObject = event.streams[0];
         }
       };
-
-      // Créer une offre et l'envoyer à l'autre utilisateur
       const offer = await peerConnectionRef.current.createOffer();
       await peerConnectionRef.current.setLocalDescription(offer);
       socketRef.current.emit("offer", offer);
+
+      setIsCommunicationActive(true); // Activer l'état de communication
     } catch (error) {
       console.error("Erreur lors de la récupération du flux audio :", error);
     }
   };
 
-  // Gérer une offre reçue
+  const stopCommunication = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop()); // Arrêter les pistes audio
+    }
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close(); // Fermer la connexion WebRTC
+    }
+    setIsCommunicationActive(false); // Désactiver l'état de communication
+    setIsSpeaking(false); // Désactiver l'état de parole
+  };
+
   const handleOffer = async (offer) => {
     if (!peerConnectionRef.current) {
       await startCommunication();
     }
     await peerConnectionRef.current.setRemoteDescription(offer);
-
-    // Créer une réponse et l'envoyer
     const answer = await peerConnectionRef.current.createAnswer();
     await peerConnectionRef.current.setLocalDescription(answer);
     socketRef.current.emit("answer", answer);
   };
 
-  // Gérer une réponse reçue
   const handleAnswer = async (answer) => {
     await peerConnectionRef.current.setRemoteDescription(answer);
   };
 
-  // Gérer un candidat ICE reçu
   const handleCandidate = async (candidate) => {
     await peerConnectionRef.current.addIceCandidate(candidate);
   };
 
-  // Activer/désactiver la parole
   const toggleSpeaking = () => {
     setIsSpeaking((prev) => !prev);
     if (localStreamRef.current) {
@@ -116,37 +119,74 @@ const TalkieWalkie = () => {
     }
   };
 
+  const bgColor = useColorModeValue("gray.50", "gray.700");
+
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
-      <Flex align="center" mb={4}>
-        <IconButton
-          icon={<GiWalkieTalkie size="24px" />}
-          size="lg"
-          aria-label="Talkie-Walkie"
-          mr={2}
-        />
-        <Text fontSize="xl" fontWeight="bold">Canal de discussion Talkie-Walkie</Text>
-      </Flex>
+      <Card bg={bgColor}>
+        <CardHeader>
+          <Flex align="center">
+            <IconButton
+              icon={<GiWalkieTalkie size="24px" />}
+              size="lg"
+              aria-label="Talkie-Walkie"
+              mr={2}
+              colorScheme="teal"
+            />
+            <Text fontSize="xl" fontWeight="bold">Canal de discussion Talkie-Walkie</Text>
+          </Flex>
+        </CardHeader>
+        <CardBody>
+          {/* Note d'information */}
+          {showInfo && (
+            <Alert status="info" mb={4} borderRadius="md">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle>Comment utiliser le Talkie-Walkie ?</AlertTitle>
+                <AlertDescription>
+                  1. Cliquez sur "Démarrer la communication" pour activer le microphone.
+                  <br />
+                  2. Appuyez sur "Parler" pour activer votre microphone et communiquer.
+                  <br />
+                  3. Relâchez le bouton "Parler" pour écouter l'autre utilisateur.
+                </AlertDescription>
+              </Box>
+              <CloseButton
+                position="absolute"
+                right="8px"
+                top="8px"
+                onClick={() => setShowInfo(false)}
+              />
+            </Alert>
+          )}
 
-      {/* Bouton pour démarrer la communication */}
-      <Button colorScheme="blue" onClick={startCommunication} mb={4}>
-        Démarrer la communication
-      </Button>
+          {/* Bouton pour démarrer/arrêter la communication */}
+          <Button
+            colorScheme={isCommunicationActive ? "green" : "red"}
+            onClick={isCommunicationActive ? stopCommunication : startCommunication}
+            mb={4}
+            width="full"
+          >
+            {isCommunicationActive ? "Arrêter la communication (On)" : "Démarrer la communication (Off)"}
+          </Button>
 
-      {/* Bouton pour parler */}
-      <Button
-        colorScheme={isSpeaking ? "red" : "green"}
-        onClick={toggleSpeaking}
-        mb={4}
-      >
-        {isSpeaking ? "Arrêter de parler" : "Parler"}
-      </Button>
-
-      {/* Audio local (optionnel) */}
-      <audio ref={localAudioRef} autoPlay muted />
-
-      {/* Audio distant */}
-      <audio ref={remoteAudioRef} autoPlay />
+          {/* Bouton pour parler */}
+          <Button
+            leftIcon={isSpeaking ? <FaMicrophoneSlash /> : <FaMicrophone />}
+            colorScheme={isSpeaking ? "red" : "blue"}
+            onClick={toggleSpeaking}
+            mb={4}
+            width="full"
+            isDisabled={!isCommunicationActive} // Désactiver le bouton si la communication n'est pas active
+          >
+            {isSpeaking ? "Arrêter de parler" : "Parler"}
+          </Button>
+        </CardBody>
+        <CardFooter>
+          <audio ref={localAudioRef} autoPlay muted />
+          <audio ref={remoteAudioRef} autoPlay />
+        </CardFooter>
+      </Card>
     </Box>
   );
 };
