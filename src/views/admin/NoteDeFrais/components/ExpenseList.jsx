@@ -9,31 +9,38 @@ import {
   Spinner,
   useToast,
   Button,
+  HStack
 } from '@chakra-ui/react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
 import supabase from './../../../../supabaseClient';
-import { useTeam } from './../../InterfaceEquipe/TeamContext'; // Assuming you have a TeamContext
-import ExpenseSummaryPDF from './ExpenseSummaryPDF'; // Import the PDF component
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ExpenseSummaryPDF from './ExpenseSummaryPDF';
+import { useEvent } from './../../../../EventContext';
+import { FaFilePdf } from "react-icons/fa6";
 
 const ExpenseList = () => {
-  const { teamUUID } = useTeam(); // Get the teamUUID from context
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const { selectedEventId } = useEvent();
 
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        let { data, error } = await supabase
+        let query = supabase
           .from('vianney_expenses_reimbursement')
-          .select('*')
-          .eq('team_id', teamUUID); // Filter by team UUID
+          .select('*');
+
+        if (selectedEventId) {
+          query = query.eq('event_id', selectedEventId);
+        }
+
+        let { data, error } = await query;
 
         if (error) {
           throw error;
         }
 
-        setExpenses(data);
+        setExpenses(data || []);
       } catch (error) {
         toast({
           title: 'Erreur de chargement',
@@ -47,10 +54,8 @@ const ExpenseList = () => {
       }
     };
 
-    if (teamUUID) {
-      fetchExpenses();
-    }
-  }, [teamUUID, toast]);
+    fetchExpenses();
+  }, [toast, selectedEventId]);
 
   if (loading) {
     return (
@@ -176,22 +181,23 @@ const ExpenseList = () => {
                 ))}
               </GridItem>
               <GridItem colSpan={2}>
-                <Flex justifyContent="flex-end">
+                <HStack justifyContent="flex-end">
                   <PDFDownloadLink
-                    document={<ExpenseSummaryPDF data={expense} trips={JSON.parse(expense.trips || '[]')} expenses={JSON.parse(expense.expenses || '[]')} />}
-                    fileName={`expense_summary_${expense.id}.pdf`}
+                    document={<ExpenseSummaryPDF data={expense} trips={JSON.parse(expense.trips)} expenses={JSON.parse(expense.expenses)} />}
+                    fileName={`note_de_frais_${expense.volunteer_last_name}_${expense.volunteer_first_name}.pdf`}
                   >
-                    {({ loading }) =>
-                      loading ? (
-                        <Button isLoading>Loading...</Button>
-                      ) : (
-                        <Button colorScheme="blue">
-                          Download PDF
-                        </Button>
-                      )
-                    }
+                    {({ loading }) => (
+                      <Button
+                        leftIcon={<FaFilePdf />}
+                        colorScheme="red"
+                        variant="solid"
+                        isLoading={loading}
+                      >
+                        Télécharger le PDF
+                      </Button>
+                    )}
                   </PDFDownloadLink>
-                </Flex>
+                </HStack>
               </GridItem>
             </Grid>
           </Box>
